@@ -20,15 +20,15 @@ def _round_time(t):
     elif lpo < l:
         po = po + ("0" * (l - lpo))
 
-    return ".".join(pr, po)
+    return ".".join([pr, po])
 
 
 class Logger(object):
 
     @staticmethod
     def log(msg_type, message, color):
-        t = time.time() - init_time
-        print(color + "[{0}] [{1}] {2}".format(_round_time(t), msg_type, message))
+        t = time.time() - INIT_TIME
+        print(color + "[{0}] [{1}] {2}".format(_round_time(t), msg_type, message) + Style.RESET_ALL)
 
     @staticmethod
     def info(message, color=Fore.GREEN):

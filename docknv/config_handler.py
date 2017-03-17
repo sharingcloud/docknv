@@ -4,7 +4,7 @@ import os
 
 from .compose import Compose
 from .yaml_utils import merge_yaml, merge_yaml_two, ordered_load, ordered_dump
-from .logger import Logging, Fore
+from .logger import Logger, Fore
 
 class ConfigHandler(object):
     def __init__(self, compose_file):
@@ -18,7 +18,7 @@ class ConfigHandler(object):
             with open(compose_file_path, mode="rt") as f:
                 compose_content = ordered_load(f.read())
         else:
-            Logging.error("Bad compose file: {0}".format(compose_file_path))
+            Logger.error("Bad compose file: {0}".format(compose_file_path))
 
         self.compose_file_path = compose_file_path
         self.compose_file_dir = os.path.dirname(compose_file_path)
@@ -29,7 +29,7 @@ class ConfigHandler(object):
 
     def generate_compose(self):
         if "templates" not in self.compose_content:
-            Logging.error("Missing `templates` section in compose config.")
+            Logger.error("Missing `templates` section in compose config.")
 
         contents = []
         for template in self.compose_content["templates"]:
@@ -40,9 +40,9 @@ class ConfigHandler(object):
                 template = self.compose_file_dir + template[1:]
 
             if not os.path.isfile(template):
-                Logging.error("Bad compose template file: {0}".format(template))
+                Logger.error("Bad compose template file: {0}".format(template))
             else:
-                Logging.info("Using template `{0}`...".format(template)
+                Logger.info("Using template `{0}`...".format(template))
 
                 with open(template, mode="rt") as f:
                     template_content = ordered_load(f.read())
@@ -54,7 +54,7 @@ class ConfigHandler(object):
     def write_compose(self, output_file):
         result = self.generate_compose()
 
-        Logging.info("Writing compose file to `{0}`...".format(output_file))
+        Logger.info("Writing compose file to `{0}`...".format(output_file))
 
         with open(output_file, mode="wt+") as f:
             f.write(ordered_dump(result, default_flow_style=False))
@@ -64,7 +64,7 @@ class ConfigHandler(object):
 
     def list_lifecycles(self):
         if "lifecycles" not in self.compose_content:
-            Logging.error("Missing `lifecycles` section in compose config.")
+            Logger.error("Missing `lifecycles` section in compose config.")
 
         lifecycles = self.compose_content["lifecycles"]
         for name in lifecycles:
@@ -74,26 +74,26 @@ class ConfigHandler(object):
             all_action = lifecycle["action"]
             handlers = lifecycle.get("handlers", {})
 
-            Logging.raw("Lifecycle: " + name, color=Fore.GREEN)
-            Logging.raw("  Schema: " + schema_name)
-            Logging.raw("  Global action: " + all_action)
+            Logger.raw("Lifecycle: " + name, color=Fore.GREEN)
+            Logger.raw("  Schema: " + schema_name)
+            Logger.raw("  Global action: " + all_action)
 
             handlers_specs = [k for k in handlers.keys() if k != "ALL"]
             if len(handlers_specs) > 0:
-                Logging.raw("  Custom actions:")
+                Logger.raw("  Custom actions:")
                 for k in handlers_specs:
                     command = handlers[k]
-                    Logging.raw("    {0}: {1}".format(k, command))
+                    Logger.raw("    {0}: {1}".format(k, command))
 
-            Logging.raw("")
+            Logger.raw("")
 
     def get_lifecycle(self, name):
         if "lifecycles" not in self.compose_content:
-            Logging.error("Missing `lifecycles` section in compose config.")
+            Logger.error("Missing `lifecycles` section in compose config.")
 
         lifecycles = self.compose_content["lifecycles"]
         if name not in lifecycles:
-            Logging.error("Missing lifecycle `{0}` definition in compose config.".format(name))
+            Logger.error("Missing lifecycle `{0}` definition in compose config.".format(name))
 
         lifecycle = lifecycles[name]
         return lifecycle
@@ -102,7 +102,7 @@ class ConfigHandler(object):
         lifecycle = self.get_lifecycle(name)
 
         if not "schema" in lifecycle:
-            Logging.error("Missing `schema` section in lifecycle `{0}`".format(name))
+            Logger.error("Missing `schema` section in lifecycle `{0}`".format(name))
 
         schema_name = lifecycle["schema"]
         schema = self.get_schema(schema_name)
@@ -131,11 +131,11 @@ class ConfigHandler(object):
 
     def get_schema(self, name):
         if "schemas" not in self.compose_content:
-            Logging.error("Missing `schemas` section in compose config.")
+            Logger.error("Missing `schemas` section in compose config.")
 
         schemas = self.compose_content["schemas"]
         if name not in schemas:
-            Logging.error("Missing schema `{0}` definition in compose config.".format(name))
+            Logger.error("Missing schema `{0}` definition in compose config.".format(name))
 
         schema = schemas[name]
 
@@ -154,24 +154,24 @@ class ConfigHandler(object):
 
     def list_schemas(self):
         if "schemas" not in self.compose_content:
-            Logging.error("Missing `schemas` section in compose config.")
+            Logger.error("Missing `schemas` section in compose config.")
 
         schemas = self.compose_content["schemas"]
         for name in schemas:
             schema = self.get_schema(name)
-            Logging.raw("Schema: " + name, color=Fore.GREEN)
+            Logger.raw("Schema: " + name, color=Fore.GREEN)
             if "volumes" in schema:
-                Logging.raw("  Volumes: ", color=Fore.BLUE)
+                Logger.raw("  Volumes: ", color=Fore.BLUE)
                 volumes = schema["volumes"]
                 for volume in volumes:
-                    Logging.raw("    " + volume)
+                    Logger.raw("    " + volume)
 
             if "services" in schema:
-                Logging.raw("  Services: ", color=Fore.BLUE)
+                Logger.raw("  Services: ", color=Fore.BLUE)
                 services = schema["services"]
                 for service in services:
-                    Logging.raw("    " + service)
-            Logging.raw("")
+                    Logger.raw("    " + service)
+            Logger.raw("")
 
     def build_schema(self, name):
         schema = self.get_schema(name)

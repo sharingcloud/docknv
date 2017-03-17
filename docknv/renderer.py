@@ -1,6 +1,7 @@
 import os
 import re
 
+from .logger import Logger, Fore
 
 class Renderer(object):
 
@@ -32,7 +33,7 @@ class Renderer(object):
         with open(dest_file, mode="wt+") as f:
             f.write(result)
 
-        print("{0} => {1}".format(path, dest_file))
+        Logger.info("Rendering {0} => {1}".format(path, dest_file))
 
     @staticmethod
     def render_files(folder, env):

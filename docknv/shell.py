@@ -15,7 +15,7 @@ class Shell(object):
         sub_compose_subparsers = sub_compose.add_subparsers(help="compose command", dest="compose_cmd")
         sub_compose_generate = sub_compose_subparsers.add_parser("generate", help="generate compose file")
         sub_compose_down = sub_compose_subparsers.add_parser("down", help="shutdown all")
-        sub_compose_ps = sub_compose_subparsers.add_parser("list", help="show active containers")
+        sub_compose_ps = sub_compose_subparsers.add_parser("ps", help="show active containers")
         sub_compose_daemon = sub_compose_subparsers.add_parser("daemon", help="run a container in background")
         sub_compose_daemon.add_argument("machine", help="machine name")
         sub_compose_run = sub_compose_subparsers.add_parser("run", help="run a command on a container")
@@ -70,7 +70,7 @@ class Shell(object):
                 self._generate_compose(args)
             elif args.compose_cmd == "down":
                 self._compose_down(args)
-            elif args.compose_cmd == "list":
+            elif args.compose_cmd == "ps":
                 self._compose_ps(args)
             elif args.compose_cmd == "daemon":
                 self._compose_daemon(args)

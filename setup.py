@@ -11,7 +11,7 @@ setup(
     packages=['docknv'],
     install_requires=[
           'six',
-          'PyYAML'
+          'PyYAML',
           'colorama'
       ],
     scripts=['bin/docknv'],
