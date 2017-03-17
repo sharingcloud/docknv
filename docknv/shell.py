@@ -108,7 +108,7 @@ class Shell(object):
 
     def _docker_compose_check(self):
         if not os.path.exists("./.docker-compose.yml"):
-            print("[ERROR] Before building you should generate the docker-compose.yml file using the `generate-compose` command.")
+            print("[ERROR] Before building you should generate the docker-compose.yml file using the `compose generate` command.")
             sys.exit(1)
 
     ############################
@@ -119,36 +119,50 @@ class Shell(object):
         config.write_compose(".docker-compose.yml")
 
     def _compose_down(self, args):
+        self._docker_compose_check()
+
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.down()
 
     def _compose_ps(self, args):
+        self._docker_compose_check()
+
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.ps()
 
     def _compose_stop(self, args):
+        self._docker_compose_check()
+
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.stop(args.machine)
 
     def _compose_daemon(self, args):
+        self._docker_compose_check()
+
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.daemon(args.machine)
 
     def _compose_run(self, args):
+        self._docker_compose_check()
+
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.run(args.machine, args.run_command)
 
     def _compose_shell(self, args):
+        self._docker_compose_check()
+
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.shell(args.machine)
 
     def _compose_restart(self, args):
+        self._docker_compose_check()
+
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.restart(args.machine)
