@@ -1,0 +1,25 @@
+#!/usr/bin/env python2
+
+import sys
+import os
+import imp
+
+current_dir = os.getcwd()
+commands_dir = os.path.join(current_dir, "commands")
+
+from docknv import Shell
+shell = Shell()
+
+if os.path.exists(commands_dir):
+    for root, folders, files in os.walk(commands_dir):
+        for f in files:
+            if f.endswith(".py"):
+                abs_f = os.path.join(root, f)
+                src = imp.load_source(f, abs_f)
+                pre_parse = getattr(src, "pre_parse")
+                post_parse = getattr(src, "post_parse")
+
+                pre_parse(shell)
+                shell.register_post_parser(post_parse)
+
+shell.run(sys.argv[1:])
