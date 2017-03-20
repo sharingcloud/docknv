@@ -81,6 +81,13 @@ class Compose(object):
         else:
             os.system("docker restart {0} > /dev/null".format(container))
 
+    def execute(self, machine, command=""):
+        container = self._get_container(machine)
+        if not container:
+            Logger.error("Machine `{0}` is not running.".format(machine), crash=False)
+        else:
+            os.system("docker exec -ti {0} {1}".format(container, command))
+
     def remove_network(self, network):
         Logger.info("Removing network `{0}`...".format(network))
         os.system("docker network rm {0} > /dev/null".format(network))

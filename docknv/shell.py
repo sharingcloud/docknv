@@ -23,11 +23,14 @@ class Shell(object):
         sub_compose_run.add_argument("run_command", nargs="?", default="", help="command")
         sub_compose_shell = sub_compose_subparsers.add_parser("shell", help="run shell")
         sub_compose_shell.add_argument("machine", help="machine name")
-        sub_compose_shell.add_argument("shell", help="shell executable")
+        sub_compose_shell.add_argument("shell", nargs="?", default="/bin/bash", help="shell executable")
         sub_compose_stop = sub_compose_subparsers.add_parser("stop", help="stop a container")
         sub_compose_stop.add_argument("machine", help="machine name")
         sub_compose_restart = sub_compose_subparsers.add_parser("restart", help="restart a container")
         sub_compose_restart.add_argument("machine", help="machine name")
+        sub_compose_exec = sub_compose_subparsers.add_parser("exec", help="execute a command on a running container")
+        sub_compose_exec.add_argument("machine", help="machine name")
+        sub_compose_exec.add_argument("exec_command", help="command to execute")
 
         sub_env = self.subparsers.add_parser("env", help="env actions")
         sub_env_subparsers = sub_env.add_subparsers(help="env command", dest="env_cmd")
@@ -82,6 +85,8 @@ class Shell(object):
                 self._compose_stop(args)
             elif args.compose_cmd == "restart":
                 self._compose_restart(args)
+            elif args.compose_cmd == "exec":
+                self._compose_exec(args)
 
         elif command == "env":
             if args.env_cmd == "generate":
@@ -166,6 +171,13 @@ class Shell(object):
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.restart(args.machine)
+
+    def _compose_exec(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        c = ConfigHandler(args.config)
+        c.compose_tool.execute(args.machine, args.exec_command)
 
     ###########################
 
