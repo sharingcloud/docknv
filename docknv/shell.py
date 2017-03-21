@@ -3,6 +3,8 @@ import sys
 import os
 import re
 
+from .logger import Logger
+
 
 class Shell(object):
     def __init__(self):
@@ -32,6 +34,8 @@ class Shell(object):
         sub_compose_exec = sub_compose_subparsers.add_parser("exec", help="execute a command on a running container")
         sub_compose_exec.add_argument("machine", help="machine name")
         sub_compose_exec.add_argument("exec_command", help="command to execute")
+        sub_compose_export = sub_compose_subparsers.add_parser("export", help="export the compose file for production")
+        sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export")
 
         sub_env = self.subparsers.add_parser("env", help="env actions")
         sub_env_subparsers = sub_env.add_subparsers(help="env command", dest="env_cmd")
@@ -90,6 +94,10 @@ class Shell(object):
                 self._compose_restart(args)
             elif args.compose_cmd == "exec":
                 self._compose_exec(args)
+            elif args.compose_cmd == "export":
+                self._compose_export(args)
+            elif args.compose_cmd == "export-clean":
+                self._compose_export_clean(args)
 
         elif command == "env":
             if args.env_cmd == "generate":
@@ -189,6 +197,22 @@ class Shell(object):
         c = ConfigHandler(args.config)
         c.compose_tool.execute(args.machine, args.exec_command)
 
+    def _compose_export(self, args):
+        self._docker_compose_check()
+
+        from .exporter import Exporter
+        Exporter.export(".docker-compose.yml")
+
+    def _compose_export_clean(self, args):
+        self._docker_compose_check()
+
+        from .exporter import Exporter
+        Exporter.clean(".docker-compose.yml")
+
+        # Generate new compose
+        Logger.info("Generating new compose file...")
+        self._generate_compose(args)
+
     ###########################
 
     def _generate_env(self, args):
@@ -201,6 +225,7 @@ class Shell(object):
         from .renderer import Renderer
         env_vars = EnvHandler.load_env_in_memory(args.env_file)
         Renderer.render_files(args.folder, env_vars)
+        EnvHandler.write_env_to_file(env_vars, ".env")
 
     def _list_schemas(self, args):
         from .config_handler import ConfigHandler
