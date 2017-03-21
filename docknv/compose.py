@@ -44,6 +44,10 @@ class Compose(object):
         Logger.info(msg)
         self._exec_compose("run --service-ports {0} {1}".format(machine, command))
 
+    def up(self):
+        Logger.info("Starting up all machines...")
+        self._exec_compose("up -d")
+
     def down(self):
         Logger.info("Shutting down all machines...")
         self._exec_compose("down")
