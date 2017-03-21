@@ -119,7 +119,10 @@ class Exporter(object):
                         os.mkdir(exported_path)
 
                     if os.path.exists(exported_final_path):
-                        shutil.rmtree(exported_final_path)
+                        if os.path.isdir(exported_final_path):
+                            shutil.rmtree(exported_final_path)
+                        else:
+                            os.remove(exported_final_path)
 
                     Logger.debug("Copying `{0}` to `{1}`...".format(host, exported_final_path))
                     if os.path.isdir(host):
