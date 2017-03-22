@@ -85,6 +85,13 @@ class Compose(object):
         else:
             os.system("docker restart {0} > /dev/null".format(container))
 
+    def logs(self, machine):
+        container = self._get_container(machine)
+        if not container:
+            Logger.error("Machine `{0}` is not running.".format(machine), crash=False)
+        else:
+            os.system("docker logs {0}".format(container))
+
     def execute(self, machine, command="", tty=True):
         container = self._get_container(machine)
         if not container:

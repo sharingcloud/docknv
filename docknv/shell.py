@@ -37,6 +37,8 @@ class Shell(object):
         sub_compose_exec.add_argument("-n", "--no-tty", action="store_true", help="disable tty")
         sub_compose_export = sub_compose_subparsers.add_parser("export", help="export the compose file for production")
         sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export")
+        sub_compose_logs = sub_compose_subparsers.add_parser("logs", help="show logs")
+        sub_compose_logs.add_argument("machine", help="machine name")
 
         sub_volume = self.subparsers.add_parser("volume", help="volume actions")
         sub_volume_subparsers = sub_volume.add_subparsers(help="volume command", dest="volume_cmd")
@@ -105,6 +107,8 @@ class Shell(object):
                 self._compose_export(args)
             elif args.compose_cmd == "export-clean":
                 self._compose_export_clean(args)
+            elif args.compose_cmd == "logs":
+                self._compose_logs(args)
 
         elif command == "volume":
             if args.volume_cmd == "list":
@@ -224,6 +228,13 @@ class Shell(object):
         # Generate new compose
         Logger.info("Generating new compose file...")
         self._generate_compose(args)
+
+    def _compose_logs(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        c = ConfigHandler(args.config)
+        c.compose_tool.logs(args.machine)
 
     ###########################
 
