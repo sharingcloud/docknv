@@ -1,5 +1,12 @@
 # docknv
 
+## Installation
+
+```bash
+git clone https://bitbucket.org/sharingcloud/docknv.git
+pip install -e ./docknv # or sudo
+```
+
 ## Introduction
 
 ### What is it ?
