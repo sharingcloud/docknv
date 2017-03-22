@@ -107,6 +107,7 @@ class Compose(object):
         if not container:
             Logger.error("Machine `{0}` is not running.".format(machine), crash=False)
         else:
+            Logger.info("Copying file from `{0}`: `{1}` => `{2}".format(machine, container_path, host_path))
             os.system("docker cp {0}:{1} {2}".format(container, container_path, host_path))
 
     def remove_network(self, network):
