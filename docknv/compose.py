@@ -102,6 +102,13 @@ class Compose(object):
             if return_code:
                 sys.exit(os.WEXITSTATUS(code))
 
+    def copy(self, machine, container_path, host_path):
+        container = self._get_container(machine)
+        if not container:
+            Logger.error("Machine `{0}` is not running.".format(machine), crash=False)
+        else:
+            os.system("docker cp {0}:{1} {2}".format(container, container_path, host_path))
+
     def remove_network(self, network):
         Logger.info("Removing network `{0}`...".format(network))
         os.system("docker network rm {0} > /dev/null".format(network))

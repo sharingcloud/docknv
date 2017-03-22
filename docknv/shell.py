@@ -40,6 +40,10 @@ class Shell(object):
         sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export")
         sub_compose_logs = sub_compose_subparsers.add_parser("logs", help="show logs")
         sub_compose_logs.add_argument("machine", help="machine name")
+        sub_compose_copy = sub_compose_subparsers.add_parser("copy", help="copy file")
+        sub_compose_copy.add_argument("machine", help="machine name")
+        sub_compose_copy.add_argument("container_path", help="container path")
+        sub_compose_copy.add_argument("host_path", help="host path")
 
         sub_volume = self.subparsers.add_parser("volume", help="volume actions")
         sub_volume_subparsers = sub_volume.add_subparsers(help="volume command", dest="volume_cmd")
@@ -110,6 +114,8 @@ class Shell(object):
                 self._compose_export_clean(args)
             elif args.compose_cmd == "logs":
                 self._compose_logs(args)
+            elif args.compose_cmd == "copy":
+                self._compose_copy(args)
 
         elif command == "volume":
             if args.volume_cmd == "list":
@@ -236,6 +242,13 @@ class Shell(object):
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.logs(args.machine)
+
+    def _compose_copy(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        c = ConfigHandler(args.config)
+        c.compose_tool.copy(args.machine, args.container_path, args.host_path)
 
     ###########################
 
