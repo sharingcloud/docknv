@@ -38,6 +38,12 @@ class Shell(object):
         sub_compose_export = sub_compose_subparsers.add_parser("export", help="export the compose file for production")
         sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export")
 
+        sub_volume = self.subparsers.add_parser("volume", help="volume actions")
+        sub_volume_subparsers = sub_volume.add_subparsers(help="volume command", dest="volume_cmd")
+        sub_volume_list = sub_volume_subparsers.add_parser("list", help="list volumes")
+        sub_volume_remove = sub_volume_subparsers.add_parser("remove", help="remove volume")
+        sub_volume_remove.add_argument("name", help="volume name")
+
         sub_env = self.subparsers.add_parser("env", help="env actions")
         sub_env_subparsers = sub_env.add_subparsers(help="env command", dest="env_cmd")
         sub_env_generate = sub_env_subparsers.add_parser("generate", help="generate .env file")
@@ -99,6 +105,12 @@ class Shell(object):
                 self._compose_export(args)
             elif args.compose_cmd == "export-clean":
                 self._compose_export_clean(args)
+
+        elif command == "volume":
+            if args.volume_cmd == "list":
+                self._list_volumes(args)
+            elif args.volume_cmd == "remove":
+                self._remove_volume(args)
 
         elif command == "env":
             if args.env_cmd == "generate":
@@ -214,6 +226,16 @@ class Shell(object):
         self._generate_compose(args)
 
     ###########################
+
+    def _list_volumes(self, args):
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.compose_tool.list_volumes()
+
+    def _remove_volume(self, args):
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.compose_tool.remove_volume(args.name)
 
     def _generate_env(self, args):
         from .env_handler import EnvHandler

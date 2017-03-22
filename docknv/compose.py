@@ -96,6 +96,9 @@ class Compose(object):
         Logger.info("Removing network `{0}`...".format(network))
         os.system("docker network rm {0} > /dev/null".format(network))
 
+    def list_volumes(self):
+        os.system("docker volume list | grep {0}".format(self.namespace))
+
     def create_volume(self, name):
         Logger.info("Creating volume `{0}`...".format(name))
         os.system("docker volume create --name {0}_{1} -d local".format(self.namespace, name))
