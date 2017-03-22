@@ -105,7 +105,7 @@ class Compose(object):
 
     def remove_volume(self, name):
         Logger.info("Removing volume `{0}`...".format(name))
-        os.system("docker volume remove {0}_{1}".format(self.namespace, name))
+        os.system("docker volume rm {0}_{1}".format(self.namespace, name))
 
     def reset_volume(self, name):
         self.remove_volume(name)
