@@ -34,6 +34,7 @@ class Shell(object):
         sub_compose_exec = sub_compose_subparsers.add_parser("exec", help="execute a command on a running container")
         sub_compose_exec.add_argument("machine", help="machine name")
         sub_compose_exec.add_argument("exec_command", help="command to execute")
+        sub_compose_exec.add_argument("-n", "--no-tty", action="store_true", help="disable tty")
         sub_compose_export = sub_compose_subparsers.add_parser("export", help="export the compose file for production")
         sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export")
 
@@ -124,8 +125,7 @@ class Shell(object):
 
     def _docker_compose_check(self):
         if not os.path.exists("./.docker-compose.yml"):
-            print("[ERROR] Before building you should generate the docker-compose.yml file using the `compose generate` command.")
-            sys.exit(1)
+            Logger.error("Before building you should generate the docker-compose.yml file using the `compose generate` command.")
 
     ############################
 
@@ -195,7 +195,7 @@ class Shell(object):
 
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
-        c.compose_tool.execute(args.machine, args.exec_command)
+        c.compose_tool.execute(args.machine, args.exec_command, not args.no_tty)
 
     def _compose_export(self, args):
         self._docker_compose_check()

@@ -15,11 +15,12 @@ if os.path.exists(commands_dir):
         for f in files:
             if f.endswith(".py"):
                 abs_f = os.path.join(root, f)
-                src = imp.load_source(f, abs_f)
-                pre_parse = getattr(src, "pre_parse")
-                post_parse = getattr(src, "post_parse")
+                src = imp.load_source("commands", abs_f)
+                if hasattr(src, "pre_parse") and hasattr(src, "post_parse"):
+                    pre_parse = getattr(src, "pre_parse")
+                    post_parse = getattr(src, "post_parse")
 
-                pre_parse(shell)
-                shell.register_post_parser(post_parse)
+                    pre_parse(shell)
+                    shell.register_post_parser(post_parse)
 
 shell.run(sys.argv[1:])
