@@ -2,6 +2,7 @@ import os
 import time
 import subprocess
 import re
+import sys
 
 from .logger import Logger
 
@@ -92,12 +93,14 @@ class Compose(object):
         else:
             os.system("docker logs {0}".format(container))
 
-    def execute(self, machine, command="", tty=True):
+    def execute(self, machine, command="", tty=True, return_code=False):
         container = self._get_container(machine)
         if not container:
             Logger.error("Machine `{0}` is not running.".format(machine), crash=False)
         else:
-            os.system("docker exec {2} {0} {1}".format(container, command, "-ti" if tty else ""))
+            code = os.system("docker exec {2} {0} {1}".format(container, command, "-ti" if tty else ""))
+            if return_code:
+                sys.exit(os.WEXITSTATUS(code))
 
     def remove_network(self, network):
         Logger.info("Removing network `{0}`...".format(network))

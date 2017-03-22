@@ -35,6 +35,7 @@ class Shell(object):
         sub_compose_exec.add_argument("machine", help="machine name")
         sub_compose_exec.add_argument("exec_command", help="command to execute")
         sub_compose_exec.add_argument("-n", "--no-tty", action="store_true", help="disable tty")
+        sub_compose_exec.add_argument("-r", "--return-code", action="store_true", help="return code")
         sub_compose_export = sub_compose_subparsers.add_parser("export", help="export the compose file for production")
         sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export")
         sub_compose_logs = sub_compose_subparsers.add_parser("logs", help="show logs")
@@ -211,7 +212,7 @@ class Shell(object):
 
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
-        c.compose_tool.execute(args.machine, args.exec_command, not args.no_tty)
+        c.compose_tool.execute(args.machine, args.exec_command, not args.no_tty, args.return_code)
 
     def _compose_export(self, args):
         self._docker_compose_check()
