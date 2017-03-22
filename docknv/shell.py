@@ -8,7 +8,7 @@ from .logger import Logger
 
 class Shell(object):
     def __init__(self):
-        self.parser = argparse.ArgumentParser(description="CompoDocker")
+        self.parser = argparse.ArgumentParser(description="Docker, Compose and eNVironments")
         self.parser.add_argument("-f", "--config", default="config.yml", help="compose config file")
 
         self.subparsers = self.parser.add_subparsers(help="command", dest="command")
