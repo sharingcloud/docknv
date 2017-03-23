@@ -53,6 +53,11 @@ class Compose(object):
         Logger.info("Shutting down all machines...")
         self._exec_compose("down")
 
+    def reup(self):
+        Logger.info("Reupping all machines...")
+        self._exec_compose("down")
+        self._exec_compose("up -d")
+
     def daemon(self, machine, command=""):
         msg = "Running machine `{0}` in background".format(machine)
         if command != "":
@@ -66,7 +71,7 @@ class Compose(object):
 
     def shell(self, machine, shell="/bin/bash"):
         Logger.info("Running shell `{0}` in machine `{1}`...".format(shell, machine))
-        self.run(machine, shell)
+        self.execute(machine, shell)
 
     def stop(self, machine):
         Logger.info("Stopping machine `{0}`...".format(machine))

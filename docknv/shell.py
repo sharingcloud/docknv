@@ -44,6 +44,7 @@ class Shell(object):
         sub_compose_copy.add_argument("machine", help="machine name")
         sub_compose_copy.add_argument("container_path", help="container path")
         sub_compose_copy.add_argument("host_path", help="host path")
+        sub_compose_reup = sub_compose_subparsers.add_parser("reup", help="restart all stack")
 
         sub_volume = self.subparsers.add_parser("volume", help="volume actions")
         sub_volume_subparsers = sub_volume.add_subparsers(help="volume command", dest="volume_cmd")
@@ -116,6 +117,8 @@ class Shell(object):
                 self._compose_logs(args)
             elif args.compose_cmd == "copy":
                 self._compose_copy(args)
+            elif args.compose_cmd == "reup":
+                self._compose_reup(args)
 
         elif command == "volume":
             if args.volume_cmd == "list":
@@ -249,6 +252,13 @@ class Shell(object):
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.copy(args.machine, args.container_path, args.host_path)
+
+    def _compose_reup(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        c = ConfigHandler(args.config)
+        c.compose_tool.reup()
 
     ###########################
 
