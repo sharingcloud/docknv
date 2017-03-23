@@ -60,11 +60,11 @@ class Shell(object):
 
         sub_env = self.subparsers.add_parser("env", help="env actions")
         sub_env_subparsers = sub_env.add_subparsers(help="env command", dest="env_cmd")
-        sub_env_generate = sub_env_subparsers.add_parser("generate", help="generate .env file")
-        sub_env_generate.add_argument("env_file", help="environment file")
-        sub_env_render = sub_env_subparsers.add_parser("render", help="render templates from env")
-        sub_env_render.add_argument("env_file", help="environment file")
-        sub_env_render.add_argument("folder", help="render templates inside folder")
+        # sub_env_generate = sub_env_subparsers.add_parser("generate", help="generate .env file")
+        # sub_env_generate.add_argument("env_file", help="environment file")
+        # sub_env_render = sub_env_subparsers.add_parser("render", help="render templates from env")
+        # sub_env_render.add_argument("env_file", help="environment file")
+        # sub_env_render.add_argument("folder", help="render templates inside folder")
         sub_env_use = sub_env_subparsers.add_parser("use", help="set env and render templates")
         sub_env_use.add_argument("env_name", help="environment file name (debug, etc.)")
 

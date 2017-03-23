@@ -140,6 +140,8 @@ networks:
 Here is the format in the **config.yml** file:
 
 ```
+project_name: "myproject"
+
 templates:
   - ./templates/one.yml
   - ./templates/two.yml
@@ -159,6 +161,8 @@ If you want to include schemas containing others, you just have to use the *incl
 *Example:*
 
 ```
+# ... Project name...
+
 # ... Templates section ...
 
 schemas:
@@ -219,6 +223,8 @@ You can reverse the operation and remove the modifications of the respective Doc
 Here is a **config.yml** example.
 
 ```
+project_name: myprojectname
+
 templates:
   - ./template/tpl1.yml
   - ./template/tpl2.yml
@@ -237,4 +243,111 @@ schemas:
   two:
     services:
       # ...
+```
+
+## Command-line arguments list
+
+```
+usage: docknv [-h] [-f CONFIG] {compose,machine,volume,env,schema} ...
+
+Docker and eNVironments
+
+positional arguments:
+  {compose,machine,volume,env,schema}
+                        command
+    compose             compose actions
+    machine             machine actions
+    volume              volume actions
+    env                 env actions
+    schema              schema actions
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f CONFIG, --config CONFIG
+                        compose config file
+```
+
+### Compose actions
+
+```
+usage: docknv compose [-h]
+                      {generate,build,down,up,ps,export,export-clean,restart}
+                      ...
+
+positional arguments:
+  {generate,build,down,up,ps,export,export-clean,restart}
+                        compose command
+    generate            generate compose file
+    build               build needed containers
+    down                shutdown all
+    up                  start all
+    ps                  show active containers
+    export              export the compose file for production
+    export-clean        clean the compose export and generate a new compose
+                        file
+    restart             restart all stack
+
+optional arguments:
+  -h, --help            show this help message and exit
+```
+
+### Machine actions
+
+```
+usage: docknv machine [-h] {daemon,run,shell,stop,restart,exec,logs,copy} ...
+
+positional arguments:
+  {daemon,run,shell,stop,restart,exec,logs,copy}
+                        machine command
+    daemon              run a container in background
+    run                 run a command on a container
+    shell               run shell
+    stop                stop a container
+    restart             restart a container
+    exec                execute a command on a running container
+    logs                show logs
+    copy                copy file
+
+optional arguments:
+  -h, --help            show this help message and exit
+```
+
+### Volume actions
+
+```
+usage: docknv volume [-h] {list,remove} ...
+
+positional arguments:
+  {list,remove}  volume command
+    list         list volumes
+    remove       remove volume
+
+optional arguments:
+  -h, --help     show this help message and exit
+```
+
+### Environment actions
+
+```
+usage: docknv env [-h] {use} ...
+
+positional arguments:
+  {use}       env command
+    use       set env and render templates
+
+optional arguments:
+  -h, --help  show this help message and exit
+```
+
+### Schema actions
+
+```
+usage: docknv schema [-h] {list} ...
+
+positional arguments:
+  {list}      schema command
+    list      list schemas
+
+optional arguments:
+  -h, --help  show this help message and exit
 ```
