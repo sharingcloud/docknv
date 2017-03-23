@@ -25,10 +25,10 @@ Here are the features:
 
 To use **Docknv**, you need to respect the following structure, all contained in a parent folder:
 
-- **/envs**: The location of your environment configuration files, ending with `.env.py` (example for *debug*, the filename is `debug.env.py`)
-- **/images**: The location of your Docker images, one folder per container. You should always use the "building" way (instead of the direct fetching) when including new Docker images in your Compose files, to permit freezing.
-- **/shared**: The location of your shared volumes, one folder per image is recommended if needed.
-- **/templates**: The location of your Docker Compose files.
+- **envs**: The location of your environment configuration files, ending with `.env.py` (example for *debug*, the filename is `debug.env.py`)
+- **images**: The location of your Docker images, one folder per container. You should always use the "building" way (instead of the direct fetching) when including new Docker images in your Compose files, to permit freezing.
+- **shared**: The location of your shared volumes, one folder per image is recommended if needed.
+- **templates**: The location of your Docker Compose files.
 - **config.yml**: The main Docknv configuration file for your project
 
 ### Environment configuration management
