@@ -9,7 +9,7 @@ class EnvHandler(object):
     @staticmethod
     def load_env_in_memory(path):
         if not os.path.isfile(path):
-            raise RuntileError("File `{0}` does not exist".format(path))
+            raise RuntimeError("File `{0}` does not exist".format(path))
         Logger.info("Loading environment configuration file {0}...".format(path))
 
         env_data = imp.load_source("envs", path)
