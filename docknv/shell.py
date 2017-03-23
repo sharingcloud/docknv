@@ -111,7 +111,7 @@ class Shell(object):
                 self._compose_export_clean(args)
             elif args.compose_cmd == "build":
                 self._compose_build(args)
-            elif args.compose_cmd == "reup":
+            elif args.compose_cmd == "restart":
                 self._compose_reup(args)
 
         elif command == "machine":
