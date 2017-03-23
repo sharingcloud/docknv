@@ -59,6 +59,8 @@ class Shell(object):
         sub_env_render = sub_env_subparsers.add_parser("render", help="render templates from env")
         sub_env_render.add_argument("env_file", help="environment file")
         sub_env_render.add_argument("folder", help="render templates inside folder")
+        sub_env_use = sub_env_subparsers.add_parser("use", help="set env and render templates")
+        sub_env_use.add_argument("env_name", help="environment file name (debug, etc.)")
 
         sub_schema = self.subparsers.add_parser("schema", help="schema actions")
         sub_schema_subparsers = sub_schema.add_subparsers(help="schema command", dest="schema_cmd")
@@ -131,6 +133,8 @@ class Shell(object):
                 self._generate_env(args)
             elif args.env_cmd == "render":
                 self._render_templates(args)
+            elif args.env_cmd == "use":
+                self._use_env(args)
 
         elif command == "schema":
             if args.schema_cmd == "list":
@@ -282,6 +286,22 @@ class Shell(object):
         from .renderer import Renderer
         env_vars = EnvHandler.load_env_in_memory(args.env_file)
         Renderer.render_files(args.folder, env_vars)
+        EnvHandler.write_env_to_file(env_vars, ".env")
+
+    def _use_env(self, args):
+        from .env_handler import EnvHandler
+        from .renderer import Renderer
+
+        fname = "./envs/{0}.env.py".format(args.env_name)
+        if not os.path.isfile(fname):
+            Logger.error("Bad env file: {0} does not exist.".format(fname))
+
+        sfolder = "./shared"
+        if not os.path.isdir(sfolder):
+            Logger.error("Bad shared folder: {0} does not exist.".format(sfolder))
+
+        env_vars = EnvHandler.load_env_in_memory(fname)
+        Renderer.render_files(sfolder, env_vars)
         EnvHandler.write_env_to_file(env_vars, ".env")
 
     def _list_schemas(self, args):
