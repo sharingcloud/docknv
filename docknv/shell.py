@@ -8,7 +8,7 @@ from .logger import Logger
 
 class Shell(object):
     def __init__(self):
-        self.parser = argparse.ArgumentParser(description="Docker, Compose and eNVironments")
+        self.parser = argparse.ArgumentParser(description="Docker and eNVironments")
         self.parser.add_argument("-f", "--config", default="config.yml", help="compose config file")
 
         self.subparsers = self.parser.add_subparsers(help="command", dest="command")
@@ -16,35 +16,41 @@ class Shell(object):
         sub_compose = self.subparsers.add_parser("compose", help="compose actions")
         sub_compose_subparsers = sub_compose.add_subparsers(help="compose command", dest="compose_cmd")
         sub_compose_generate = sub_compose_subparsers.add_parser("generate", help="generate compose file")
+        sub_compose_generate.add_argument("schema", nargs="?", help="schema name to generate")
+        sub_compose_build = sub_compose_subparsers.add_parser("build", help="build needed containers")
         sub_compose_down = sub_compose_subparsers.add_parser("down", help="shutdown all")
         sub_compose_up = sub_compose_subparsers.add_parser("up", help="start all")
         sub_compose_ps = sub_compose_subparsers.add_parser("ps", help="show active containers")
-        sub_compose_daemon = sub_compose_subparsers.add_parser("daemon", help="run a container in background")
-        sub_compose_daemon.add_argument("machine", help="machine name")
-        sub_compose_run = sub_compose_subparsers.add_parser("run", help="run a command on a container")
-        sub_compose_run.add_argument("machine", help="machine name")
-        sub_compose_run.add_argument("run_command", nargs="?", default="", help="command")
-        sub_compose_shell = sub_compose_subparsers.add_parser("shell", help="run shell")
-        sub_compose_shell.add_argument("machine", help="machine name")
-        sub_compose_shell.add_argument("shell", nargs="?", default="/bin/bash", help="shell executable")
-        sub_compose_stop = sub_compose_subparsers.add_parser("stop", help="stop a container")
-        sub_compose_stop.add_argument("machine", help="machine name")
-        sub_compose_restart = sub_compose_subparsers.add_parser("restart", help="restart a container")
-        sub_compose_restart.add_argument("machine", help="machine name")
-        sub_compose_exec = sub_compose_subparsers.add_parser("exec", help="execute a command on a running container")
-        sub_compose_exec.add_argument("machine", help="machine name")
-        sub_compose_exec.add_argument("exec_command", help="command to execute")
-        sub_compose_exec.add_argument("-n", "--no-tty", action="store_true", help="disable tty")
-        sub_compose_exec.add_argument("-r", "--return-code", action="store_true", help="return code")
         sub_compose_export = sub_compose_subparsers.add_parser("export", help="export the compose file for production")
-        sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export")
-        sub_compose_logs = sub_compose_subparsers.add_parser("logs", help="show logs")
-        sub_compose_logs.add_argument("machine", help="machine name")
-        sub_compose_copy = sub_compose_subparsers.add_parser("copy", help="copy file")
-        sub_compose_copy.add_argument("machine", help="machine name")
-        sub_compose_copy.add_argument("container_path", help="container path")
-        sub_compose_copy.add_argument("host_path", help="host path")
-        sub_compose_reup = sub_compose_subparsers.add_parser("reup", help="restart all stack")
+        sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export and generate a new compose file")
+        sub_compose_clean_export.add_argument("schema", nargs="?", help="new schema to generate")
+        sub_compose_reup = sub_compose_subparsers.add_parser("restart", help="restart all stack")
+
+        sub_machine = self.subparsers.add_parser("machine", help="machine actions")
+        sub_machine_subparsers = sub_machine.add_subparsers(help="machine command", dest="machine_cmd")
+        sub_machine_daemon = sub_machine_subparsers.add_parser("daemon", help="run a container in background")
+        sub_machine_daemon.add_argument("machine", help="machine name")
+        sub_machine_run = sub_machine_subparsers.add_parser("run", help="run a command on a container")
+        sub_machine_run.add_argument("machine", help="machine name")
+        sub_machine_run.add_argument("run_command", nargs="?", default="", help="command")
+        sub_machine_shell = sub_machine_subparsers.add_parser("shell", help="run shell")
+        sub_machine_shell.add_argument("machine", help="machine name")
+        sub_machine_shell.add_argument("shell", nargs="?", default="/bin/bash", help="shell executable")
+        sub_machine_stop = sub_machine_subparsers.add_parser("stop", help="stop a container")
+        sub_machine_stop.add_argument("machine", help="machine name")
+        sub_machine_restart = sub_machine_subparsers.add_parser("restart", help="restart a container")
+        sub_machine_restart.add_argument("machine", help="machine name")
+        sub_machine_exec = sub_machine_subparsers.add_parser("exec", help="execute a command on a running container")
+        sub_machine_exec.add_argument("machine", help="machine name")
+        sub_machine_exec.add_argument("exec_command", help="command to execute")
+        sub_machine_exec.add_argument("-n", "--no-tty", action="store_true", help="disable tty")
+        sub_machine_exec.add_argument("-r", "--return-code", action="store_true", help="return code")
+        sub_machine_logs = sub_machine_subparsers.add_parser("logs", help="show logs")
+        sub_machine_logs.add_argument("machine", help="machine name")
+        sub_machine_copy = sub_machine_subparsers.add_parser("copy", help="copy file")
+        sub_machine_copy.add_argument("machine", help="machine name")
+        sub_machine_copy.add_argument("container_path", help="container path")
+        sub_machine_copy.add_argument("host_path", help="host path")
 
         sub_volume = self.subparsers.add_parser("volume", help="volume actions")
         sub_volume_subparsers = sub_volume.add_subparsers(help="volume command", dest="volume_cmd")
@@ -65,14 +71,14 @@ class Shell(object):
         sub_schema = self.subparsers.add_parser("schema", help="schema actions")
         sub_schema_subparsers = sub_schema.add_subparsers(help="schema command", dest="schema_cmd")
         sub_schema_list = sub_schema_subparsers.add_parser("list", help="list schemas")
-        sub_schema_build = sub_schema_subparsers.add_parser("build", help="build schema")
-        sub_schema_build.add_argument("schema", help="schema name")
+        # sub_schema_build = sub_schema_subparsers.add_parser("build", help="build schema")
+        # sub_schema_build.add_argument("schema", help="schema name")
 
-        sub_lifecycle = self.subparsers.add_parser("lifecycle", help="lifecycle actions")
-        sub_lifecycle_subparsers = sub_lifecycle.add_subparsers(help="lifecycle command", dest="lifecycle_cmd")
-        sub_lifecycle_list = sub_lifecycle_subparsers.add_parser("list", help="list lifecycles")
-        sub_lifecycle_run = sub_lifecycle_subparsers.add_parser("run", help="run lifecycle")
-        sub_lifecycle_run.add_argument("lifecycle", help="lifecycle name")
+        # sub_lifecycle = self.subparsers.add_parser("lifecycle", help="lifecycle actions")
+        # sub_lifecycle_subparsers = sub_lifecycle.add_subparsers(help="lifecycle command", dest="lifecycle_cmd")
+        # sub_lifecycle_list = sub_lifecycle_subparsers.add_parser("list", help="list lifecycles")
+        # sub_lifecycle_run = sub_lifecycle_subparsers.add_parser("run", help="run lifecycle")
+        # sub_lifecycle_run.add_argument("lifecycle", help="lifecycle name")
 
         self.post_parsers = []
 
@@ -99,28 +105,32 @@ class Shell(object):
                 self._compose_up(args)
             elif args.compose_cmd == "ps":
                 self._compose_ps(args)
-            elif args.compose_cmd == "daemon":
-                self._compose_daemon(args)
-            elif args.compose_cmd == "run":
-                self._compose_run(args)
-            elif args.compose_cmd == "shell":
-                self._compose_shell(args)
-            elif args.compose_cmd == "stop":
-                self._compose_stop(args)
-            elif args.compose_cmd == "restart":
-                self._compose_restart(args)
-            elif args.compose_cmd == "exec":
-                self._compose_exec(args)
             elif args.compose_cmd == "export":
                 self._compose_export(args)
             elif args.compose_cmd == "export-clean":
                 self._compose_export_clean(args)
-            elif args.compose_cmd == "logs":
-                self._compose_logs(args)
-            elif args.compose_cmd == "copy":
-                self._compose_copy(args)
+            elif args.compose_cmd == "build":
+                self._compose_build(args)
             elif args.compose_cmd == "reup":
                 self._compose_reup(args)
+
+        elif command == "machine":
+            if args.machine_cmd == "daemon":
+                self._machine_daemon(args)
+            elif args.machine_cmd == "run":
+                self._machine_run(args)
+            elif args.machine_cmd == "shell":
+                self._machine_shell(args)
+            elif args.machine_cmd == "stop":
+                self._machine_stop(args)
+            elif args.machine_cmd == "restart":
+                self._machine_restart(args)
+            elif args.machine_cmd == "exec":
+                self._machine_exec(args)
+            elif args.machine_cmd == "logs":
+                self._machine_logs(args)
+            elif args.machine_cmd == "copy":
+                self._machine_copy(args)
 
         elif command == "volume":
             if args.volume_cmd == "list":
@@ -162,7 +172,7 @@ class Shell(object):
     def _generate_compose(self, args):
         from .config_handler import ConfigHandler
         config = ConfigHandler(args.config)
-        config.write_compose(".docker-compose.yml")
+        config.write_compose(".docker-compose.yml", args.schema)
 
     def _compose_down(self, args):
         self._docker_compose_check()
@@ -170,6 +180,13 @@ class Shell(object):
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.down()
+
+    def _compose_build(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        c = ConfigHandler(args.config)
+        c.compose_tool.build_all()
 
     def _compose_up(self, args):
         self._docker_compose_check()
@@ -185,47 +202,61 @@ class Shell(object):
         c = ConfigHandler(args.config)
         c.compose_tool.ps()
 
-    def _compose_stop(self, args):
+    def _machine_stop(self, args):
         self._docker_compose_check()
 
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.stop(args.machine)
 
-    def _compose_daemon(self, args):
+    def _machine_daemon(self, args):
         self._docker_compose_check()
 
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.daemon(args.machine)
 
-    def _compose_run(self, args):
+    def _machine_run(self, args):
         self._docker_compose_check()
 
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.run(args.machine, args.run_command)
 
-    def _compose_shell(self, args):
+    def _machine_shell(self, args):
         self._docker_compose_check()
 
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.shell(args.machine)
 
-    def _compose_restart(self, args):
+    def _machine_restart(self, args):
         self._docker_compose_check()
 
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.restart(args.machine)
 
-    def _compose_exec(self, args):
+    def _machine_exec(self, args):
         self._docker_compose_check()
 
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.execute(args.machine, args.exec_command, not args.no_tty, args.return_code)
+
+    def _machine_logs(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        c = ConfigHandler(args.config)
+        c.compose_tool.logs(args.machine)
+
+    def _machine_copy(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        c = ConfigHandler(args.config)
+        c.compose_tool.copy(args.machine, args.container_path, args.host_path)
 
     def _compose_export(self, args):
         self._docker_compose_check()
@@ -242,20 +273,6 @@ class Shell(object):
         # Generate new compose
         Logger.info("Generating new compose file...")
         self._generate_compose(args)
-
-    def _compose_logs(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.logs(args.machine)
-
-    def _compose_copy(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.copy(args.machine, args.container_path, args.host_path)
 
     def _compose_reup(self, args):
         self._docker_compose_check()

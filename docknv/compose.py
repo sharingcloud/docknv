@@ -35,6 +35,10 @@ class Compose(object):
         Logger.info("Building machine `{0}`...".format(machine))
         self._exec_compose("build {0}".format(machine))
 
+    def build_all(self):
+        Logger.info("Building machines...")
+        self._exec_compose("build")
+
     def run(self, machine, command=""):
         msg = "Running machine `{0}`".format(machine)
         if command != "":

@@ -27,7 +27,7 @@ class ConfigHandler(object):
 
         self.compose_tool = Compose(self.namespace)
 
-    def generate_compose(self):
+    def generate_compose(self, schema=None):
         if "templates" not in self.compose_content:
             Logger.error("Missing `templates` section in compose config.")
 
@@ -49,10 +49,57 @@ class ConfigHandler(object):
 
             contents.append(template_content)
 
-        return merge_yaml(contents)
+        merged = merge_yaml(contents)
 
-    def write_compose(self, output_file):
-        result = self.generate_compose()
+        if schema:
+            Logger.info("Using schema `{0}`...".format(schema))
+            if not "schemas" in self.compose_content:
+                Logger.error("Missing `schemas` section in compose config.")
+
+            schemas = self.compose_content["schemas"]
+            if schema not in schemas:
+                Logger.error("Missing schema `{0}` in schemas section.".format(schema))
+
+            schema_data = self.get_schema(schema)
+            needed_volumes = schema_data.get("volumes", [])
+            needed_services = schema_data.get("services", [])
+            needed_networks = schema_data.get("networks", [])
+
+            new_merged = copy.deepcopy(merged)
+            to_remove = []
+            for volume_name in new_merged["volumes"]:
+                if volume_name not in needed_volumes:
+                    to_remove.append(volume_name)
+
+            for x in to_remove:
+                Logger.debug("- Removing volume {0}...".format(x))
+                del new_merged["volumes"][x]
+
+            to_remove = []
+            for network_name in new_merged["networks"]:
+                if network_name not in needed_networks:
+                    to_remove.append(network_name)
+
+            for x in to_remove:
+                Logger.debug("- Removing network {0}...".format(x))
+                del new_merged["networks"][x]
+
+            to_remove = []
+            for service_name in new_merged["services"]:
+                if service_name not in needed_services:
+                    to_remove.append(service_name)
+
+            for x in to_remove:
+                Logger.debug("- Removing service {0}...".format(x))
+                del new_merged["services"][x]
+
+            return new_merged
+
+        else:
+            return merged
+
+    def write_compose(self, output_file, schema=None):
+        result = self.generate_compose(schema)
 
         Logger.info("Writing compose file to `{0}`...".format(output_file))
 
