@@ -20,14 +20,18 @@ class Renderer(object):
         return str(replace)
 
     @staticmethod
-    def render_file(path, env):
+    def render_content(path, env):
         if not os.path.isfile(path):
             raise RuntimeError("File `{0}` does not exist".format(path))
 
         with open(path, mode="rt") as f:
             content = f.read()
 
-        result = re.sub(Renderer.CONTENT_RGX, lambda x: Renderer.replace_match(x, env), content)
+        return re.sub(Renderer.CONTENT_RGX, lambda x: Renderer.replace_match(x, env), content)
+
+    @staticmethod
+    def render_file(path, env):
+        result = Renderer.render_content(path, env)
 
         dest_file = path[:-4]
         with open(dest_file, mode="wt+") as f:

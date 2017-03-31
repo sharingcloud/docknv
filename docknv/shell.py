@@ -22,9 +22,12 @@ class Shell(object):
         sub_compose_up = sub_compose_subparsers.add_parser("up", help="start all")
         sub_compose_ps = sub_compose_subparsers.add_parser("ps", help="show active containers")
         sub_compose_export = sub_compose_subparsers.add_parser("export", help="export the compose file for production")
+        sub_compose_export.add_argument("--swarm", action="store_true", help="prepare swarm mode by setting image names")
+        sub_compose_export.add_argument("--swarm-registry", nargs="?", default="127.0.0.1:5000", help="swarm registry URL")
         sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export and generate a new compose file")
         sub_compose_clean_export.add_argument("schema", nargs="?", help="new schema to generate")
         sub_compose_reup = sub_compose_subparsers.add_parser("restart", help="restart all stack")
+        sub_compose_static = sub_compose_subparsers.add_parser("static", help="make the compose file static")
 
         sub_machine = self.subparsers.add_parser("machine", help="machine actions")
         sub_machine_subparsers = sub_machine.add_subparsers(help="machine command", dest="machine_cmd")
@@ -113,6 +116,8 @@ class Shell(object):
                 self._compose_build(args)
             elif args.compose_cmd == "restart":
                 self._compose_reup(args)
+            elif args.compose_cmd == "static":
+                self._compose_static(args)
 
         elif command == "machine":
             if args.machine_cmd == "daemon":
@@ -262,7 +267,7 @@ class Shell(object):
         self._docker_compose_check()
 
         from .exporter import Exporter
-        Exporter.export(".docker-compose.yml")
+        Exporter.export(".docker-compose.yml", args.swarm, args.swarm_registry)
 
     def _compose_export_clean(self, args):
         self._docker_compose_check()
@@ -280,6 +285,13 @@ class Shell(object):
         from .config_handler import ConfigHandler
         c = ConfigHandler(args.config)
         c.compose_tool.reup()
+
+    def _compose_static(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.make_static(".docker-compose.yml")
 
     ###########################
 

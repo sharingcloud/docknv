@@ -63,14 +63,29 @@ class Exporter(object):
                 shutil.rmtree(exported_path)
 
     @staticmethod
-    def export(compose_file):
+    def export(compose_file, swarm=False, swarm_registry=None):
         Logger.info("Exporting compose file...")
         content = Exporter._load_file(compose_file)
         services = content["services"]
+
+        if "networks" in content:
+            if swarm:
+                for network in content["networks"]:
+                    content["networks"][network] = {"external": True}
+
         for service_name in services:
             service = services[service_name]
+
+            # Swarm mode
+            if swarm:
+                if "image" in service:
+                    Logger.info("Image is already present in service `{0}`".format(service_name))
+                else:
+                    config = swarm_registry if swarm_registry else "127.0.0.1:5000"
+                    service["image"] = "{0}/{1}".format(config, service_name)
+
             if "volumes" not in service:
-                Logger.info("No volume in service `{0}`".format(service))
+                Logger.info("No volume in service `{0}`".format(service_name))
                 continue
 
             if "build" not in service:
@@ -135,6 +150,9 @@ class Exporter(object):
 
                 else:
                     Logger.info("Named volume. Nothing to do")
+
+            if len(volumes) == 0:
+                del service["volumes"]
 
             # Update Dockerfile
             with open(dockerfile_path, mode="wt+") as f:

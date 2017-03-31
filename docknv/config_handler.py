@@ -1,6 +1,7 @@
 import yaml
 import copy
 import os
+import shutil
 
 from .compose import Compose
 from .yaml_utils import merge_yaml, merge_yaml_two, ordered_load, ordered_dump
@@ -105,6 +106,16 @@ class ConfigHandler(object):
 
         with open(output_file, mode="wt+") as f:
             f.write(ordered_dump(result, default_flow_style=False))
+
+    def make_static(self, path):
+        if not os.path.isfile(".env"):
+            Logger.error("Missing `.env` file. Please generate env using 'env use [environment]'")
+
+        Logger.info("Generating static compose file using .env file...")
+
+        os.system("docker-compose -f {0} config > {0}.out".format(path))
+        shutil.copy("{0}.out".format(path), path)
+        os.remove("{0}.out".format(path))
 
     ##############################
     ##############################
