@@ -5,6 +5,7 @@ import shutil
 from .logger import Logger
 from .yaml_utils import ordered_load, ordered_dump
 
+from collections import OrderedDict
 
 class Exporter(object):
 
@@ -32,7 +33,7 @@ class Exporter(object):
         for service_name in services:
             service = services[service_name]
             if "volumes" not in service:
-                Logger.info("No volume in service `{0}`".format(service))
+                Logger.info("No volume in service `{0}`".format(service_name))
                 continue
 
             if "build" not in service:
@@ -41,6 +42,9 @@ class Exporter(object):
 
             # Build path detection
             build_path = service["build"]
+            if isinstance(build_path, OrderedDict):
+                build_path = build_path["context"]
+
             dockerfile_path = os.path.join(build_path, "Dockerfile")
             exported_path = os.path.join(build_path, "exported")
             if not os.path.exists(dockerfile_path):
@@ -94,6 +98,9 @@ class Exporter(object):
 
             # Build path detection
             build_path = service["build"]
+            if isinstance(build_path, OrderedDict):
+                build_path = build_path["context"]
+
             dockerfile_path = os.path.join(build_path, "Dockerfile")
             exported_path = os.path.join(build_path, "exported")
             if not os.path.exists(dockerfile_path):
@@ -118,10 +125,10 @@ class Exporter(object):
 
                 host_folder = os.path.basename(host)
 
-                if host.startswith("/"):
-                    Logger.info("Volume with absolute path. Nothing to do.")
-                elif host.startswith("."):
-                    Logger.info("Relative path volume `{0}`".format(host))
+                if host.endswith(".sock"):
+                    Logger.info("Socket detected. Nothing to do.")
+                elif host.startswith(".") or host.startswith("/"):
+                    Logger.info("Path volume `{0}`".format(host))
 
                     # Copy local folder and edit dockerfile
 
