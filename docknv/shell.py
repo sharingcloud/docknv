@@ -29,6 +29,12 @@ class Shell(object):
         sub_compose_reup = sub_compose_subparsers.add_parser("restart", help="restart all stack")
         sub_compose_static = sub_compose_subparsers.add_parser("static", help="make the compose file static")
 
+        sub_swarm = self.subparsers.add_parser("swarm", help="swarm actions")
+        sub_swarm_subparsers = sub_swarm.add_subparsers(help="swarm command", dest="swarm_cmd")
+        sub_swarm_push = sub_swarm_subparsers.add_parser("push", help="push stack to swarm")
+        sub_swarm_up = sub_swarm_subparsers.add_parser("up", help="deploy stack to swarm")
+        sub_swarm_down = sub_swarm_subparsers.add_parser("down", help="shutdown stack")
+
         sub_machine = self.subparsers.add_parser("machine", help="machine actions")
         sub_machine_subparsers = sub_machine.add_subparsers(help="machine command", dest="machine_cmd")
         sub_machine_daemon = sub_machine_subparsers.add_parser("daemon", help="run a container in background")
@@ -163,6 +169,14 @@ class Shell(object):
             elif args.lifecycle_cmd == "run":
                 self._run_lifecycle(args)
 
+        elif command == "swarm":
+            if args.swarm_cmd == "push":
+                self._push_swarm(args)
+            elif args.swarm_cmd == "up":
+                self._up_swarm(args)
+            elif args.swarm_cmd == "down":
+                self._down_swarm(args)
+
         else:
             for p in self.post_parsers:
                 if p(self, args):
@@ -292,6 +306,27 @@ class Shell(object):
         from .config_handler import ConfigHandler
         config = ConfigHandler(args.config)
         config.make_static(".docker-compose.yml")
+
+    def _push_swarm(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.compose_tool.push_stack()
+
+    def _up_swarm(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.compose_tool.deploy_stack()
+
+    def _down_swarm(self, args):
+        self._docker_compose_check()
+
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.compose_tool.rm_stack()
 
     ###########################
 

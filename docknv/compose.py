@@ -151,3 +151,14 @@ class Compose(object):
     def reset_volumes(self, names):
         for name in names:
             self.reset_volume(name)
+
+    ##################
+
+    def push_stack(self):
+        self._exec_compose("push")
+
+    def deploy_stack(self):
+        os.system("docker stack deploy --compose-file {0} {1}".format(self.compose_file, self.namespace))
+
+    def rm_stack(self):
+        os.system("docker stack rm {0}".format(self.namespace))
