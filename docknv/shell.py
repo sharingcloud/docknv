@@ -421,5 +421,4 @@ class Shell(object):
     def _remove_network(self, args):
         from .config_handler import ConfigHandler
         config = ConfigHandler(args.config)
-        config.list_lifecycles()
         config.compose_tool.remove_network(args.name)
