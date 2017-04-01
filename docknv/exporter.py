@@ -122,7 +122,7 @@ class Exporter(object):
             volumes = copy.copy(service["volumes"])
             for volume in service["volumes"]:
                 volume_split = volume.split(":")
-                host, container = volume_split[:2]s
+                host, container = volume_split[:2]
                 host_folder = os.path.basename(host)
 
 
