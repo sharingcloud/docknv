@@ -124,7 +124,8 @@ class Exporter(object):
                 volume_split = volume.split(":")
                 host, container = volume_split[:2]
                 host_folder = os.path.basename(host)
-
+                if host_folder == "":
+                    host_folder = os.path.basename(host[:-1])
 
                 if host.endswith(".sock"):
                     Logger.info("Socket detected. Nothing to do.")
@@ -136,6 +137,7 @@ class Exporter(object):
                     if not os.path.exists(host):
                         Logger.error("The host volume path does not exist: `{0}`".format(host))
 
+                    # Fix copy
                     exported_final_path = os.path.join(exported_path, host_folder)
 
                     if not os.path.exists(exported_path):
