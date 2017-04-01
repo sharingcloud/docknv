@@ -120,13 +120,9 @@ class Exporter(object):
             dockerfile_content += "# <docknv additions>\n"
 
             volumes = copy.copy(service["volumes"])
-            print(volumes)
-
             for volume in service["volumes"]:
                 volume_split = volume.split(":")
-                host, container = volume_split[:2]
-                print(host)
-
+                host, container = volume_split[:2]s
                 host_folder = os.path.basename(host)
 
 
