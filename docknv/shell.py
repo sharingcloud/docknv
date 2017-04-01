@@ -35,6 +35,14 @@ class Shell(object):
         sub_swarm_up = sub_swarm_subparsers.add_parser("up", help="deploy stack to swarm")
         sub_swarm_down = sub_swarm_subparsers.add_parser("down", help="shutdown stack")
 
+        sub_network = self.subparsers.add_parser("network", help="network actions")
+        sub_network_subparsers = sub_network.add_subparsers(help="network command", dest="network_cmd")
+        sub_network_create_overlay = sub_network_subparsers.add_parser("create-overlay", help="create an overlay network to use with swarm")
+        sub_network_create_overlay.add_argument("name", help="network name")
+        sub_network_list = sub_network_subparsers.add_parser("ls", help="list networks")
+        sub_network_remove = sub_network_subparsers.add_parser("remove", help="remove network")
+        sub_network_remove.add_argument("name", help="network name")
+
         sub_machine = self.subparsers.add_parser("machine", help="machine actions")
         sub_machine_subparsers = sub_machine.add_subparsers(help="machine command", dest="machine_cmd")
         sub_machine_daemon = sub_machine_subparsers.add_parser("daemon", help="run a container in background")
@@ -176,6 +184,14 @@ class Shell(object):
                 self._up_swarm(args)
             elif args.swarm_cmd == "down":
                 self._down_swarm(args)
+
+        elif command == "network":
+            if args.network_cmd == "create-overlay":
+                self._create_overlay_network(args)
+            elif args.network_cmd == "ls":
+                self._list_networks(args)
+            elif args.network_cmd == "remove":
+                self._remove_network(args)
 
         else:
             for p in self.post_parsers:
@@ -391,3 +407,19 @@ class Shell(object):
         from .config_handler import ConfigHandler
         config = ConfigHandler(args.config)
         config.list_lifecycles()
+
+    def _create_overlay_network(self, args):
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.compose_tool.create_overlay_network(args.name)
+
+    def _list_networks(self, args):
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.compose_tool.list_networks()
+
+    def _remove_network(self, args):
+        from .config_handler import ConfigHandler
+        config = ConfigHandler(args.config)
+        config.list_lifecycles()
+        config.compose_tool.remove_network(args.name)

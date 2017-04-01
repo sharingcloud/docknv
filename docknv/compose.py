@@ -162,3 +162,16 @@ class Compose(object):
 
     def rm_stack(self):
         os.system("docker stack rm {0}".format(self.namespace))
+
+    ###################
+
+    def create_overlay_network(self, name):
+        Logger.info("Creating overlay network `{0}`...".format(name))
+        os.system("docker network create --driver=overlay --attachable {0}".format(name))
+
+    def list_networks(self):
+        os.system("docker network ls")
+
+    def remove_network(self, name):
+        Logger.info("Removing network `{0}`...".format(name))
+        os.system("docker network rm {0}".format(name))
