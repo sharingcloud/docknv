@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import copy
 
 from .logger import Logger
 from .yaml_utils import ordered_load, ordered_dump
@@ -118,12 +119,16 @@ class Exporter(object):
 
             dockerfile_content += "# <docknv additions>\n"
 
-            volumes = service["volumes"]
-            for volume in volumes:
+            volumes = copy.copy(service["volumes"])
+            print(volumes)
+
+            for volume in service["volumes"]:
                 volume_split = volume.split(":")
                 host, container = volume_split[:2]
+                print(host)
 
                 host_folder = os.path.basename(host)
+
 
                 if host.endswith(".sock"):
                     Logger.info("Socket detected. Nothing to do.")
@@ -160,6 +165,8 @@ class Exporter(object):
 
             if len(volumes) == 0:
                 del service["volumes"]
+            else:
+                service["volumes"] = volumes
 
             # Update Dockerfile
             with open(dockerfile_path, mode="wt+") as f:
