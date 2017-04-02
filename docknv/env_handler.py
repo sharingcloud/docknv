@@ -7,6 +7,18 @@ from .logger import Logger, Fore
 class EnvHandler(object):
 
     @staticmethod
+    def list_envs():
+        if not os.path.isdir("./envs"):
+            Logger.error("Env folder does not exist.")
+
+        Logger.info("Environment files listing:")
+
+        for f in os.listdir("./envs"):
+            if f.endswith(".env.py"):
+                name = f[:-7]
+                print("  > {0}".format(name))
+
+    @staticmethod
     def load_env_in_memory(path):
         if not os.path.isfile(path):
             raise RuntimeError("File `{0}` does not exist".format(path))

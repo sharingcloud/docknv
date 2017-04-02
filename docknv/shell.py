@@ -4,6 +4,10 @@ import os
 import re
 
 from .logger import Logger
+from .config_handler import ConfigHandler
+from .renderer import Renderer
+from .env_handler import EnvHandler
+from .exporter import Exporter
 
 
 class Shell(object):
@@ -16,8 +20,7 @@ class Shell(object):
         sub_compose = self.subparsers.add_parser("compose", help="compose actions")
         sub_compose_subparsers = sub_compose.add_subparsers(help="compose command", dest="compose_cmd")
         sub_compose_generate = sub_compose_subparsers.add_parser("generate", help="generate compose file")
-        sub_compose_generate.add_argument("schema", nargs="?", help="schema name to generate")
-        sub_compose_build = sub_compose_subparsers.add_parser("build", help="build needed containers")
+        sub_compose_generate.add_argument("schema", help="schema name to generate")
         sub_compose_down = sub_compose_subparsers.add_parser("down", help="shutdown all")
         sub_compose_up = sub_compose_subparsers.add_parser("up", help="start all")
         sub_compose_ps = sub_compose_subparsers.add_parser("ps", help="show active containers")
@@ -25,7 +28,7 @@ class Shell(object):
         sub_compose_export.add_argument("--swarm", action="store_true", help="prepare swarm mode by setting image names")
         sub_compose_export.add_argument("--swarm-registry", nargs="?", default="127.0.0.1:5000", help="swarm registry URL")
         sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export and generate a new compose file")
-        sub_compose_clean_export.add_argument("schema", nargs="?", help="new schema to generate")
+        sub_compose_clean_export.add_argument("schema", help="new schema to generate")
         sub_compose_reup = sub_compose_subparsers.add_parser("restart", help="restart all stack")
         sub_compose_static = sub_compose_subparsers.add_parser("static", help="make the compose file static")
 
@@ -40,7 +43,7 @@ class Shell(object):
         sub_network_create_overlay = sub_network_subparsers.add_parser("create-overlay", help="create an overlay network to use with swarm")
         sub_network_create_overlay.add_argument("name", help="network name")
         sub_network_list = sub_network_subparsers.add_parser("ls", help="list networks")
-        sub_network_remove = sub_network_subparsers.add_parser("remove", help="remove network")
+        sub_network_remove = sub_network_subparsers.add_parser("rm", help="remove network")
         sub_network_remove.add_argument("name", help="network name")
 
         sub_machine = self.subparsers.add_parser("machine", help="machine actions")
@@ -71,31 +74,21 @@ class Shell(object):
 
         sub_volume = self.subparsers.add_parser("volume", help="volume actions")
         sub_volume_subparsers = sub_volume.add_subparsers(help="volume command", dest="volume_cmd")
-        sub_volume_list = sub_volume_subparsers.add_parser("list", help="list volumes")
-        sub_volume_remove = sub_volume_subparsers.add_parser("remove", help="remove volume")
+        sub_volume_list = sub_volume_subparsers.add_parser("ls", help="list volumes")
+        sub_volume_remove = sub_volume_subparsers.add_parser("rm", help="remove volume")
         sub_volume_remove.add_argument("name", help="volume name")
 
         sub_env = self.subparsers.add_parser("env", help="env actions")
         sub_env_subparsers = sub_env.add_subparsers(help="env command", dest="env_cmd")
-        # sub_env_generate = sub_env_subparsers.add_parser("generate", help="generate .env file")
-        # sub_env_generate.add_argument("env_file", help="environment file")
-        # sub_env_render = sub_env_subparsers.add_parser("render", help="render templates from env")
-        # sub_env_render.add_argument("env_file", help="environment file")
-        # sub_env_render.add_argument("folder", help="render templates inside folder")
         sub_env_use = sub_env_subparsers.add_parser("use", help="set env and render templates")
         sub_env_use.add_argument("env_name", help="environment file name (debug, etc.)")
+        sub_env_ls = sub_env_subparsers.add_parser("ls", help="list envs")
 
         sub_schema = self.subparsers.add_parser("schema", help="schema actions")
         sub_schema_subparsers = sub_schema.add_subparsers(help="schema command", dest="schema_cmd")
-        sub_schema_list = sub_schema_subparsers.add_parser("list", help="list schemas")
-        # sub_schema_build = sub_schema_subparsers.add_parser("build", help="build schema")
-        # sub_schema_build.add_argument("schema", help="schema name")
-
-        # sub_lifecycle = self.subparsers.add_parser("lifecycle", help="lifecycle actions")
-        # sub_lifecycle_subparsers = sub_lifecycle.add_subparsers(help="lifecycle command", dest="lifecycle_cmd")
-        # sub_lifecycle_list = sub_lifecycle_subparsers.add_parser("list", help="list lifecycles")
-        # sub_lifecycle_run = sub_lifecycle_subparsers.add_parser("run", help="run lifecycle")
-        # sub_lifecycle_run.add_argument("lifecycle", help="lifecycle name")
+        sub_schema_list = sub_schema_subparsers.add_parser("ls", help="list schemas")
+        sub_schema_build = sub_schema_subparsers.add_parser("build", help="build schema")
+        sub_schema_build.add_argument("schema", help="schema name")
 
         self.post_parsers = []
 
@@ -111,87 +104,119 @@ class Shell(object):
 
     def _parse_args(self, args):
         command = args.command
-        function_name = "_" + re.sub(r'-', '_', command)
+
+        config = ConfigHandler(args.config)
+        compose = config.compose_tool
+        compose_file = ".docker-compose.yml"
 
         if command == "compose":
             if args.compose_cmd == "generate":
-                self._generate_compose(args)
-            elif args.compose_cmd == "down":
-                self._compose_down(args)
-            elif args.compose_cmd == "up":
-                self._compose_up(args)
-            elif args.compose_cmd == "ps":
-                self._compose_ps(args)
-            elif args.compose_cmd == "export":
-                self._compose_export(args)
-            elif args.compose_cmd == "export-clean":
-                self._compose_export_clean(args)
-            elif args.compose_cmd == "build":
-                self._compose_build(args)
-            elif args.compose_cmd == "restart":
-                self._compose_reup(args)
-            elif args.compose_cmd == "static":
-                self._compose_static(args)
+                config.write_compose(compose_file, args.schema)
+
+            else:
+                self._docker_compose_check()
+
+                if args.compose_cmd == "down":
+                    compose.down()
+
+                elif args.compose_cmd == "up":
+                    compose.up()
+
+                elif args.compose_cmd == "ps":
+                    compose.ps()
+
+                elif args.compose_cmd == "export":
+                    Exporter.export(compose_file, args.swarm, args.swarm_registry)
+
+                elif args.compose_cmd == "export-clean":
+                    Exporter.clean(compose_file)
+                    Logger.info("Generating new compose file...")
+                    config.write_compose(compose_file, args.schema)
+
+                elif args.compose_cmd == "restart":
+                    compose.reup()
+
+                elif args.compose_cmd == "static":
+                    config.make_static(compose_file)
 
         elif command == "machine":
+            self._docker_compose_check()
+
             if args.machine_cmd == "daemon":
-                self._machine_daemon(args)
+                compose.daemon(args.machine)
+
             elif args.machine_cmd == "run":
-                self._machine_run(args)
+                compose.run(args.machine, args.run_command)
+
             elif args.machine_cmd == "shell":
-                self._machine_shell(args)
+                compose.shell(args.machine)
+
             elif args.machine_cmd == "stop":
-                self._machine_stop(args)
+                compose.stop(args.machine)
+
             elif args.machine_cmd == "restart":
-                self._machine_restart(args)
+                compose.restart(args.machine)
+
             elif args.machine_cmd == "exec":
-                self._machine_exec(args)
+                compose.execute(args.machine, args.exec_command, not args.no_tty, args.return_code)
+
             elif args.machine_cmd == "logs":
-                self._machine_logs(args)
+                compose.logs(args.machine)
+
             elif args.machine_cmd == "copy":
-                self._machine_copy(args)
+                compose.copy(args.machine, args.container_path, args.host_path)
 
         elif command == "volume":
-            if args.volume_cmd == "list":
-                self._list_volumes(args)
-            elif args.volume_cmd == "remove":
-                self._remove_volume(args)
+            if args.volume_cmd == "ls":
+                compose.list_volumes()
+
+            elif args.volume_cmd == "rm":
+                compose.remove_volume(args.name)
 
         elif command == "env":
-            if args.env_cmd == "generate":
-                self._generate_env(args)
-            elif args.env_cmd == "render":
-                self._render_templates(args)
+            if args.env_cmd == "ls":
+                EnvHandler.list_envs()
+
             elif args.env_cmd == "use":
-                self._use_env(args)
+                filename = "./envs/{0}.env.py".format(args.env_name)
+                if not os.path.isfile(filename):
+                    Logger.error("Bad env file: {0} does not exist.".format(filename))
+                sharedfolder = "./shared"
+                if not os.path.isdir(sharedfolder):
+                    Logger.error("Bad shared folder: {0} does not exist.".format(sharedfolder))
+
+                env_vars = EnvHandler.load_env_in_memory(filename)
+                Renderer.render_files(sharedfolder, env_vars)
+                EnvHandler.write_env_to_file(env_vars, ".env")
 
         elif command == "schema":
-            if args.schema_cmd == "list":
-                self._list_schemas(args)
-            elif args.schema_cmd == "build":
-                self._build_schema(args)
+            if args.schema_cmd == "ls":
+                config.list_schemas()
 
-        elif command == "lifecycle":
-            if args.lifecycle_cmd == "list":
-                self._list_lifecycles(args)
-            elif args.lifecycle_cmd == "run":
-                self._run_lifecycle(args)
+            elif args.schema_cmd == "build":
+                config.build_schema(args.schema)
 
         elif command == "swarm":
+            self._docker_compose_check()
+
             if args.swarm_cmd == "push":
-                self._push_swarm(args)
+                compose.push_stack()
+
             elif args.swarm_cmd == "up":
-                self._up_swarm(args)
+                compose.deploy_stack()
+
             elif args.swarm_cmd == "down":
-                self._down_swarm(args)
+                compose.rm_stack()
 
         elif command == "network":
             if args.network_cmd == "create-overlay":
-                self._create_overlay_network(args)
+                compose.create_overlay_network(args.name)
+
             elif args.network_cmd == "ls":
-                self._list_networks(args)
-            elif args.network_cmd == "remove":
-                self._remove_network(args)
+                compose.list_networks()
+
+            elif args.network_cmd == "rm":
+                compose.remove_network(args.name)
 
         else:
             for p in self.post_parsers:
@@ -201,224 +226,3 @@ class Shell(object):
     def _docker_compose_check(self):
         if not os.path.exists("./.docker-compose.yml"):
             Logger.error("Before building you should generate the docker-compose.yml file using the `compose generate` command.")
-
-    ############################
-
-    def _generate_compose(self, args):
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.write_compose(".docker-compose.yml", args.schema)
-
-    def _compose_down(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.down()
-
-    def _compose_build(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.build_all()
-
-    def _compose_up(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.up()
-
-    def _compose_ps(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.ps()
-
-    def _machine_stop(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.stop(args.machine)
-
-    def _machine_daemon(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.daemon(args.machine)
-
-    def _machine_run(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.run(args.machine, args.run_command)
-
-    def _machine_shell(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.shell(args.machine)
-
-    def _machine_restart(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.restart(args.machine)
-
-    def _machine_exec(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.execute(args.machine, args.exec_command, not args.no_tty, args.return_code)
-
-    def _machine_logs(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.logs(args.machine)
-
-    def _machine_copy(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.copy(args.machine, args.container_path, args.host_path)
-
-    def _compose_export(self, args):
-        self._docker_compose_check()
-
-        from .exporter import Exporter
-        Exporter.export(".docker-compose.yml", args.swarm, args.swarm_registry)
-
-    def _compose_export_clean(self, args):
-        self._docker_compose_check()
-
-        from .exporter import Exporter
-        Exporter.clean(".docker-compose.yml")
-
-        # Generate new compose
-        Logger.info("Generating new compose file...")
-        self._generate_compose(args)
-
-    def _compose_reup(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        c = ConfigHandler(args.config)
-        c.compose_tool.reup()
-
-    def _compose_static(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.make_static(".docker-compose.yml")
-
-    def _push_swarm(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.compose_tool.push_stack()
-
-    def _up_swarm(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.compose_tool.deploy_stack()
-
-    def _down_swarm(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.compose_tool.rm_stack()
-
-    ###########################
-
-    def _list_volumes(self, args):
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.compose_tool.list_volumes()
-
-    def _remove_volume(self, args):
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.compose_tool.remove_volume(args.name)
-
-    def _generate_env(self, args):
-        from .env_handler import EnvHandler
-        env_vars = EnvHandler.load_env_in_memory(args.env_file)
-        EnvHandler.write_env_to_file(env_vars, ".env")
-
-    def _render_templates(self, args):
-        from .env_handler import EnvHandler
-        from .renderer import Renderer
-        env_vars = EnvHandler.load_env_in_memory(args.env_file)
-        Renderer.render_files(args.folder, env_vars)
-        EnvHandler.write_env_to_file(env_vars, ".env")
-
-    def _use_env(self, args):
-        from .env_handler import EnvHandler
-        from .renderer import Renderer
-
-        fname = "./envs/{0}.env.py".format(args.env_name)
-        if not os.path.isfile(fname):
-            Logger.error("Bad env file: {0} does not exist.".format(fname))
-
-        sfolder = "./shared"
-        if not os.path.isdir(sfolder):
-            Logger.error("Bad shared folder: {0} does not exist.".format(sfolder))
-
-        env_vars = EnvHandler.load_env_in_memory(fname)
-        Renderer.render_files(sfolder, env_vars)
-        EnvHandler.write_env_to_file(env_vars, ".env")
-
-    def _list_schemas(self, args):
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.list_schemas()
-
-    def _build_schema(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.build_schema(args.schema)
-
-    def _run_lifecycle(self, args):
-        self._docker_compose_check()
-
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.run_lifecycle(args.lifecycle)
-
-    def _list_lifecycles(self, args):
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.list_lifecycles()
-
-    def _create_overlay_network(self, args):
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.compose_tool.create_overlay_network(args.name)
-
-    def _list_networks(self, args):
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.compose_tool.list_networks()
-
-    def _remove_network(self, args):
-        from .config_handler import ConfigHandler
-        config = ConfigHandler(args.config)
-        config.compose_tool.remove_network(args.name)

@@ -24,7 +24,12 @@ class ConfigHandler(object):
         self.compose_file_path = compose_file_path
         self.compose_file_dir = os.path.dirname(compose_file_path)
         self.compose_content = compose_content
-        self.namespace = compose_content.get("project_name", os.path.basename(self.compose_file_dir))
+        self.namespace = compose_content.get("project_name", None)
+
+        if not self.namespace:
+            compose_dir = os.path.basename(self.compose_file_dir)
+            compose_dir = compose_dir.replace("-", "")
+            self.namespace = compose_dir
 
         self.compose_tool = Compose(self.namespace)
 
@@ -68,18 +73,20 @@ class ConfigHandler(object):
 
             new_merged = copy.deepcopy(merged)
             to_remove = []
-            for volume_name in new_merged["volumes"]:
-                if volume_name not in needed_volumes:
-                    to_remove.append(volume_name)
+            if "volumes" in new_merged:
+                for volume_name in new_merged["volumes"]:
+                    if volume_name not in needed_volumes:
+                        to_remove.append(volume_name)
 
             for x in to_remove:
                 Logger.debug("- Removing volume {0}...".format(x))
                 del new_merged["volumes"][x]
 
             to_remove = []
-            for network_name in new_merged["networks"]:
-                if network_name not in needed_networks:
-                    to_remove.append(network_name)
+            if "networks" in new_merged:
+                for network_name in new_merged["networks"]:
+                    if network_name not in needed_networks:
+                        to_remove.append(network_name)
 
             for x in to_remove:
                 Logger.debug("- Removing network {0}...".format(x))
@@ -234,10 +241,10 @@ class ConfigHandler(object):
     def build_schema(self, name):
         schema = self.get_schema(name)
 
-        if "volumes" in schema:
-            volumes = schema["volumes"]
-            for volume in volumes:
-                self.compose_tool.create_volume(volume)
+        # if "volumes" in schema:
+        #     volumes = schema["volumes"]
+        #     for volume in volumes:
+        #         self.compose_tool.create_volume(volume)
 
         if "services" in schema:
             services = schema["services"]
