@@ -149,7 +149,7 @@ templates:
 # ... Schemas section ...
 ```
 
-To render the merged Compose file, use the `docknv compose generate` command.
+To render the merged Compose file, use the `docknv schema generate` command.
 
 ### Use schemas to isolate
 
@@ -187,10 +187,10 @@ schemas:
       - plugin
 ```
 
-When you defined schemas, you can generate the Compose file like in the previous point to include everything, or use a schema name in the command (for example considering the schema *base*): `docknv compose generate base`.  
+When you defined schemas, you can generate the Compose file like in the previous point to include everything, or use a schema name in the command (for example considering the schema *base*): `docknv schema generate base`.  
 To list defined schemas, use `docknv schema list`.
 
-Once you generated your Compose file, you can build the needed containers using `docknv compose build`.
+Once you generated your Compose file, you can build the needed containers using `docknv schema build base`.
 
 ### Freezing
 
