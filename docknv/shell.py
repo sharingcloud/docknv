@@ -19,8 +19,6 @@ class Shell(object):
 
         sub_compose = self.subparsers.add_parser("compose", help="compose actions")
         sub_compose_subparsers = sub_compose.add_subparsers(help="compose command", dest="compose_cmd")
-        sub_compose_generate = sub_compose_subparsers.add_parser("generate", help="generate compose file")
-        sub_compose_generate.add_argument("schema", help="schema name to generate")
         sub_compose_down = sub_compose_subparsers.add_parser("down", help="shutdown all")
         sub_compose_up = sub_compose_subparsers.add_parser("up", help="start all")
         sub_compose_ps = sub_compose_subparsers.add_parser("ps", help="show active containers")
@@ -86,6 +84,8 @@ class Shell(object):
 
         sub_schema = self.subparsers.add_parser("schema", help="schema actions")
         sub_schema_subparsers = sub_schema.add_subparsers(help="schema command", dest="schema_cmd")
+        sub_schema_generate = sub_schema_subparsers.add_parser("generate", help="generate compose file from schema")
+        sub_schema_generate.add_argument("schema", help="schema name to generate")
         sub_schema_list = sub_schema_subparsers.add_parser("ls", help="list schemas")
         sub_schema_build = sub_schema_subparsers.add_parser("build", help="build schema")
         sub_schema_build.add_argument("schema", help="schema name")
@@ -110,34 +110,30 @@ class Shell(object):
         compose_file = ".docker-compose.yml"
 
         if command == "compose":
-            if args.compose_cmd == "generate":
+            self._docker_compose_check()
+
+            if args.compose_cmd == "down":
+                compose.down()
+
+            elif args.compose_cmd == "up":
+                compose.up()
+
+            elif args.compose_cmd == "ps":
+                compose.ps()
+
+            elif args.compose_cmd == "export":
+                Exporter.export(compose_file, args.swarm, args.swarm_registry)
+
+            elif args.compose_cmd == "export-clean":
+                Exporter.clean(compose_file)
+                Logger.info("Generating new compose file...")
                 config.write_compose(compose_file, args.schema)
 
-            else:
-                self._docker_compose_check()
+            elif args.compose_cmd == "restart":
+                compose.reup()
 
-                if args.compose_cmd == "down":
-                    compose.down()
-
-                elif args.compose_cmd == "up":
-                    compose.up()
-
-                elif args.compose_cmd == "ps":
-                    compose.ps()
-
-                elif args.compose_cmd == "export":
-                    Exporter.export(compose_file, args.swarm, args.swarm_registry)
-
-                elif args.compose_cmd == "export-clean":
-                    Exporter.clean(compose_file)
-                    Logger.info("Generating new compose file...")
-                    config.write_compose(compose_file, args.schema)
-
-                elif args.compose_cmd == "restart":
-                    compose.reup()
-
-                elif args.compose_cmd == "static":
-                    config.make_static(compose_file)
+            elif args.compose_cmd == "static":
+                config.make_static(compose_file)
 
         elif command == "machine":
             self._docker_compose_check()
@@ -193,7 +189,11 @@ class Shell(object):
             if args.schema_cmd == "ls":
                 config.list_schemas()
 
+            elif args.schema_cmd == "generate":
+                config.write_compose(compose_file, args.schema)
+
             elif args.schema_cmd == "build":
+                self._docker_compose_check()
                 config.build_schema(args.schema)
 
         elif command == "swarm":
