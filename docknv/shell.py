@@ -3,7 +3,7 @@ import sys
 import os
 import re
 
-from .logger import Logger
+from .logger import Logger, Fore
 from .config_handler import ConfigHandler
 from .renderer import Renderer
 from .env_handler import EnvHandler
@@ -84,11 +84,12 @@ class Shell(object):
 
         sub_schema = self.subparsers.add_parser("schema", help="schema actions")
         sub_schema_subparsers = sub_schema.add_subparsers(help="schema command", dest="schema_cmd")
-        sub_schema_generate = sub_schema_subparsers.add_parser("generate", help="generate compose file from schema")
-        sub_schema_generate.add_argument("schema", help="schema name to generate")
+        sub_schema_generate = sub_schema_subparsers.add_parser("generate", help="generate compose file for current schema")
         sub_schema_list = sub_schema_subparsers.add_parser("ls", help="list schemas")
-        sub_schema_build = sub_schema_subparsers.add_parser("build", help="build schema")
-        sub_schema_build.add_argument("schema", help="schema name")
+        sub_schema_use = sub_schema_subparsers.add_parser("use", help="set a current schema")
+        sub_schema_use.add_argument("schema", help="schema name")
+        sub_schema_status = sub_schema_subparsers.add_parser("status", help="get current schema")
+        sub_schema_build = sub_schema_subparsers.add_parser("build", help="build current schema")
 
         self.post_parsers = []
 
@@ -190,11 +191,26 @@ class Shell(object):
                 config.list_schemas()
 
             elif args.schema_cmd == "generate":
-                config.write_compose(compose_file, args.schema)
+                self._schema_check()
+
+                config.write_compose(compose_file, config.get_current_schema())
+
+            elif args.schema_cmd == "use":
+                config.set_current_schema(args.schema)
+                Logger.raw("Schema set: `{0}`".format(args.schema), Fore.GREEN)    
+
+            elif args.schema_cmd == "status":
+                schema = config.get_current_schema()
+                if not schema:
+                    Logger.raw("No schema selected. Use `schema use [schema]` to use a schema, `schema ls` to list schemas.", Fore.YELLOW)
+                else:
+                    Logger.raw("Current schema: `{0}`".format(schema), Fore.GREEN)
 
             elif args.schema_cmd == "build":
                 self._docker_compose_check()
-                config.build_schema(args.schema)
+                self._schema_check()
+
+                config.build_schema(config.get_current_schema())
 
         elif command == "swarm":
             self._docker_compose_check()
@@ -225,4 +241,8 @@ class Shell(object):
 
     def _docker_compose_check(self):
         if not os.path.exists("./.docker-compose.yml"):
-            Logger.error("Before building you should generate the docker-compose.yml file using the `compose generate` command.")
+            Logger.error("Before building you should generate the compose file using the `schema generate` command.")
+
+    def _schema_check(self):
+        if not os.path.exists("./.docknv_schema"):
+            Logger.error("Before using schemas you should set the current schema using `schema use [schema]`")

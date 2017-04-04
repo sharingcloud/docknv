@@ -7,6 +7,8 @@ from .compose import Compose
 from .yaml_utils import merge_yaml, merge_yaml_two, ordered_load, ordered_dump
 from .logger import Logger, Fore
 
+CURRENT_SCHEMA_FILENAME = "./.docknv_schema"
+
 class ConfigHandler(object):
     def __init__(self, compose_file):
         self._load_config(compose_file)
@@ -127,6 +129,27 @@ class ConfigHandler(object):
     ##############################
     ##############################
 
+    def get_current_schema(self):
+        if os.path.isfile(CURRENT_SCHEMA_FILENAME):
+            with open(CURRENT_SCHEMA_FILENAME, mode="rt") as f:
+                schema = f.read()
+
+            if self.check_schema(schema):
+                return schema
+            else:
+                return None
+
+        else:
+            return None
+
+    def set_current_schema(self, schema):
+        if self.check_schema(schema):
+            with open(CURRENT_SCHEMA_FILENAME, mode="wt+") as f:
+                f.write(schema)
+
+        else:
+            Logger.error("Could not set unknown schema as current: `{0}`".format(schema))
+
     def list_lifecycles(self):
         if "lifecycles" not in self.compose_content:
             Logger.error("Missing `lifecycles` section in compose config.")
@@ -216,6 +239,13 @@ class ConfigHandler(object):
             schema = merge_yaml(include_schemas)
 
         return schema
+
+    def check_schema(self, schema_name):
+        if "schemas" not in self.compose_content:
+            Logger.error("Missing `schemas` section in compose config.")
+
+        schemas = self.compose_content["schemas"]
+        return schema_name in schemas
 
     def list_schemas(self):
         if "schemas" not in self.compose_content:
