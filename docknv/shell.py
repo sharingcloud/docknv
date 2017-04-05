@@ -69,6 +69,8 @@ class Shell(object):
         sub_machine_copy.add_argument("machine", help="machine name")
         sub_machine_copy.add_argument("container_path", help="container path")
         sub_machine_copy.add_argument("host_path", help="host path")
+        sub_machine_build = sub_machine_subparsers.add_parser("build", help="build a machine")
+        sub_machine_build.add_argument("machine", help="machine name")
 
         sub_volume = self.subparsers.add_parser("volume", help="volume actions")
         sub_volume_subparsers = sub_volume.add_subparsers(help="volume command", dest="volume_cmd")
@@ -163,6 +165,9 @@ class Shell(object):
             elif args.machine_cmd == "copy":
                 compose.copy(args.machine, args.container_path, args.host_path)
 
+            elif args.machine_cmd == "build":
+                compose.build(args.machine)
+
         elif command == "volume":
             if args.volume_cmd == "ls":
                 compose.list_volumes()
@@ -197,7 +202,7 @@ class Shell(object):
 
             elif args.schema_cmd == "use":
                 config.set_current_schema(args.schema)
-                Logger.raw("Schema set: `{0}`".format(args.schema), Fore.GREEN)    
+                Logger.raw("Schema set: `{0}`".format(args.schema), Fore.GREEN)
 
             elif args.schema_cmd == "status":
                 schema = config.get_current_schema()
