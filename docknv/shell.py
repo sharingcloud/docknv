@@ -15,37 +15,33 @@ class Shell(object):
         self.parser = argparse.ArgumentParser(description="Docker and eNVironments")
         self.parser.add_argument("-f", "--config", default="config.yml", help="compose config file")
 
-        self.subparsers = self.parser.add_subparsers(help="command", dest="command")
+        self.subparsers = self.parser.add_subparsers(dest="command", metavar="")
 
-        sub_compose = self.subparsers.add_parser("compose", help="compose actions")
-        sub_compose_subparsers = sub_compose.add_subparsers(help="compose command", dest="compose_cmd")
+        sub_compose = self.subparsers.add_parser("compose", help="manage current machines lifecycle (compose mode)")
+        sub_compose_subparsers = sub_compose.add_subparsers(dest="compose_cmd", metavar="")
         sub_compose_down = sub_compose_subparsers.add_parser("down", help="shutdown all")
         sub_compose_up = sub_compose_subparsers.add_parser("up", help="start all")
         sub_compose_ps = sub_compose_subparsers.add_parser("ps", help="show active containers")
-        sub_compose_export = sub_compose_subparsers.add_parser("export", help="export the compose file for production")
-        sub_compose_export.add_argument("--swarm", action="store_true", help="prepare swarm mode by setting image names")
-        sub_compose_export.add_argument("--swarm-registry", nargs="?", default="127.0.0.1:5000", help="swarm registry URL")
-        sub_compose_clean_export = sub_compose_subparsers.add_parser("export-clean", help="clean the compose export and generate a new compose file")
-        sub_compose_clean_export.add_argument("schema", help="new schema to generate")
         sub_compose_reup = sub_compose_subparsers.add_parser("restart", help="restart all stack")
-        sub_compose_static = sub_compose_subparsers.add_parser("static", help="make the compose file static")
 
-        sub_swarm = self.subparsers.add_parser("swarm", help="swarm actions")
-        sub_swarm_subparsers = sub_swarm.add_subparsers(help="swarm command", dest="swarm_cmd")
-        sub_swarm_push = sub_swarm_subparsers.add_parser("push", help="push stack to swarm")
-        sub_swarm_up = sub_swarm_subparsers.add_parser("up", help="deploy stack to swarm")
-        sub_swarm_down = sub_swarm_subparsers.add_parser("down", help="shutdown stack")
+        sub_schema = self.subparsers.add_parser("schema", help="manage groups of machines at once (schema mode)")
+        sub_schema_subparsers = sub_schema.add_subparsers(dest="schema_cmd", metavar="")
+        sub_schema_generate = sub_schema_subparsers.add_parser("generate", help="generate compose file for current schema")
+        sub_schema_list = sub_schema_subparsers.add_parser("ls", help="list schemas")
+        sub_schema_use = sub_schema_subparsers.add_parser("use", help="set a current schema")
+        sub_schema_use.add_argument("schema", help="schema name")
+        sub_schema_status = sub_schema_subparsers.add_parser("status", help="get current schema")
+        sub_schema_build = sub_schema_subparsers.add_parser("build", help="build current schema")
+        sub_schema_export = sub_schema_subparsers.add_parser("export", help="export the schema for production")
+        sub_schema_export.add_argument("--swarm", action="store_true", help="prepare swarm mode by setting image names")
+        sub_schema_export.add_argument("--swarm-registry", nargs="?", default="127.0.0.1:5000", help="swarm registry URL")
+        sub_schema_export.add_argument("--build", action="store_true", help="rebuild new images")
+        sub_schema_clean_export = sub_schema_subparsers.add_parser("export-clean", help="clean the schema export and generate a new compose file")
+        sub_schema_clean_export.add_argument("--build", action="store_true", help="rebuild new images")
+        sub_schema_static = sub_schema_subparsers.add_parser("static", help="make the compose file static")
 
-        sub_network = self.subparsers.add_parser("network", help="network actions")
-        sub_network_subparsers = sub_network.add_subparsers(help="network command", dest="network_cmd")
-        sub_network_create_overlay = sub_network_subparsers.add_parser("create-overlay", help="create an overlay network to use with swarm")
-        sub_network_create_overlay.add_argument("name", help="network name")
-        sub_network_list = sub_network_subparsers.add_parser("ls", help="list networks")
-        sub_network_remove = sub_network_subparsers.add_parser("rm", help="remove network")
-        sub_network_remove.add_argument("name", help="network name")
-
-        sub_machine = self.subparsers.add_parser("machine", help="machine actions")
-        sub_machine_subparsers = sub_machine.add_subparsers(help="machine command", dest="machine_cmd")
+        sub_machine = self.subparsers.add_parser("machine", help="manage one machine at a time (machine mode)")
+        sub_machine_subparsers = sub_machine.add_subparsers(dest="machine_cmd", metavar="")
         sub_machine_daemon = sub_machine_subparsers.add_parser("daemon", help="run a container in background")
         sub_machine_daemon.add_argument("machine", help="machine name")
         sub_machine_run = sub_machine_subparsers.add_parser("run", help="run a command on a container")
@@ -72,26 +68,31 @@ class Shell(object):
         sub_machine_build = sub_machine_subparsers.add_parser("build", help="build a machine")
         sub_machine_build.add_argument("machine", help="machine name")
 
-        sub_volume = self.subparsers.add_parser("volume", help="volume actions")
-        sub_volume_subparsers = sub_volume.add_subparsers(help="volume command", dest="volume_cmd")
+        sub_swarm = self.subparsers.add_parser("swarm", help="deploy to swarm (swarm mode)")
+        sub_swarm_subparsers = sub_swarm.add_subparsers(dest="swarm_cmd", metavar="")
+        sub_swarm_push = sub_swarm_subparsers.add_parser("push", help="push stack to swarm")
+        sub_swarm_up = sub_swarm_subparsers.add_parser("up", help="deploy stack to swarm")
+        sub_swarm_down = sub_swarm_subparsers.add_parser("down", help="shutdown stack")
+
+        sub_network = self.subparsers.add_parser("network", help="manage networks")
+        sub_network_subparsers = sub_network.add_subparsers(dest="network_cmd", metavar="")
+        sub_network_create_overlay = sub_network_subparsers.add_parser("create-overlay", help="create an overlay network to use with swarm")
+        sub_network_create_overlay.add_argument("name", help="network name")
+        sub_network_list = sub_network_subparsers.add_parser("ls", help="list networks")
+        sub_network_remove = sub_network_subparsers.add_parser("rm", help="remove network")
+        sub_network_remove.add_argument("name", help="network name")
+
+        sub_volume = self.subparsers.add_parser("volume", help="manage volumes")
+        sub_volume_subparsers = sub_volume.add_subparsers(dest="volume_cmd", metavar="")
         sub_volume_list = sub_volume_subparsers.add_parser("ls", help="list volumes")
         sub_volume_remove = sub_volume_subparsers.add_parser("rm", help="remove volume")
         sub_volume_remove.add_argument("name", help="volume name")
 
-        sub_env = self.subparsers.add_parser("env", help="env actions")
-        sub_env_subparsers = sub_env.add_subparsers(help="env command", dest="env_cmd")
+        sub_env = self.subparsers.add_parser("env", help="manage environments")
+        sub_env_subparsers = sub_env.add_subparsers(dest="env_cmd", metavar="")
         sub_env_use = sub_env_subparsers.add_parser("use", help="set env and render templates")
         sub_env_use.add_argument("env_name", help="environment file name (debug, etc.)")
         sub_env_ls = sub_env_subparsers.add_parser("ls", help="list envs")
-
-        sub_schema = self.subparsers.add_parser("schema", help="schema actions")
-        sub_schema_subparsers = sub_schema.add_subparsers(help="schema command", dest="schema_cmd")
-        sub_schema_generate = sub_schema_subparsers.add_parser("generate", help="generate compose file for current schema")
-        sub_schema_list = sub_schema_subparsers.add_parser("ls", help="list schemas")
-        sub_schema_use = sub_schema_subparsers.add_parser("use", help="set a current schema")
-        sub_schema_use.add_argument("schema", help="schema name")
-        sub_schema_status = sub_schema_subparsers.add_parser("status", help="get current schema")
-        sub_schema_build = sub_schema_subparsers.add_parser("build", help="build current schema")
 
         self.post_parsers = []
 
@@ -107,6 +108,9 @@ class Shell(object):
 
     def _parse_args(self, args):
         command = args.command
+
+        # Validation
+        ConfigHandler.validate_config(args.config)
 
         config = ConfigHandler(args.config)
         compose = config.compose_tool
@@ -124,19 +128,8 @@ class Shell(object):
             elif args.compose_cmd == "ps":
                 compose.ps()
 
-            elif args.compose_cmd == "export":
-                Exporter.export(compose_file, args.swarm, args.swarm_registry)
-
-            elif args.compose_cmd == "export-clean":
-                Exporter.clean(compose_file)
-                Logger.info("Generating new compose file...")
-                config.write_compose(compose_file, args.schema)
-
             elif args.compose_cmd == "restart":
                 compose.reup()
-
-            elif args.compose_cmd == "static":
-                config.make_static(compose_file)
 
         elif command == "machine":
             self._docker_compose_check()
@@ -197,12 +190,28 @@ class Shell(object):
 
             elif args.schema_cmd == "generate":
                 self._schema_check()
-
                 config.write_compose(compose_file, config.get_current_schema())
+
+            elif args.schema_cmd == "export":
+                self._schema_check()
+                Exporter.export(config, compose_file, args.swarm, args.swarm_registry)
+                if args.build:
+                    config.build_schema(config.get_current_schema())
+
+            elif args.schema_cmd == "export-clean":
+                self._schema_check()
+                Exporter.clean(config, compose_file)
+                Logger.info("Generating new compose file...")
+                config.write_compose(compose_file, config.get_current_schema())
+                if args.build:
+                    config.build_schema(config.get_current_schema())
 
             elif args.schema_cmd == "use":
                 config.set_current_schema(args.schema)
                 Logger.raw("Schema set: `{0}`".format(args.schema), Fore.GREEN)
+
+            elif args.schema_cmd == "static":
+                config.make_static(compose_file)
 
             elif args.schema_cmd == "status":
                 schema = config.get_current_schema()

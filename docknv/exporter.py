@@ -26,17 +26,13 @@ class Exporter(object):
         return content
 
     @staticmethod
-    def clean(compose_file):
+    def clean(config_handler, compose_file):
         Logger.info("Cleaning export...")
 
         content = Exporter._load_file(compose_file)
         services = content["services"]
         for service_name in services:
             service = services[service_name]
-            if "volumes" not in service:
-                Logger.info("No volume in service `{0}`".format(service_name))
-                continue
-
             if "build" not in service:
                 Logger.warn("Exporter only works with image builds, not direct pull.")
                 continue
@@ -68,7 +64,7 @@ class Exporter(object):
                 shutil.rmtree(exported_path)
 
     @staticmethod
-    def export(compose_file, swarm=False, swarm_registry=None):
+    def export(config_handler, compose_file, swarm=False, swarm_registry=None):
         Logger.info("Exporting compose file...")
         content = Exporter._load_file(compose_file)
         services = content["services"]
@@ -87,7 +83,7 @@ class Exporter(object):
                     Logger.info("Image is already present in service `{0}`".format(service_name))
                 else:
                     config = swarm_registry if swarm_registry else "127.0.0.1:5000"
-                    service["image"] = "{0}/{1}".format(config, service_name)
+                    service["image"] = "{0}/{1}_{2}".format(config, config_handler.namespace, service_name)
 
             if "volumes" not in service:
                 Logger.info("No volume in service `{0}`".format(service_name))

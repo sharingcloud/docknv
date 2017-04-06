@@ -7,9 +7,18 @@ from .compose import Compose
 from .yaml_utils import merge_yaml, merge_yaml_two, ordered_load, ordered_dump
 from .logger import Logger, Fore
 
+################
+# Constants
+
 CURRENT_SCHEMA_FILENAME = "./.docknv_schema"
 
+################
+
 class ConfigHandler(object):
+    """
+    Handle the docknv config file.
+    """
+
     def __init__(self, compose_file):
         self._load_config(compose_file)
 
@@ -35,7 +44,52 @@ class ConfigHandler(object):
 
         self.compose_tool = Compose(self.namespace)
 
+    @staticmethod
+    def validate_config(compose_file):
+        """
+        Validate the docknv config file.
+        """
+
+        compose_content = ""
+        compose_file_path = os.path.realpath(compose_file)
+
+        if os.path.isfile(compose_file_path):
+            try:
+                with open(compose_file_path, mode="rt") as f:
+                    compose_content = ordered_load(f.read())
+            except Exception as exc:
+                Logger.error(
+                    "Exception occured during the loading of `{0}`: {1}"
+                        .format(compose_file_path, exc)
+                )
+        else:
+            Logger.error("Unknown file: {0}".format(compose_file_path))
+
+        # Validate data
+
+        if "project_name" not in compose_content:
+            Logger.error(
+                "Missing `project_name` key in config file `{0}`"
+                    .format(compose_file_path)
+            )
+
+        if "templates" not in compose_content:
+            Logger.error(
+                "Missing `templates` key in config file `{0}`"
+                    .format(compose_file_path)
+            )
+
+        if "schemas" not in compose_content:
+            Logger.error(
+                "Missing `schemas` key in config file `{0}`"
+                    .format(compose_file_path)
+            )
+
     def generate_compose(self, schema=None):
+        """
+        Generate a Docker Compose file from the docknv config.yml
+        """
+
         if "templates" not in self.compose_content:
             Logger.error("Missing `templates` section in compose config.")
 
@@ -109,6 +163,10 @@ class ConfigHandler(object):
             return merged
 
     def write_compose(self, output_file, schema=None):
+        """
+        Write a Docker Compose file to disk
+        """
+
         result = self.generate_compose(schema)
 
         Logger.info("Writing compose file to `{0}`...".format(output_file))
@@ -117,6 +175,11 @@ class ConfigHandler(object):
             f.write(ordered_dump(result, default_flow_style=False))
 
     def make_static(self, path):
+        """
+        Substitute the Docker Compose environment variables with their current
+        values from the local .env file.
+        """
+
         if not os.path.isfile(".env"):
             Logger.error("Missing `.env` file. Please generate env using 'env use [environment]'")
 
@@ -127,9 +190,15 @@ class ConfigHandler(object):
         os.remove("{0}.out".format(path))
 
     ##############################
+
     ##############################
+    # Schemas
 
     def get_current_schema(self):
+        """
+        Fetch the current schema from the docknv schema filename.
+        """
+
         if os.path.isfile(CURRENT_SCHEMA_FILENAME):
             with open(CURRENT_SCHEMA_FILENAME, mode="rt") as f:
                 schema = f.read()
@@ -143,6 +212,10 @@ class ConfigHandler(object):
             return None
 
     def set_current_schema(self, schema):
+        """
+        Set the current schema in the docknv schema filename.
+        """
+
         if self.check_schema(schema):
             with open(CURRENT_SCHEMA_FILENAME, mode="wt+") as f:
                 f.write(schema)
@@ -150,74 +223,12 @@ class ConfigHandler(object):
         else:
             Logger.error("Could not set unknown schema as current: `{0}`".format(schema))
 
-    def list_lifecycles(self):
-        if "lifecycles" not in self.compose_content:
-            Logger.error("Missing `lifecycles` section in compose config.")
-
-        lifecycles = self.compose_content["lifecycles"]
-        for name in lifecycles:
-            lifecycle = self.get_lifecycle(name)
-            schema_name = lifecycle["schema"]
-            schema = self.get_schema(schema_name)
-            all_action = lifecycle["action"]
-            handlers = lifecycle.get("handlers", {})
-
-            Logger.raw("Lifecycle: " + name, color=Fore.GREEN)
-            Logger.raw("  Schema: " + schema_name)
-            Logger.raw("  Global action: " + all_action)
-
-            handlers_specs = [k for k in handlers.keys() if k != "ALL"]
-            if len(handlers_specs) > 0:
-                Logger.raw("  Custom actions:")
-                for k in handlers_specs:
-                    command = handlers[k]
-                    Logger.raw("    {0}: {1}".format(k, command))
-
-            Logger.raw("")
-
-    def get_lifecycle(self, name):
-        if "lifecycles" not in self.compose_content:
-            Logger.error("Missing `lifecycles` section in compose config.")
-
-        lifecycles = self.compose_content["lifecycles"]
-        if name not in lifecycles:
-            Logger.error("Missing lifecycle `{0}` definition in compose config.".format(name))
-
-        lifecycle = lifecycles[name]
-        return lifecycle
-
-    def run_lifecycle(self, name):
-        lifecycle = self.get_lifecycle(name)
-
-        if not "schema" in lifecycle:
-            Logger.error("Missing `schema` section in lifecycle `{0}`".format(name))
-
-        schema_name = lifecycle["schema"]
-        schema = self.get_schema(schema_name)
-        handlers = lifecycle.get("handlers", {})
-        all_action = lifecycle["action"]
-
-        for service in schema["services"]:
-            # Custom handler ?
-            if service in handlers:
-                command = handlers[service]
-                self.compose_tool.run(service, command)
-
-            if all_action == "start":
-                self.compose_tool.daemon(service)
-            elif all_action == "stop":
-                self.compose_tool.stop(service)
-
-        if all_action == "stop":
-            if "networks" in schema:
-                for network in schema["networks"]:
-                    full_network_name = self.namespace + "_" + network
-                    self.compose_tool.remove_network(full_network_name)
-
-    ##############################
-    ##############################
 
     def get_schema(self, name):
+        """
+        Fetch information about one schema.
+        """
+
         if "schemas" not in self.compose_content:
             Logger.error("Missing `schemas` section in compose config.")
 
@@ -241,6 +252,10 @@ class ConfigHandler(object):
         return schema
 
     def check_schema(self, schema_name):
+        """
+        Check if a schema exist in the current compose file.
+        """
+
         if "schemas" not in self.compose_content:
             Logger.error("Missing `schemas` section in compose config.")
 
@@ -248,6 +263,10 @@ class ConfigHandler(object):
         return schema_name in schemas
 
     def list_schemas(self):
+        """
+        List all the available schemas from the project.
+        """
+
         if "schemas" not in self.compose_content:
             Logger.error("Missing `schemas` section in compose config.")
 
@@ -271,12 +290,9 @@ class ConfigHandler(object):
     def build_schema(self, name):
         schema = self.get_schema(name)
 
-        # if "volumes" in schema:
-        #     volumes = schema["volumes"]
-        #     for volume in volumes:
-        #         self.compose_tool.create_volume(volume)
-
         if "services" in schema:
             services = schema["services"]
             for service in services:
                 self.compose_tool.build(service)
+
+    ##############################

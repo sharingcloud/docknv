@@ -52,7 +52,7 @@ MY_PORT = 6000
 # ...
 ```
 
-Once you defined your environment configuration file, you can use it in the templating process, using the `docknv env use` command.
+Once you defined your environment configuration file, you can use it in the templating process, using the `docknv env use <env_name>` command.
 
 ### Templating system
 
@@ -204,23 +204,26 @@ Last step before production, you may need to quickly export your volumes inside 
 - Edit the respective Docker files (that is why the "building" way is recommended instead of the quick pulling way by specifying a `build` property for each container in your Compose files)
 - Removing the volume entries from the current Docker Compose file (`.docker-compose.yml`)
 
-That's it. So here is the workflow if you want to push your stack in freeze mode:
+That's it. So here is the workflow if you want to push your stack in freeze mode, using schema `base`:
 
 ```bash
   # You may want to use another env file
   docknv env use preprod
 
-  # Freeze everything
-  docknv compose export
+  # Select your schema
+  docknv schema use base
 
-  # Rebuild
-  docknv schema build
+  # Generate compose
+  docknv schema generate
+
+  # Freeze everything and rebuild
+  docknv schema export --build
 
   # Start !
   docknv compose up
 ```
 
-You can reverse the operation and remove the modifications of the respective Dockerfiles and recreate a Compose file using the `docknv compose export-clean <schema>` command, with an optional `schema` argument to directly recreate an isolated Compose file using a schema, instead of including everything.
+You can reverse the operation and remove the modifications of the respective Dockerfiles and recreate a Compose file using the `docknv schema export-clean` command.
 
 ### Configuration syntax example - config.yml
 
