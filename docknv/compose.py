@@ -76,11 +76,7 @@ class Compose(object):
         os.system("docker service ls")
 
     def service_ps(self, machine):
-        service = self._get_service(machine)
-        if not service:
-            Logger.error("Service `{0}` is not running.".format(service), crash=False)
-        else:
-            os.system("docker service ps {1}".format(service))
+        os.system("docker service ps {0}_{1}".format(self.namespace, machine))
 
     def daemon(self, machine, command=""):
         msg = "Running machine `{0}` in background".format(machine)
