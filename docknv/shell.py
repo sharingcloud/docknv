@@ -75,6 +75,7 @@ class Shell(object):
         sub_swarm_down = sub_swarm_subparsers.add_parser("down", help="shutdown stack")
         sub_swarm_list = sub_swarm_subparsers.add_parser("ls", help="list current services")
         sub_swarm_ps = sub_swarm_subparsers.add_parser("ps", help="get service info")
+        sub_swarm_ps.add_argument("machine", help="machine name")
 
         sub_network = self.subparsers.add_parser("network", help="manage networks")
         sub_network_subparsers = sub_network.add_subparsers(dest="network_cmd", metavar="")
