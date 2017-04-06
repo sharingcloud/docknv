@@ -26,6 +26,16 @@ class Compose(object):
 
         return out.strip()
 
+    def _get_service(self, machine):
+        cmd = "docker service ps -q {0}_{1}".format(self.namespace, machine)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+
+        if out == "":
+            return None
+
+        return out.strip()
+
     ##############
 
     def ps(self):
@@ -61,6 +71,16 @@ class Compose(object):
         Logger.info("Reupping all machines...")
         self._exec_compose("down")
         self._exec_compose("up -d")
+
+    def service_list(self):
+        os.system("docker service ls")
+
+    def service_ps(self, machine):
+        service = self._get_service(machine)
+        if not service:
+            Logger.error("Service `{0}` is not running.".format(service), crash=False)
+        else:
+            os.system("docker service ps {1}".format(service))
 
     def daemon(self, machine, command=""):
         msg = "Running machine `{0}` in background".format(machine)

@@ -73,6 +73,8 @@ class Shell(object):
         sub_swarm_push = sub_swarm_subparsers.add_parser("push", help="push stack to swarm")
         sub_swarm_up = sub_swarm_subparsers.add_parser("up", help="deploy stack to swarm")
         sub_swarm_down = sub_swarm_subparsers.add_parser("down", help="shutdown stack")
+        sub_swarm_list = sub_swarm_subparsers.add_parser("ls", help="list current services")
+        sub_swarm_ps = sub_swarm_subparsers.add_parser("ps", help="get service info")
 
         sub_network = self.subparsers.add_parser("network", help="manage networks")
         sub_network_subparsers = sub_network.add_subparsers(dest="network_cmd", metavar="")
@@ -237,6 +239,12 @@ class Shell(object):
 
             elif args.swarm_cmd == "down":
                 compose.rm_stack()
+
+            elif args.swarm_cmd == "ls":
+                compose.service_list()
+
+            elif args.swarm_cmd == "ps":
+                compose.service_ps(args.machine)
 
         elif command == "network":
             if args.network_cmd == "create-overlay":
