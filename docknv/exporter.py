@@ -5,6 +5,7 @@ import copy
 
 from .logger import Logger
 from .yaml_utils import ordered_load, ordered_dump
+from .nfs import NFSHandler
 
 from collections import OrderedDict
 
@@ -68,6 +69,7 @@ class Exporter(object):
         Logger.info("Exporting compose file...")
         content = Exporter._load_file(compose_file)
         services = content["services"]
+        named_volumes_to_remove = []
 
         if "networks" in content:
             if swarm:
@@ -116,7 +118,7 @@ class Exporter(object):
             dockerfile_content += "# <docknv additions>\n"
 
             volumes = copy.copy(service["volumes"])
-            for volume in service["volumes"]:
+            for volume_index, volume in enumerate(service["volumes"]):
                 volume_split = volume.split(":")
                 host, container = volume_split[:2]
                 host_folder = os.path.basename(host)
@@ -155,7 +157,23 @@ class Exporter(object):
                     volumes.remove(volume)
 
                 else:
-                    Logger.info("Named volume. Nothing to do")
+                    # Named volume handling
+                    configuration = config_handler.configuration
+                    if "nfs" in configuration:
+                        Logger.info("Named volume and NFS configuration. Generating paths...")
+
+                        path = configuration["nfs"]["path"]
+                        resolved_path = os.path.join(path, config_handler.namespace, host)
+
+                        if host not in named_volumes_to_remove:
+                            named_volumes_to_remove.append(host)
+
+                        if not NFSHandler.do_volume_exist(path, config_handler.namespace, host):
+                            NFSHandler.create_volume(path, config_handler.namespace, host)
+
+                        volumes[volume_index] = resolved_path + ":" + container
+                    else:
+                        Logger.info("Named volume and no NFS configuration. Nothing to do.")
 
             if len(volumes) == 0:
                 del service["volumes"]
@@ -165,6 +183,12 @@ class Exporter(object):
             # Update Dockerfile
             with open(dockerfile_path, mode="wt+") as f:
                 f.write(dockerfile_content)
+
+        for volume in named_volumes_to_remove:
+            del content["volumes"][volume]
+
+        if len(content["volumes"]) == 0:
+            del content["volumes"]
 
         # Remove the volume directives from the compose file
         with open(compose_file, mode="wt") as f:

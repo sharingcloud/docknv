@@ -36,6 +36,7 @@ class ConfigHandler(object):
         self.compose_file_dir = os.path.dirname(compose_file_path)
         self.compose_content = compose_content
         self.namespace = compose_content.get("project_name", None)
+        self.configuration = compose_content.get("configuration", {})
 
         if not self.namespace:
             compose_dir = os.path.basename(self.compose_file_dir)

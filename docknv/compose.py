@@ -4,6 +4,7 @@ import subprocess
 import re
 import sys
 
+from .nfs import NFSHandler
 from .logger import Logger
 
 class Compose(object):
@@ -167,6 +168,27 @@ class Compose(object):
     def reset_volumes(self, names):
         for name in names:
             self.reset_volume(name)
+
+    def create_nfs_volume(self, config, name):
+        if "nfs" not in config.configuration:
+            Logger.error("No NFS configuration present in `config.yml`.")
+
+        path = config.configuration["nfs"]["path"]
+        NFSHandler.create_volume(path, self.namespace, name)
+
+    def list_nfs_volumes(self, config):
+        if "nfs" not in config.configuration:
+            Logger.error("No NFS configuration present in `config.yml`.")
+
+        path = config.configuration["nfs"]["path"]
+        NFSHandler.list_namespace_volumes(path, self.namespace)
+
+    def remove_nfs_volume(self, config, name):
+        if "nfs" not in config.configuration:
+            Logger.error("No NFS configuration present in `config.yml`.")
+
+        path = config.configuration["nfs"]["path"]
+        NFSHandler.remove_volume(path, self.namespace, name)
 
     ##################
 

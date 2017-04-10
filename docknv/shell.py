@@ -27,17 +27,12 @@ class Shell(object):
         sub_schema = self.subparsers.add_parser("schema", help="manage groups of machines at once (schema mode)")
         sub_schema_subparsers = sub_schema.add_subparsers(dest="schema_cmd", metavar="")
         sub_schema_generate = sub_schema_subparsers.add_parser("generate", help="generate compose file for current schema")
+        sub_schema_generate.add_argument("-b", "--build", action="store_true", help="build schema")
         sub_schema_list = sub_schema_subparsers.add_parser("ls", help="list schemas")
         sub_schema_use = sub_schema_subparsers.add_parser("use", help="set a current schema")
         sub_schema_use.add_argument("schema", help="schema name")
         sub_schema_status = sub_schema_subparsers.add_parser("status", help="get current schema")
         sub_schema_build = sub_schema_subparsers.add_parser("build", help="build current schema")
-        sub_schema_export = sub_schema_subparsers.add_parser("export", help="export the schema for production")
-        sub_schema_export.add_argument("--swarm", action="store_true", help="prepare swarm mode by setting image names")
-        sub_schema_export.add_argument("--swarm-registry", nargs="?", default="127.0.0.1:5000", help="swarm registry URL")
-        sub_schema_export.add_argument("--build", action="store_true", help="rebuild new images")
-        sub_schema_clean_export = sub_schema_subparsers.add_parser("export-clean", help="clean the schema export and generate a new compose file")
-        sub_schema_clean_export.add_argument("--build", action="store_true", help="rebuild new images")
         sub_schema_static = sub_schema_subparsers.add_parser("static", help="make the compose file static")
 
         sub_machine = self.subparsers.add_parser("machine", help="manage one machine at a time (machine mode)")
@@ -77,6 +72,12 @@ class Shell(object):
         sub_swarm_ps = sub_swarm_subparsers.add_parser("ps", help="get service info")
         sub_swarm_ps.add_argument("machine", help="machine name")
 
+        sub_export = self.subparsers.add_parser("export", help="export the current schema for production")
+        sub_export.add_argument("--clean", action="store_true", help="clean the export.")
+        sub_export.add_argument("--swarm", action="store_true", help="prepare swarm mode by setting image names")
+        sub_export.add_argument("--swarm-registry", nargs="?", default="127.0.0.1:5000", help="swarm registry URL")
+        sub_export.add_argument("--build", action="store_true", help="rebuild new images")
+
         sub_network = self.subparsers.add_parser("network", help="manage networks")
         sub_network_subparsers = sub_network.add_subparsers(dest="network_cmd", metavar="")
         sub_network_create_overlay = sub_network_subparsers.add_parser("create-overlay", help="create an overlay network to use with swarm")
@@ -90,6 +91,14 @@ class Shell(object):
         sub_volume_list = sub_volume_subparsers.add_parser("ls", help="list volumes")
         sub_volume_remove = sub_volume_subparsers.add_parser("rm", help="remove volume")
         sub_volume_remove.add_argument("name", help="volume name")
+
+        sub_volume_nfs = self.subparsers.add_parser("nfs", help="manage NFS volumes")
+        sub_volume_nfs_subparsers = sub_volume_nfs.add_subparsers(dest="nfs_cmd", metavar="")
+        sub_volume_nfs_list = sub_volume_nfs_subparsers.add_parser("ls", help="list NFS volumes")
+        sub_volume_nfs_remove = sub_volume_nfs_subparsers.add_parser("rm", help="remove NFS volume")
+        sub_volume_nfs_remove.add_argument("name", help="NFS volume name")
+        sub_volume_nfs_create = sub_volume_nfs_subparsers.add_parser("create", help="create NFS volumes")
+        sub_volume_nfs_create.add_argument("name", help="NFS volume name")
 
         sub_env = self.subparsers.add_parser("env", help="manage environments")
         sub_env_subparsers = sub_env.add_subparsers(dest="env_cmd", metavar="")
@@ -171,6 +180,16 @@ class Shell(object):
             elif args.volume_cmd == "rm":
                 compose.remove_volume(args.name)
 
+        elif command == "nfs":
+            if args.nfs_cmd == "ls":
+                compose.list_nfs_volumes(config)
+
+            elif args.nfs_cmd == "rm":
+                compose.remove_nfs_volume(config, args.name)
+
+            elif args.nfs_cmd == "create":
+                compose.create_nfs_volume(config, args.name)
+
         elif command == "env":
             if args.env_cmd == "ls":
                 EnvHandler.list_envs()
@@ -195,17 +214,6 @@ class Shell(object):
                 self._schema_check()
                 config.write_compose(compose_file, config.get_current_schema())
 
-            elif args.schema_cmd == "export":
-                self._schema_check()
-                Exporter.export(config, compose_file, args.swarm, args.swarm_registry)
-                if args.build:
-                    config.build_schema(config.get_current_schema())
-
-            elif args.schema_cmd == "export-clean":
-                self._schema_check()
-                Exporter.clean(config, compose_file)
-                Logger.info("Generating new compose file...")
-                config.write_compose(compose_file, config.get_current_schema())
                 if args.build:
                     config.build_schema(config.get_current_schema())
 
@@ -228,6 +236,19 @@ class Shell(object):
                 self._schema_check()
 
                 config.build_schema(config.get_current_schema())
+
+        elif command == "export":
+            self._schema_check()
+            if args.clean:
+                Exporter.clean(config, compose_file)
+                Logger.info("Generating new compose file...")
+                config.write_compose(compose_file, config.get_current_schema())
+                if args.build:
+                    config.build_schema(config.get_current_schema())
+            else:
+                Exporter.export(config, compose_file, args.swarm, args.swarm_registry)
+                if args.build:
+                    config.build_schema(config.get_current_schema())
 
         elif command == "swarm":
             self._docker_compose_check()

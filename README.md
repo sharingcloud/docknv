@@ -217,13 +217,13 @@ That's it. So here is the workflow if you want to push your stack in freeze mode
   docknv schema generate
 
   # Freeze everything and rebuild
-  docknv schema export --build
+  docknv export --build
 
   # Start !
   docknv compose up
 ```
 
-You can reverse the operation and remove the modifications of the respective Dockerfiles and recreate a Compose file using the `docknv schema export-clean` command.
+You can reverse the operation and remove the modifications of the respective Dockerfiles and recreate a Compose file using the `docknv export --clean` command.
 
 ### Configuration syntax example - config.yml
 
