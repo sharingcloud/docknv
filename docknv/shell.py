@@ -60,6 +60,10 @@ class Shell(object):
         sub_machine_copy.add_argument("machine", help="machine name")
         sub_machine_copy.add_argument("container_path", help="container path")
         sub_machine_copy.add_argument("host_path", help="host path")
+        sub_machine_push = sub_machine_subparsers.add_parser("push", help="push file")
+        sub_machine_push.add_argument("machine", help="machine name")
+        sub_machine_push.add_argument("host_path", help="host path")
+        sub_machine_push.add_argument("container_path", help="container path")
         sub_machine_build = sub_machine_subparsers.add_parser("build", help="build a machine")
         sub_machine_build.add_argument("machine", help="machine name")
 
@@ -169,6 +173,9 @@ class Shell(object):
 
             elif args.machine_cmd == "copy":
                 compose.copy(args.machine, args.container_path, args.host_path)
+
+            elif args.machine_cmd == "push":
+                compose.push(args.machine, args.host_path, args.container_path)
 
             elif args.machine_cmd == "build":
                 compose.build(args.machine)

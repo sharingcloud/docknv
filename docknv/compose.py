@@ -128,6 +128,14 @@ class Compose(object):
             if return_code:
                 sys.exit(os.WEXITSTATUS(code))
 
+    def push(self, machine, host_path, container_path):
+        container = self._get_container(machine)
+        if not container:
+            Logger.error("Machine `{0}` is not running.".format(machine), crash=False)
+        else:
+            Logger.info("Copying file from host to `{0}`: `{1}` => `{2}".format(machine, host_path, container_path))
+            os.system("docker cp {0} {1}:{2}".format(host_path, container, container_path))
+
     def copy(self, machine, container_path, host_path):
         container = self._get_container(machine)
         if not container:
