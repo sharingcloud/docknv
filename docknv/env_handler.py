@@ -11,12 +11,16 @@ class EnvHandler(object):
         if not os.path.isdir("./envs"):
             Logger.error("Env folder does not exist.")
 
-        Logger.info("Environment files listing:")
+        envs = os.listdir("./envs")
+        if len(envs) == 0:
+            Logger.warn("No env file found.")
+        else:
+            Logger.info("Environment files listing:")
 
-        for f in os.listdir("./envs"):
-            if f.endswith(".env.py"):
-                name = f[:-7]
-                print("  > {0}".format(name))
+            for f in os.listdir("./envs"):
+                if f.endswith(".env.py"):
+                    name = f[:-7]
+                    Logger.raw("  > {0}".format(name))
 
     @staticmethod
     def load_env_in_memory(path):

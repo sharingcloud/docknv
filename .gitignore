@@ -6,3 +6,13 @@ __pycache__
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
+
+# Tox
+/.tox
+/bin/
+
+# Coverage
+.coverage
+/htmlcov/
+
+.DS_Store

@@ -12,7 +12,8 @@ setup(
     install_requires=[
           'six',
           'PyYAML',
-          'colorama'
+          'colorama',
+          'Jinja2'
       ],
     scripts=['bin/docknv'],
     zip_safe=False

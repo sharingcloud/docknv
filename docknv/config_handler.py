@@ -1,16 +1,15 @@
-import yaml
+"""
+Handle the docknv config file
+"""
+
 import copy
 import os
 import shutil
 
 from .compose import Compose
-from .yaml_utils import merge_yaml, merge_yaml_two, ordered_load, ordered_dump
+from .yaml_utils import merge_yaml, ordered_load, ordered_dump
 from .logger import Logger, Fore
 
-################
-# Constants
-
-CURRENT_SCHEMA_FILENAME = "./.docknv_schema"
 
 ################
 
@@ -19,10 +18,10 @@ class ConfigHandler(object):
     Handle the docknv config file.
     """
 
-    def __init__(self, compose_file):
-        self._load_config(compose_file)
+    def __init__(self, compose_file, user_namespace="default"):
+        self._load_config(compose_file, user_namespace)
 
-    def _load_config(self, compose_file):
+    def _load_config(self, compose_file, user_namespace):
         compose_content = ""
         compose_file_path = os.path.realpath(compose_file)
 
@@ -43,7 +42,8 @@ class ConfigHandler(object):
             compose_dir = compose_dir.replace("-", "")
             self.namespace = compose_dir
 
-        self.compose_tool = Compose(self.namespace)
+        self.compose_tool = Compose(
+            self.namespace, "./.docker-compose.yml", user_namespace)
 
     @staticmethod
     def validate_config(compose_file):
@@ -61,29 +61,28 @@ class ConfigHandler(object):
             except Exception as exc:
                 Logger.error(
                     "Exception occured during the loading of `{0}`: {1}"
-                        .format(compose_file_path, exc)
+                    .format(compose_file_path, exc)
                 )
         else:
             Logger.error("Unknown file: {0}".format(compose_file_path))
 
         # Validate data
-
         if "project_name" not in compose_content:
             Logger.error(
                 "Missing `project_name` key in config file `{0}`"
-                    .format(compose_file_path)
+                .format(compose_file_path)
             )
 
-        if "templates" not in compose_content:
+        if "composefiles" not in compose_content:
             Logger.error(
-                "Missing `templates` key in config file `{0}`"
-                    .format(compose_file_path)
+                "Missing `composefiles` key in config file `{0}`"
+                .format(compose_file_path)
             )
 
         if "schemas" not in compose_content:
             Logger.error(
                 "Missing `schemas` key in config file `{0}`"
-                    .format(compose_file_path)
+                .format(compose_file_path)
             )
 
     def generate_compose(self, schema=None):
@@ -91,11 +90,11 @@ class ConfigHandler(object):
         Generate a Docker Compose file from the docknv config.yml
         """
 
-        if "templates" not in self.compose_content:
-            Logger.error("Missing `templates` section in compose config.")
+        if "composefiles" not in self.compose_content:
+            Logger.error("Missing `composefiles` section in compose config.")
 
         contents = []
-        for template in self.compose_content["templates"]:
+        for template in self.compose_content["composefiles"]:
             template_content = ""
 
             # Relative to absolute
@@ -110,18 +109,21 @@ class ConfigHandler(object):
                 with open(template, mode="rt") as f:
                     template_content = ordered_load(f.read())
 
+                # Handle special values in template
+
             contents.append(template_content)
 
         merged = merge_yaml(contents)
 
         if schema:
             Logger.info("Using schema `{0}`...".format(schema))
-            if not "schemas" in self.compose_content:
+            if "schemas" not in self.compose_content:
                 Logger.error("Missing `schemas` section in compose config.")
 
             schemas = self.compose_content["schemas"]
             if schema not in schemas:
-                Logger.error("Missing schema `{0}` in schemas section.".format(schema))
+                Logger.error(
+                    "Missing schema `{0}` in schemas section.".format(schema))
 
             schema_data = self.get_schema(schema)
             needed_volumes = schema_data.get("volumes", [])
@@ -135,9 +137,9 @@ class ConfigHandler(object):
                     if volume_name not in needed_volumes:
                         to_remove.append(volume_name)
 
-            for x in to_remove:
-                Logger.debug("- Removing volume {0}...".format(x))
-                del new_merged["volumes"][x]
+            for value in to_remove:
+                Logger.debug("- Removing volume {0}...".format(value))
+                del new_merged["volumes"][value]
 
             to_remove = []
             if "networks" in new_merged:
@@ -145,18 +147,18 @@ class ConfigHandler(object):
                     if network_name not in needed_networks:
                         to_remove.append(network_name)
 
-            for x in to_remove:
-                Logger.debug("- Removing network {0}...".format(x))
-                del new_merged["networks"][x]
+            for value in to_remove:
+                Logger.debug("- Removing network {0}...".format(value))
+                del new_merged["networks"][value]
 
             to_remove = []
             for service_name in new_merged["services"]:
                 if service_name not in needed_services:
                     to_remove.append(service_name)
 
-            for x in to_remove:
-                Logger.debug("- Removing service {0}...".format(x))
-                del new_merged["services"][x]
+            for value in to_remove:
+                Logger.debug("- Removing service {0}...".format(value))
+                del new_merged["services"][value]
 
             return new_merged
 
@@ -182,7 +184,8 @@ class ConfigHandler(object):
         """
 
         if not os.path.isfile(".env"):
-            Logger.error("Missing `.env` file. Please generate env using 'env use [environment]'")
+            Logger.error(
+                "Missing `.env` file. Please generate env using 'env use [environment]'")
 
         Logger.info("Generating static compose file using .env file...")
 
@@ -195,36 +198,6 @@ class ConfigHandler(object):
     ##############################
     # Schemas
 
-    def get_current_schema(self):
-        """
-        Fetch the current schema from the docknv schema filename.
-        """
-
-        if os.path.isfile(CURRENT_SCHEMA_FILENAME):
-            with open(CURRENT_SCHEMA_FILENAME, mode="rt") as f:
-                schema = f.read()
-
-            if self.check_schema(schema):
-                return schema
-            else:
-                return None
-
-        else:
-            return None
-
-    def set_current_schema(self, schema):
-        """
-        Set the current schema in the docknv schema filename.
-        """
-
-        if self.check_schema(schema):
-            with open(CURRENT_SCHEMA_FILENAME, mode="wt+") as f:
-                f.write(schema)
-
-        else:
-            Logger.error("Could not set unknown schema as current: `{0}`".format(schema))
-
-
     def get_schema(self, name):
         """
         Fetch information about one schema.
@@ -235,14 +208,16 @@ class ConfigHandler(object):
 
         schemas = self.compose_content["schemas"]
         if name not in schemas:
-            Logger.error("Missing schema `{0}` definition in compose config.".format(name))
+            Logger.error(
+                "Missing schema `{0}` definition in compose config.".format(name))
 
         schema = schemas[name]
 
         # Inclusions
         if "includes" in schema:
             includes = schema["includes"]
-            include_schemas = [self.get_schema(include_name) for include_name in includes]
+            include_schemas = [self.get_schema(
+                include_name) for include_name in includes]
 
             current_schema = copy.deepcopy(schema)
             del current_schema["includes"]
@@ -272,21 +247,26 @@ class ConfigHandler(object):
             Logger.error("Missing `schemas` section in compose config.")
 
         schemas = self.compose_content["schemas"]
-        for name in schemas:
-            schema = self.get_schema(name)
-            Logger.raw("Schema: " + name, color=Fore.GREEN)
-            if "volumes" in schema:
-                Logger.raw("  Volumes: ", color=Fore.BLUE)
-                volumes = schema["volumes"]
-                for volume in volumes:
-                    Logger.raw("    " + volume)
+        schemas_count = len(schemas) if schemas is not None else 0
 
-            if "services" in schema:
-                Logger.raw("  Services: ", color=Fore.BLUE)
-                services = schema["services"]
-                for service in services:
-                    Logger.raw("    " + service)
-            Logger.raw("")
+        if schemas_count == 0:
+            Logger.warn("No schema found.")
+        else:
+            for name in schemas:
+                schema = self.get_schema(name)
+                Logger.raw("Schema: " + name, color=Fore.GREEN)
+                if "volumes" in schema:
+                    Logger.raw("  Volumes: ", color=Fore.BLUE)
+                    volumes = schema["volumes"]
+                    for volume in volumes:
+                        Logger.raw("    " + volume)
+
+                if "services" in schema:
+                    Logger.raw("  Services: ", color=Fore.BLUE)
+                    services = schema["services"]
+                    for service in services:
+                        Logger.raw("    " + service)
+                Logger.raw("")
 
     def build_schema(self, name):
         schema = self.get_schema(name)

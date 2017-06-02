@@ -1,3 +1,4 @@
 six
 PyYAML
 colorama
+Jinja2
