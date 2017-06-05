@@ -9,6 +9,9 @@ from docknv.v2.schema_handler import SchemaHandler
 from docknv.v2.scaffolder import Scaffolder
 from docknv.v2.lifecycle_handler import LifecycleHandler
 from docknv.v2.config_handler import ConfigHandler
+from docknv.v2.volume_handler import VolumeHandler
+from docknv.v2.env_handler import EnvHandler
+from docknv import utils
 
 from docknv.logger import Logger, Fore
 
@@ -167,6 +170,8 @@ class Shell(object):
 
         env_cmd = subs.add_parser("env", help="scaffold an environment file")
         env_cmd.add_argument("name", help="environment file name")
+        env_cmd.add_argument(
+            "-f", "--from-env", nargs="?", default=None, help="copy from existing environment")
 
         composefile_link_cmd = subs.add_parser(
             "link-compose", help="link a composefile to the project")
@@ -207,6 +212,12 @@ class Shell(object):
         update_cmd = subs.add_parser(
             "update", help="update a known configuration")
         update_cmd.add_argument("name", help="configuration name")
+        update_cmd.add_argument(
+            "-s", "--set-current", action="store_true", help="set this configuration as current")
+
+        remove_cmd = subs.add_parser(
+            "rm", help="remove a known configuration")
+        remove_cmd.add_argument("name", help="configuration name")
 
     def _init_image_commands(self):
         pass
@@ -305,8 +316,13 @@ class Shell(object):
             elif args.scaffold_cmd == "image":
                 Scaffolder.scaffold_image(
                     ".", args.image_name, args.image_tag, args.image_version)
+
             elif args.scaffold_cmd == "env":
-                Scaffolder.scaffold_environment(".", args.name)
+                if args.from_env:
+                    Scaffolder.scaffold_environment_copy(
+                        ".", args.from_env, args.name)
+                else:
+                    Scaffolder.scaffold_environment(".", args.name)
 
             elif args.scaffold_cmd == "link-compose":
                 Scaffolder.scaffold_link_composefile(
@@ -314,6 +330,10 @@ class Shell(object):
             elif args.scaffold_cmd == "unlink-compose":
                 Scaffolder.scaffold_link_composefile(
                     ".", args.composefile_name, unlink=True)
+
+        elif command == "env":
+            if args.env_cmd == "ls":
+                EnvHandler.list_environments(".")
 
         elif command == "schema":
             if args.schema_cmd == "build":
@@ -359,6 +379,14 @@ class Shell(object):
                 LifecycleHandler.restart_machine(
                     ".", args.machine)
 
+            elif args.machine_cmd == "push":
+                LifecycleHandler.push_machine(
+                    ".", args.machine, args.host_path, args.container_path)
+
+            elif args.machine_cmd == "pull":
+                LifecycleHandler.pull_machine(
+                    ".", args.machine, args.container_path, args.host_path)
+
             elif args.machine_cmd == "logs":
                 LifecycleHandler.logs_machine(
                     ".", args.machine, tail=args.tail)
@@ -366,6 +394,9 @@ class Shell(object):
         elif command == "config":
             if args.config_cmd == "ls":
                 ConfigHandler.list_known_configurations(".")
+
+            elif args.config_cmd == "rm":
+                ConfigHandler.remove_config(".", args.name)
 
             elif args.config_cmd == "generate":
                 SchemaHandler.generate_compose(
@@ -379,12 +410,24 @@ class Shell(object):
                 SchemaHandler.generate_compose_from_configuration(
                     ".", args.name)
 
+                if args.set_current:
+                    ConfigHandler.use_composefile_configuration(
+                        ".", args.name)
+
             elif args.config_cmd == "status":
                 config = ConfigHandler.get_current_config(".")
                 if not config:
-                    Logger.warn("No configuration selected.")
+                    Logger.warn(
+                        "No configuration selected. Use 'docknv config use [configuration]' to select a configuration.")
                 else:
                     Logger.info("Current configuration: `{0}`".format(config))
+
+        elif command == "volume":
+            if args.volume_cmd == "ls":
+                LifecycleHandler.list_volumes(".")
+
+            elif args.volume_cmd == "rm":
+                LifecycleHandler.remove_volume(".", args.name)
 
         # if command == "scaffold" and args.scaffold_cmd == "project":
         #     Scaffolder.scaffold_project(args.project_path, args.project_name)
@@ -547,7 +590,6 @@ class Shell(object):
         #     elif args.network_cmd == "rm":
         #         compose.remove_network(args.name)
 
-        # else:
-        #     for p in self.post_parsers:
-        #         if p(self, args):
-        #             break
+        for p in self.post_parsers:
+            if p(self, args):
+                break

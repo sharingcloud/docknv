@@ -119,8 +119,8 @@ class SchemaHandler(object):
         env_content = EnvHandler.load_env_in_memory(project_path, environment)
 
         # Generate .env file
-        EnvHandler.write_env_to_file(
-            env_content, os.path.join(project_path, ".env"))
+        # EnvHandler.write_env_to_file(
+        # env_content, os.path.join(project_path, ".env"))
 
         # Get schema configuration
         schema_config = SchemaHandler.get_schema_configuration(
@@ -134,9 +134,13 @@ class SchemaHandler(object):
         merged_content = ComposeHandler.filter_content_with_schema(
             compose_files_content, schema_config)
 
+        # Resolve compose content
+        resolved_content = ComposeHandler.resolve_compose_content(
+            merged_content, env_content)
+
         # Generate volumes declared in composefiles
         rendered_content = ComposeHandler.resolve_volumes(
-            project_path, merged_content, namespace, environment, env_content)
+            project_path, resolved_content, namespace, environment, env_content)
 
         # Apply namespace
         namespaced_content = ComposeHandler.apply_namespace(

@@ -5,6 +5,7 @@ Compose file handler
 import os
 import copy
 import shutil
+import codecs
 
 from docknv import yaml_utils, utils
 from docknv.logger import Logger
@@ -35,7 +36,7 @@ class ComposeHandler(object):
             Logger.error(
                 "Compose file `{0}` does not exist.".format(compose_file_path))
 
-        with open(real_path, mode="rt") as handle:
+        with codecs.open(real_path, encoding="utf-8", mode="rt") as handle:
             content = yaml_utils.ordered_load(handle.read())
 
         return content
@@ -198,6 +199,23 @@ class ComposeHandler(object):
         return output_content
 
     @staticmethod
+    def resolve_compose_content(compose_content, environment_data=None):
+        """
+        Resolve compose content.
+
+        @param compose_content  Compose content
+        @param environment_data Environment data
+        """
+
+        Logger.info("Resolving compose content...")
+        output_content = copy.deepcopy(compose_content)
+
+        template_result = TemplateRenderer.render_template_inplace(
+            output_content, environment_data)
+
+        return yaml_utils.ordered_load(template_result)
+
+    @staticmethod
     def resolve_volumes(project_path, compose_content, namespace="default", environment="default", environment_data=None):
         """
         Resolve volumes, using namespacing.
@@ -212,6 +230,12 @@ class ComposeHandler(object):
 
         Logger.info("Resolving volumes...")
         output_content = copy.deepcopy(compose_content)
+
+        # Cleaning static files
+        utils.create_path_or_replace(
+            VolumeHandler.generate_namespaced_path(
+                "static", namespace, environment)
+        )
 
         if "services" in output_content:
             for service_name in output_content["services"]:
@@ -247,7 +271,7 @@ class ComposeHandler(object):
                                 static_def)
 
                             # Create dirs & copy
-                            output_path = volume_object.generate_namespaced_path(
+                            output_path = volume_object.generate_namespaced_volume_path(
                                 "static", volume_object.host_path, namespace, environment)
 
                             data_path = os.path.join(
@@ -260,13 +284,14 @@ class ComposeHandler(object):
                             if os.path.isfile(data_path):
                                 utils.create_path_tree(
                                     os.path.dirname(output_path))
-                                shutil.copyfile(
+
+                                shutil.copy(
                                     data_path, output_path)
                             else:
                                 try:
                                     shutil.copytree(
                                         data_path, output_path)
-                                except:
+                                except OSError:
                                     pass
 
                             volume_object.host_path = output_path
@@ -322,7 +347,7 @@ class ComposeHandler(object):
         @param output_path      Output path
         """
 
-        with open(output_path, mode="wt") as handle:
+        with codecs.open(output_path, encoding="utf-8", mode="wt") as handle:
             handle.write(yaml_utils.ordered_dump(compose_content))
 
         Logger.info(

@@ -67,8 +67,32 @@ class LifecycleHandler(object):
             project_path, ["run", "--service-ports", machine_name, command])
 
     @staticmethod
+    def push_machine(project_path, machine_name, host_path, container_path):
+        container = LifecycleHandler._get_container(project_path, machine_name)
+        if not container:
+            Logger.error("Machine `{0}` is not running.".format(
+                machine_name), crash=False)
+        else:
+            Logger.info("Copying file from host to `{0}`: `{1}` => `{2}".format(
+                machine_name, host_path, container_path))
+            os.system("docker cp {0} {1}:{2}".format(
+                host_path, container, container_path))
+
+    @staticmethod
+    def pull_machine(project_path, machine_name, container_path, host_path):
+        container = LifecycleHandler._get_container(project_path, machine_name)
+        if not container:
+            Logger.error("Machine `{0}` is not running.".format(
+                machine_name), crash=False)
+        else:
+            Logger.info("Copying file from `{0}`: `{1}` => `{2}".format(
+                machine_name, container_path, host_path))
+            os.system("docker cp {0}:{1} {2}".format(
+                container, container_path, host_path))
+
+    @staticmethod
     def exec_machine(project_path, machine_name, command=None, no_tty=False, return_code=False):
-        container = LifecycleHandler._get_container(machine_name)
+        container = LifecycleHandler._get_container(project_path, machine_name)
         if not container:
             Logger.error("Machine `{0}` is not running.".format(
                 machine_name), crash=False)
@@ -80,7 +104,7 @@ class LifecycleHandler(object):
 
     @staticmethod
     def logs_machine(project_path, machine_name, tail=0):
-        container = LifecycleHandler._get_container(machine_name)
+        container = LifecycleHandler._get_container(project_path, machine_name)
         if not container:
             Logger.error("Machine `{0}` is not running.".format(
                 machine_name), crash=False)
@@ -91,13 +115,48 @@ class LifecycleHandler(object):
 
             os.system(cmd)
 
+    @staticmethod
+    def list_volumes(project_path):
+        """
+        List volumes
+        """
+
+        Logger.info("Listing volumes...")
+
+        project_name = LifecycleHandler._get_project_name(project_path)
+        os.system("docker volume list | grep -i {0}".format(project_name))
+
+    @staticmethod
+    def remove_volume(project_path, volume_name):
+        """
+        Remove a volume
+        """
+
+        Logger.info("Removing volume `{0}`".format(volume_name))
+
+        project_name = LifecycleHandler._get_project_name(project_path)
+        os.system("docker volume rm {0}_{1}".format(project_name, volume_name))
+
     # INTERNAL FUNCTIONS ###########
 
     @staticmethod
-    def _get_container(machine):
+    def _get_project_name(project_path):
+        """
+        Get project name from path.
+        """
+
+        return os.path.basename(os.path.abspath(project_path)).lower()
+
+    @staticmethod
+    def _get_container(project_path, machine):
+        """
+        Return a Docker container ID.
+        """
+
         cmd = "docker-compose -f {0} ps -q {1}".format(
             ".docker-compose.yml", machine)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        proc = subprocess.Popen(cmd, cwd=project_path,
+                                stdout=subprocess.PIPE, shell=True)
         (out, _) = proc.communicate()
 
         if out == "":
@@ -107,10 +166,18 @@ class LifecycleHandler(object):
 
     @staticmethod
     def _exec_docker(project_path, args):
+        """
+        Execute a Docker command.
+        """
+
         os.system(
             "pushd {0} > /dev/null; docker {1}; popd > /dev/null".format(project_path, " ".join(args)))
 
     @staticmethod
     def _exec_compose(project_path, args):
+        """
+        Execute a Docker Compose command.
+        """
+
         os.system("pushd {0} > /dev/null; docker-compose -f {1} {2}; popd > /dev/null".format(
             project_path, ".docker-compose.yml", " ".join(args)))

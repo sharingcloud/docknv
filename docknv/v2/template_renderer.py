@@ -8,12 +8,35 @@ import codecs
 from jinja2 import Template
 
 from docknv.logger import Logger
+from docknv import yaml_utils
 
 
 class TemplateRenderer(object):
     """
     Jinja template renderer
     """
+
+    @staticmethod
+    def render_template_inplace(content, environment_data=None):
+        """
+        Render a Jinja template in-place, using environment data.
+
+        @param content          Template content
+        @param environment_data Environment data
+        """
+
+        environment_data = environment_data if environment_data else {}
+
+        Logger.debug("Rendering template in-place...")
+
+        string_content = yaml_utils.ordered_dump(content)
+
+        template = Template(string_content)
+        template_output = template.render(**environment_data)
+
+        Logger.debug("Template rendered.")
+
+        return template_output
 
     @staticmethod
     def render_template(project_path, template_path, namespace="default", environment="default", environment_data=None):

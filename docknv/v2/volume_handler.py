@@ -31,11 +31,11 @@ class VolumeHandler(object):
                 character in self.host_path for character in "/\\")
             self.is_named = not self.is_absolute and not self.is_relative
 
-        def generate_namespaced_path(self, type, path, namespace, environment):
+        def generate_namespaced_volume_path(self, file_type, path, namespace, environment):
             """
-            Generate a namespaced path.
+            Generate a namespaced volume path.
 
-            @param type         Type of file (static/shared)
+            @param file_type    Type of file (static/shared)
             @param path         File path
             @param namespace    Current namespace name
             @param environment  Current environment file name
@@ -43,13 +43,27 @@ class VolumeHandler(object):
             @return Path
             """
 
-            if type == "static":
-                return "./data/local/{0}/{1}/static/{2}".format(namespace, environment, path)
-            elif type == "shared":
-                return "./data/global/{0}".format(path)
+            return "{0}/{1}".format(VolumeHandler.generate_namespaced_path(file_type, namespace, environment), path)
 
         def __str__(self):
             return ":".join((self.host_path, self.container_path, self.mode))
+
+    @staticmethod
+    def generate_namespaced_path(file_type, namespace, environment):
+        """
+        Generate a namespaced volume path.
+
+        @param file_type    Type of file (static/shared)
+        @param namespace    Current namespace name
+        @param environment  Current environment file name
+
+        @return Path
+        """
+
+        if file_type == "static":
+            return "./data/local/{0}/{1}/static".format(namespace, environment)
+        elif file_type == "shared":
+            return "./data/global"
 
     @staticmethod
     def extract_from_line(line):

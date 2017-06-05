@@ -1,11 +1,11 @@
-# -*- encoding: utf-8 -*-
-
 """
 Scaffolder methods
 """
 
 from __future__ import print_function
 import os
+import codecs
+import shutil
 
 from docknv.v2.env_handler import EnvHandler
 from docknv.yaml_utils import ordered_load, ordered_dump
@@ -78,7 +78,7 @@ class Scaffolder(object):
         )
 
         joined_path = os.path.join(project_path, "config.yml")
-        with open(joined_path, mode="wt") as handle:
+        with codecs.open(joined_path, encoding="utf-8", mode="wt") as handle:
             handle.write(config_content)
 
         Logger.info("Configuration file created.")
@@ -108,16 +108,50 @@ class Scaffolder(object):
                 return
 
         # Create file
-        with open(env_path, mode="wt+") as handle:
+        with codecs.open(env_path, encoding="utf-8", mode="wt+") as handle:
             handle.write("")
 
-        # Write env to file
+        # Write env to file
         env_content_len = len(env_content)
         if env_content_len > 0:
             EnvHandler.write_env_to_file(env_content, env_path)
         else:
             Logger.info(
                 "Empty environment file `{0}` created.".format(env_name))
+
+    @staticmethod
+    def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
+        """
+        Copy an environment.
+
+        @param project_path     Project path
+        @param env_name_source  Source environment name
+        @param env_name_dest    Destination environment name
+        """
+
+        env_path_source = os.path.join(
+            project_path, "envs", "".join((env_name_source, ".env.py")))
+        env_path_dest = os.path.join(
+            project_path, "envs", "".join((env_name_dest, ".env.py")))
+
+        if not os.path.exists(env_path_source):
+            Logger.error(
+                "Missing environment file `{0}`.".format(env_name_source))
+
+        if os.path.exists(env_path_dest):
+            choice = prompt_yes_no(
+                "/!\\ WARNING: The environment file `{0}` already exists. Overwrite ?".format(
+                    env_name_dest
+                )
+            )
+
+            if not choice:
+                print("Nothing done.")
+                return
+
+        shutil.copy(env_path_source, env_path_dest)
+        Logger.info("Environment file `{0}` copied to `{1}`".format(
+            env_name_source, env_name_dest))
 
     @staticmethod
     def scaffold_link_composefile(project_path, compose_file_name, unlink=False):
@@ -141,7 +175,7 @@ class Scaffolder(object):
             Logger.error(
                 "Compose file `{0}` does not exist.".format(compose_file))
 
-        with open(config_file, mode="rt") as handle:
+        with codecs.open(config_file, encoding="utf-8", mode="rt") as handle:
             content = ordered_load(handle.read())
 
         if "composefiles" not in content:
@@ -170,7 +204,7 @@ class Scaffolder(object):
 
         content["composefiles"] = composefiles
 
-        with open(config_file, mode="wt") as handle:
+        with codecs.open(config_file, encoding="utf-8", mode="wt") as handle:
             handle.write(ordered_dump(content))
 
     @staticmethod
@@ -200,7 +234,7 @@ class Scaffolder(object):
             Logger.error(
                 "Project path `{0}` does not exist.".format(project_path))
 
-        with open(ignore_file, mode="wt") as handle:
+        with codecs.open(ignore_file, encoding="utf-8", mode="wt") as handle:
             handle.write(file_content)
 
         Logger.info("Ignore file created.")
@@ -240,7 +274,7 @@ class Scaffolder(object):
 
         generated_dockerfile = "FROM {0}:{1}\n".format(image_url, image_tag)
 
-        with open(dockerfile_path, mode="wt") as handle:
+        with codecs.open(dockerfile_path, encoding="utf-8", mode="wt") as handle:
             handle.write(generated_dockerfile)
 
         Logger.info("Dockerfile generated for image `{0}`, using `{1}:{2}`".format(

@@ -4,6 +4,7 @@ docknv utilities
 
 from __future__ import print_function
 import os
+import shutil
 import six
 
 
@@ -41,9 +42,23 @@ def prompt_yes_no(message, force=False):
         return False
 
 
+def create_path_or_replace(path_to_create):
+    """
+    Create or replace path.
+
+    @param path_to_create   Path to create
+    """
+    if os.path.exists(path_to_create):
+        shutil.rmtree(path_to_create)
+
+    create_path_tree(path_to_create)
+
+
 def create_path_tree(path_to_create):
     """
     Create a path tree if folders does not exist.
+
+    @param path_to_create   Path to create
     """
 
     current = ""

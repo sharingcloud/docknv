@@ -4,6 +4,9 @@ Handle docknv environment files
 
 import os
 import imp
+import codecs
+
+from collections import OrderedDict
 
 from docknv.logger import Logger, Fore
 
@@ -72,7 +75,7 @@ class EnvHandler(object):
         env_data = imp.load_source("envs", env_path)
         env_vars = [e for e in dir(env_data) if not e.startswith("__")]
 
-        loaded_env = {}
+        loaded_env = OrderedDict()
         for variable in env_vars:
             loaded_env[variable] = getattr(env_data, variable)
 
@@ -95,6 +98,6 @@ class EnvHandler(object):
 
         Logger.info("Writing environment to file {0}...".format(path))
 
-        with open(path, mode="wt+") as handle:
+        with codecs.open(path, encoding="utf-8", mode="wt+") as handle:
             for value in env:
                 handle.write("{0}={1}\n".format(value, env[value]))
