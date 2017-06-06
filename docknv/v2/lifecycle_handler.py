@@ -17,8 +17,31 @@ class LifecycleHandler(object):
     # SCHEMA FUNCTIONS ###############
 
     @staticmethod
-    def build_schema(project_path):
-        LifecycleHandler._exec_compose(project_path, ["build"])
+    def build_schema(project_path, push_to_registry=False):
+
+        # Get services from current config
+        from docknv.v2.config_handler import ConfigHandler
+        from docknv.v2.schema_handler import SchemaHandler
+
+        current_config = ConfigHandler.get_current_config(project_path)
+        current_config_data = ConfigHandler.get_known_configuration(
+            project_path, current_config)
+
+        config_data = ConfigHandler.load_config_from_path(project_path)
+        schema_config = SchemaHandler.get_schema_configuration(
+            config_data, current_config_data["schema"])
+
+        namespace = current_config_data["namespace"]
+        for service in schema_config["config"]["services"]:
+            service_name = "{0}_{1}".format(
+                namespace, service) if namespace != "default" else service
+
+            LifecycleHandler._exec_compose(
+                project_path, ["build", service_name])
+            LifecycleHandler._exec_compose(
+                project_path, ["push", service_name])
+
+        # LifecycleHandler._exec_compose(project_path, ["build"])
 
     @staticmethod
     def start_schema(project_path, foreground=False):
@@ -43,8 +66,12 @@ class LifecycleHandler(object):
     # MACHINE FUNCTIONS #############
 
     @staticmethod
-    def build_machine(project_path, machine_name):
+    def build_machine(project_path, machine_name, push_to_registry=False):
         LifecycleHandler._exec_compose(project_path, ["build", machine_name])
+
+        if push_to_registry:
+            LifecycleHandler._exec_compose(
+                project_path, ["push", machine_name])
 
     @staticmethod
     def shell_machine(project_path, machine_name, shell_path="/bin/bash"):
@@ -136,6 +163,22 @@ class LifecycleHandler(object):
 
         project_name = LifecycleHandler._get_project_name(project_path)
         os.system("docker volume rm {0}_{1}".format(project_name, volume_name))
+
+    @staticmethod
+    def start_registry(path):
+        Logger.info("Starting registry...")
+
+        cmd = "docker run -d -p 5000:5000 {0} --restart=always --name registry registry:2"
+        if path:
+            cmd = cmd.format("-v {0}:/var/lib/registry".format(path))
+        else:
+            cmd = cmd.format("")
+
+        os.system(cmd)
+
+    @staticmethod
+    def stop_registry():
+        os.system("docker stop registry && docker rm registry")
 
     # INTERNAL FUNCTIONS ###########
 

@@ -68,6 +68,7 @@ class Shell(object):
         self._init_swarm_commands()
         self._init_environment_commands()
         self._init_scaffold_commands()
+        self._init_registry_commands()
         self._init_image_commands()
         self._init_network_commands()
         self._init_config_commands()
@@ -89,6 +90,19 @@ class Shell(object):
         restart_cmd = subs.add_parser(
             "restart", help="restart machines from schema")
         build_cmd = subs.add_parser("build", help="build machines from schema")
+        build_cmd.add_argument(
+            "-p", "--push", help="push to registry", action="store_true")
+
+    def _init_registry_commands(self):
+        cmd = self.subparsers.add_parser(
+            "registry", help="start and stop registry")
+
+        subs = cmd.add_subparsers(dest="registry_cmd", metavar="")
+
+        start_cmd = subs.add_parser("start", help="start registry")
+        start_cmd.add_argument(
+            "-p", "--path", help="storage path", nargs="?", default=None)
+        stop_cmd = subs.add_parser("stop", help="stop registry")
 
     def _init_machine_commands(self):
         cmd = self.subparsers.add_parser(
@@ -145,6 +159,8 @@ class Shell(object):
 
         build_cmd = subs.add_parser("build", help="build a machine")
         build_cmd.add_argument("machine", help="machine name")
+        build_cmd.add_argument(
+            "-p", "--push", help="push to registry", action="store_true")
 
     def _init_scaffold_commands(self):
         cmd = self.subparsers.add_parser("scaffold", help="scaffolding")
@@ -337,7 +353,7 @@ class Shell(object):
 
         elif command == "schema":
             if args.schema_cmd == "build":
-                LifecycleHandler.build_schema(".")
+                LifecycleHandler.build_schema(".", args.push)
 
             elif args.schema_cmd == "start":
                 LifecycleHandler.start_schema(
@@ -357,7 +373,7 @@ class Shell(object):
 
         elif command == "machine":
             if args.machine_cmd == "build":
-                LifecycleHandler.build_machine(".", args.machine)
+                LifecycleHandler.build_machine(".", args.machine, args.push)
 
             elif args.machine_cmd == "daemon":
                 LifecycleHandler.daemon_machine(
@@ -390,6 +406,12 @@ class Shell(object):
             elif args.machine_cmd == "logs":
                 LifecycleHandler.logs_machine(
                     ".", args.machine, tail=args.tail)
+
+        elif command == "registry":
+            if args.registry_cmd == "start":
+                LifecycleHandler.start_registry(args.path)
+            elif args.registry_cmd == "stop":
+                LifecycleHandler.stop_registry()
 
         elif command == "config":
             if args.config_cmd == "ls":

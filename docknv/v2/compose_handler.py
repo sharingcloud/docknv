@@ -7,6 +7,8 @@ import copy
 import shutil
 import codecs
 
+from collections import OrderedDict
+
 from docknv import yaml_utils, utils
 from docknv.logger import Logger
 
@@ -132,7 +134,7 @@ class ComposeHandler(object):
 
         # Volume replacement
         shared_volumes = set()
-        new_volumes = {}
+        new_volumes = OrderedDict()
         for volume in output_content["volumes"]:
             if isinstance(output_content["volumes"][volume], dict):
                 if "shared" in output_content["volumes"][volume] and output_content["volumes"][volume]["shared"]:
@@ -155,13 +157,13 @@ class ComposeHandler(object):
             del output_content["volumes"][new_volumes[key]]
 
         # Service replacement
-        new_keys_repl = {}
+        new_keys_repl = OrderedDict()
         for key in output_content["services"]:
             new_key = "{0}_{1}".format(namespace, key)
             new_keys_repl[new_key] = key
 
             # Find volumes
-            new_volumes = {}
+            new_volumes = OrderedDict()
             if "volumes" in output_content["services"][key]:
                 for volume in output_content["services"][key]["volumes"]:
                     volume_object = VolumeHandler.extract_from_line(volume)
