@@ -74,6 +74,14 @@ class LifecycleHandler(object):
                 project_path, ["push", machine_name])
 
     @staticmethod
+    def stop_machine(project_path, machine_name):
+        LifecycleHandler._exec_compose(project_path, ["stop", machine_name])
+
+    @staticmethod
+    def start_machine(project_path, machine_name):
+        LifecycleHandler._exec_compose(project_path, ["start", machine_name])
+
+    @staticmethod
     def shell_machine(project_path, machine_name, shell_path="/bin/bash"):
         LifecycleHandler.exec_machine(
             project_path, machine_name, shell_path, False, False)
@@ -84,9 +92,13 @@ class LifecycleHandler(object):
             project_path, ["run", "--service-ports", "-d", machine_name, command])
 
     @staticmethod
-    def restart_machine(project_path, machine_name):
-        LifecycleHandler._exec_compose(
-            project_path, ["restart", machine_name])
+    def restart_machine(project_path, machine_name, force=False):
+        if force:
+            LifecycleHandler.stop_machine(project_path, machine_name)
+            LifecycleHandler.start_machine(project_path, machine_name)
+        else:
+            LifecycleHandler._exec_compose(
+                project_path, ["restart", machine_name])
 
     @staticmethod
     def run_machine(project_path, machine_name, command=None):

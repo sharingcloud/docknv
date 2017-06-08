@@ -130,8 +130,13 @@ class Shell(object):
         stop_cmd = subs.add_parser("stop", help="stop a container")
         stop_cmd.add_argument("machine", help="machine name")
 
+        start_cmd = subs.add_parser("start", help="start a container")
+        start_cmd.add_argument("machine", help="machine name")
+
         restart_cmd = subs.add_parser("restart", help="restart a container")
         restart_cmd.add_argument("machine", help="machine name")
+        restart_cmd.add_argument(
+            "-f", "--force", action="store_true", help="force restart")
 
         exec_cmd = subs.add_parser(
             "exec", help="execute command on a running container")
@@ -393,6 +398,14 @@ class Shell(object):
 
             elif args.machine_cmd == "restart":
                 LifecycleHandler.restart_machine(
+                    ".", args.machine, args.force)
+
+            elif args.machine_cmd == "stop":
+                LifecycleHandler.stop_machine(
+                    ".", args.machine)
+
+            elif args.machine_cmd == "start":
+                LifecycleHandler.start_machine(
                     ".", args.machine)
 
             elif args.machine_cmd == "push":
