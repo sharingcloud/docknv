@@ -6,6 +6,7 @@ import os
 import random
 import shutil
 import codecs
+from contextlib import contextmanager
 
 from docknv.logger import Logger, Fore
 from docknv import yaml_utils, utils
@@ -105,6 +106,14 @@ class ConfigHandler(object):
         return "config_{0}".format(len(config_list) + 1)
 
     @staticmethod
+    def get_configurations_list(project_path):
+        """
+        Get configurations list
+        """
+        config = ConfigHandler.load_temporary_config_from_path(project_path)
+        return config["values"]
+
+    @staticmethod
     def list_known_configurations(project_path):
         """
         List known configurations.
@@ -121,9 +130,10 @@ class ConfigHandler(object):
                 namespace = config["values"][key]["namespace"]
                 environment = config["values"][key]["environment"]
                 schema = config["values"][key]["schema"]
+                user = config["values"][key]["user"]
 
-                Logger.raw("  - {0} [namespace: {1}, environment: {2}, schema: {3}]".format(
-                    key, namespace, environment, schema), color=Fore.BLUE)
+                Logger.raw("  - {0} [namespace: {1}, environment: {2}, schema: {3}, user id: {4}]".format(
+                    key, namespace, environment, schema, user), color=Fore.BLUE)
 
     @staticmethod
     def get_known_configuration(project_path, name):
@@ -143,19 +153,25 @@ class ConfigHandler(object):
 
     @staticmethod
     def set_current_config(project_path, config_name):
-        config = ConfigHandler.load_temporary_config_from_path(project_path)
-        config["current"] = config_name
+        config = ConfigHandler.load_config_from_path(project_path)
 
-        ConfigHandler.write_temporary_config(project_path, config)
+        from docknv.v2.multi_user_handler import MultiUserHandler
+        MultiUserHandler.set_current_config(config.project_name, config_name)
 
         Logger.info(
             "Configuration `{0}` set as current configuration.".format(config_name))
 
     @staticmethod
     def remove_config(project_path, config_name):
+        from docknv.v2.multi_user_handler import MultiUserHandler
         config = ConfigHandler.load_temporary_config_from_path(project_path)
         if config_name not in config["values"]:
             Logger.error("Missing configuration `{0}`.".format(config_name))
+        uid = MultiUserHandler.get_user_id()
+
+        if config["user"] != uid:
+            Logger.error(
+                "You can not remove configuration `{0}`. Access denied.".format(config_name))
 
         choice = utils.prompt_yes_no(
             "/!\\ Are you sure you want to remove configuration `{0}` ?".format(config_name))
@@ -181,8 +197,10 @@ class ConfigHandler(object):
 
     @staticmethod
     def get_current_config(project_path):
-        config = ConfigHandler.load_temporary_config_from_path(project_path)
-        return config.get("current", None)
+        config = ConfigHandler.load_config_from_path(project_path)
+
+        from docknv.v2.multi_user_handler import MultiUserHandler
+        return MultiUserHandler.get_current_config(config.project_name)
 
     @staticmethod
     def use_composefile_configuration(project_path, config_name):
@@ -190,8 +208,17 @@ class ConfigHandler(object):
         Use a composefile from a known configuration.
         Set it at .docker-compose.yml.
         """
+        from docknv.v2.multi_user_handler import MultiUserHandler
+
+        config_content = ConfigHandler.load_config_from_path(project_path)
+
         config = ConfigHandler.get_known_configuration(
             project_path, config_name)
+
+        current_id = MultiUserHandler.get_user_id()
+        if config["user"] != current_id:
+            Logger.error(
+                "Can not access to `{0}` configuration. Access denied.".format(config_name))
 
         path = ConfigHandler.get_composefile_path(
             project_path, config["namespace"], config["environment"], config["schema"])
@@ -200,7 +227,8 @@ class ConfigHandler(object):
             Logger.error(
                 "Missing composefile for configuration `{0}`".format(config_name))
 
-        shutil.copyfile(path, ".docker-compose.yml")
+        MultiUserHandler.copy_file_to_user_config_path(
+            config_content.project_name, path)
 
         ConfigHandler.set_current_config(project_path, config_name)
 
@@ -214,6 +242,18 @@ class ConfigHandler(object):
 
         with codecs.open(project_file_path, encoding="utf-8", mode="wt") as handle:
             handle.write(yaml_utils.ordered_dump(content))
+
+    @staticmethod
+    @contextmanager
+    def using_temporary_config(project_path, config_name):
+        old_config = ConfigHandler.get_current_config(project_path)
+        if old_config is None:
+            Logger.error(
+                "You should already use one config before using this tool")
+
+        ConfigHandler.use_composefile_configuration(project_path, config_name)
+        yield
+        ConfigHandler.use_composefile_configuration(project_path, old_config)
 
     # PRIVATE METHODS #############
 

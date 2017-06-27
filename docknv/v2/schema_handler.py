@@ -105,7 +105,8 @@ class SchemaHandler(object):
         current_combination = {
             "schema": schema_name,
             "namespace": namespace,
-            "environment": environment
+            "environment": environment,
+            "user": os.geteuid()
         }
 
         # Load config file
@@ -165,7 +166,8 @@ class SchemaHandler(object):
             other_config = {
                 "schema": config["values"][key]["schema"],
                 "environment": config["values"][key]["environment"],
-                "namespace": config["values"][key]["namespace"]
+                "namespace": config["values"][key]["namespace"],
+                "user": config["values"][key]["user"]
             }
 
             if current_combination == other_config:

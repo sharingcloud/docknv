@@ -89,6 +89,8 @@ class Shell(object):
             "stop", help="shutdown machines from schema")
         restart_cmd = subs.add_parser(
             "restart", help="restart machines from schema")
+        restart_cmd.add_argument(
+            "-f", "--force", action="store_true", help="force restart")
         build_cmd = subs.add_parser("build", help="build machines from schema")
         build_cmd.add_argument(
             "-p", "--push", help="push to registry", action="store_true")

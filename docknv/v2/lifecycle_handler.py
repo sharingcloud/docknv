@@ -207,17 +207,22 @@ class LifecycleHandler(object):
         """
         Return a Docker container ID.
         """
+        from docknv.v2.config_handler import ConfigHandler
+        from docknv.v2.multi_user_handler import MultiUserHandler
 
-        cmd = "docker-compose -f {0} ps -q {1}".format(
-            ".docker-compose.yml", machine)
-        proc = subprocess.Popen(cmd, cwd=project_path,
-                                stdout=subprocess.PIPE, shell=True)
-        (out, _) = proc.communicate()
+        config = ConfigHandler.load_config_from_path(project_path)
 
-        if out == "":
-            return None
+        with MultiUserHandler.temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
+            cmd = "docker-compose -f {0} ps -q {1}".format(
+                user_file, machine)
+            proc = subprocess.Popen(cmd, cwd=project_path,
+                                    stdout=subprocess.PIPE, shell=True)
+            (out, _) = proc.communicate()
 
-        return out.strip()
+            if out == "":
+                return None
+
+            return out.strip()
 
     @staticmethod
     def _exec_docker(project_path, args):
@@ -226,13 +231,18 @@ class LifecycleHandler(object):
         """
 
         os.system(
-            "pushd {0} > /dev/null; docker {1}; popd > /dev/null".format(project_path, " ".join(args)))
+            "cd {0}; docker {1}; cd - > /dev/null".format(project_path, " ".join(args)))
 
     @staticmethod
     def _exec_compose(project_path, args):
         """
         Execute a Docker Compose command.
         """
+        from docknv.v2.config_handler import ConfigHandler
+        from docknv.v2.multi_user_handler import MultiUserHandler
 
-        os.system("pushd {0} > /dev/null; docker-compose -f {1} {2}; popd > /dev/null".format(
-            project_path, ".docker-compose.yml", " ".join(args)))
+        config = ConfigHandler.load_config_from_path(project_path)
+
+        with MultiUserHandler.temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
+            os.system("cd {0}; docker-compose -f {1} {2}; cd - > /dev/null".format(
+                project_path, user_file, " ".join(args)))
