@@ -7,7 +7,7 @@ import imp
 current_dir = os.getcwd()
 commands_dir = os.path.join(current_dir, "commands")
 
-from docknv import Shell
+from docknv.shell import Shell
 shell = Shell()
 
 if os.path.exists(commands_dir):

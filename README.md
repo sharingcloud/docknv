@@ -9,7 +9,7 @@ pip install -e ./docknv # or sudo
 
 ## Introduction
 
-**docknv** (for *Docker and eNVironments*) is a wrapper around *Docker* and *Docker Compose* to handle some tasks easily.  
+**docknv** (for *Docker with environments*) is a wrapper around *Docker* and *Docker Compose* to handle some tasks easily.  
 
 Here are the features:
 

@@ -4,12 +4,13 @@ docknv config handler
 
 import os
 import random
-import shutil
 import codecs
 from contextlib import contextmanager
 
 from docknv.logger import Logger, Fore
 from docknv import yaml_utils, utils
+
+from docknv.v2.project_handler import get_composefile_path
 
 
 class ConfigHandler(object):
@@ -148,11 +149,10 @@ class ConfigHandler(object):
                 "Missing configuration `{0}` in known configuration.".format(name))
 
     @staticmethod
-    def get_composefile_path(project_path, namespace, environment, schema):
-        return os.path.join(project_path, "data", "local", namespace, environment, "composefiles", schema, "docker-compose.yml")
-
-    @staticmethod
     def set_current_config(project_path, config_name):
+        """
+        Set a current config
+        """
         config = ConfigHandler.load_config_from_path(project_path)
 
         from docknv.v2.multi_user_handler import MultiUserHandler
@@ -163,6 +163,9 @@ class ConfigHandler(object):
 
     @staticmethod
     def remove_config(project_path, config_name):
+        """
+        Remove a config
+        """
         from docknv.v2.multi_user_handler import MultiUserHandler
         config = ConfigHandler.load_temporary_config_from_path(project_path)
         if config_name not in config["values"]:
@@ -186,7 +189,7 @@ class ConfigHandler(object):
 
             # Remove configuration and docker-compose file.
             config_to_remove = config["values"][config_name]
-            path = ConfigHandler.get_composefile_path(
+            path = get_composefile_path(
                 project_path, config_to_remove["namespace"], config_to_remove["environment"], config_to_remove["schema"])
             os.remove(path)
 
@@ -197,6 +200,9 @@ class ConfigHandler(object):
 
     @staticmethod
     def get_current_config(project_path):
+        """
+        Get the current config
+        """
         config = ConfigHandler.load_config_from_path(project_path)
 
         from docknv.v2.multi_user_handler import MultiUserHandler
@@ -220,7 +226,7 @@ class ConfigHandler(object):
             Logger.error(
                 "Can not access to `{0}` configuration. Access denied.".format(config_name))
 
-        path = ConfigHandler.get_composefile_path(
+        path = get_composefile_path(
             project_path, config["namespace"], config["environment"], config["schema"])
 
         if not os.path.exists(path):
@@ -246,6 +252,10 @@ class ConfigHandler(object):
     @staticmethod
     @contextmanager
     def using_temporary_config(project_path, config_name):
+        """
+        Use a temporary config
+        """
+
         old_config = ConfigHandler.get_current_config(project_path)
         if old_config is None:
             Logger.error(
