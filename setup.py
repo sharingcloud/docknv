@@ -1,9 +1,16 @@
+"""
+Docknv
+"""
+
+__version__ = ""
+
 from setuptools import setup
+execfile('docknv/version.py')
 
 setup(
     name='docknv',
-    version='1.0',
-    description='Configurable Docker Compose',
+    version=__version__,
+    description='Docker with environments',
     url='',
     author='SharingCloud',
     author_email='',

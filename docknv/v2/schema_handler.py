@@ -9,6 +9,8 @@ from docknv.v2.config_handler import ConfigHandler
 from docknv.v2.env_handler import EnvHandler
 from docknv.v2.compose_handler import ComposeHandler
 
+from docknv.v2.project_handler import get_composefile_path
+
 from docknv import yaml_utils, utils
 from docknv.logger import Logger, Fore
 
@@ -155,7 +157,7 @@ class SchemaHandler(object):
             rendered_content, namespace, environment)
 
         # Generate main compose file
-        output_compose_file = ConfigHandler.get_composefile_path(
+        output_compose_file = get_composefile_path(
             project_path, namespace, environment, schema_name)
         if not os.path.exists(output_compose_file):
             utils.create_path_tree(os.path.dirname(output_compose_file))

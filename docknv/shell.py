@@ -9,9 +9,9 @@ from docknv.v2.schema_handler import SchemaHandler
 from docknv.v2.scaffolder import Scaffolder
 from docknv.v2.lifecycle_handler import LifecycleHandler
 from docknv.v2.config_handler import ConfigHandler
-from docknv.v2.volume_handler import VolumeHandler
 from docknv.v2.env_handler import EnvHandler
-from docknv import utils
+
+from docknv.version import __version__
 
 from docknv.logger import Logger, Fore
 import os
@@ -25,9 +25,11 @@ class Shell(object):
 
     def __init__(self):
         self.parser = argparse.ArgumentParser(
-            description="Docker w/ environments")
+            description="Docker w/ environments (docknv {0})".format(__version__))
         self.parser.add_argument(
             "-f", "--config", default="config.yml", help="compose config file")
+        self.parser.add_argument('-v', '--version', action='version',
+                                 version='%(prog)s ' + __version__)
 
         self.subparsers = self.parser.add_subparsers(
             dest="command", metavar="")
@@ -81,6 +83,7 @@ class Shell(object):
             "schema", help="manage groups of machines at once (schema mode)")
 
         subs = cmd.add_subparsers(dest="schema_cmd", metavar="")
+
         ls_cmd = subs.add_parser("ls", help="list schemas")
 
         ps_cmd = subs.add_parser("ps", help="list schema processes")
@@ -286,6 +289,10 @@ class Shell(object):
         cmd = self.subparsers.add_parser("env", help="manage environments")
         subs = cmd.add_subparsers(dest="env_cmd", metavar="")
 
+        show_cmd = subs.add_parser("show", help="show an environment file")
+        show_cmd.add_argument(
+            "env_name", help="environment file name (debug, etc.)")
+
         ls_cmd = subs.add_parser("ls", help="list envs")
 
         use_cmd = subs.add_parser("use", help="set env and render templates")
@@ -359,6 +366,9 @@ class Shell(object):
         elif command == "env":
             if args.env_cmd == "ls":
                 EnvHandler.list_environments(".")
+
+            elif args.env_cmd == "show":
+                EnvHandler.show_environment(".", args.env_name)
 
         elif command == "schema":
             if args.schema_cmd == "build":
@@ -468,169 +478,8 @@ class Shell(object):
             elif args.volume_cmd == "rm":
                 LifecycleHandler.remove_volume(".", args.name)
 
-        # if command == "scaffold" and args.scaffold_cmd == "project":
-        #     Scaffolder.scaffold_project(args.project_path, args.project_name)
-        #     return
-
-        # elif command == "schema" and args.schema_cmd == "build":
-        #     SchemaHandler.build_schema(".", args.name, args.namespace, args.environment)
-        #     return
-
-        # # Validation
-        # ConfigHandler.validate_config(args.config)
-
-        # config = ConfigHandler(
-        #     args.config, args.namespace if "namespace" in args else "default")
-        # compose = config.compose_tool
-        # compose_file = ".docker-compose.yml"
-
-        # if command == "machine":
-        #     if args.machine_cmd == "daemon":
-        #         compose.daemon(args.machine)
-
-        #     elif args.machine_cmd == "run":
-        #         compose.run(args.machine, args.run_command)
-
-        #     elif args.machine_cmd == "shell":
-        #         compose.shell(args.machine)
-
-        #     elif args.machine_cmd == "stop":
-        #         compose.stop(args.machine)
-
-        #     elif args.machine_cmd == "restart":
-        #         compose.restart(args.machine)
-
-        #     elif args.machine_cmd == "exec":
-        #         compose.execute(args.machine, args.exec_command,
-        #                         not args.no_tty, args.return_code)
-
-        #     elif args.machine_cmd == "logs":
-        #         compose.logs(args.machine)
-
-        #     elif args.machine_cmd == "copy":
-        # compose.copy(args.machine, args.container_path, args.host_path)
-
-        #     elif args.machine_cmd == "push":
-        # compose.push(args.machine, args.host_path, args.container_path)
-
-        #     elif args.machine_cmd == "build":
-        #         compose.build(args.machine)
-
-        # elif command == "volume":
-        #     if args.volume_cmd == "ls":
-        #         compose.list_volumes()
-
-        #     elif args.volume_cmd == "rm":
-        #         compose.remove_volume(args.name)
-
-        # elif command == "nfs":
-        #     if args.nfs_cmd == "ls":
-        #         compose.list_nfs_volumes(config)
-
-        #     elif args.nfs_cmd == "rm":
-        #         compose.remove_nfs_volume(config, args.name)
-
-        #     elif args.nfs_cmd == "create":
-        #         compose.create_nfs_volume(config, args.name)
-
-        # elif command == "env":
-        #     if args.env_cmd == "ls":
-        #         EnvHandler.list_envs()
-
-        #     elif args.env_cmd == "use":
-        #         filename = "./envs/{0}.env.py".format(args.env_name)
-        #         if not os.path.isfile(filename):
-        #             Logger.error(
-        #                 "Bad env file: {0} does not exist.".format(filename))
-        #         sharedfolder = "./shared"
-        #         if not os.path.isdir(sharedfolder):
-        #             Logger.error(
-        #                 "Bad shared folder: {0} does not exist.".format(sharedfolder))
-
-        #         env_vars = EnvHandler.load_env_in_memory(filename)
-        #         Renderer.render_files(sharedfolder, env_vars)
-        #         EnvHandler.write_env_to_file(env_vars, ".env")
-
-        # elif command == "scaffold":
-        #     if args.scaffold_cmd == "image":
-        #         Scaffolder.scaffold_image(
-        #             args.image_name, args.image_tag, args.image_version)
-
-        #     elif args.scaffold_cmd == "env":
-        #         Scaffolder.scaffold_environment(".", args.name)
-
-        #     elif args.scaffold_cmd == "link-compose":
-        #         Scaffolder.scaffold_link_composefile(
-        #             args.composefile_name, unlink=False)
-        #     elif args.scaffold_cmd == "unlink-compose":
-        #         Scaffolder.scaffold_link_composefile(
-        #             args.composefile_name, unlink=True)
-
-        # elif command == "schema":
-        #     if args.schema_cmd == "ls":
-        #         config.list_schemas()
-
-        #     if args.schema_cmd == "down":
-        #         self._use_schema(config, args)
-        #         compose.down()
-
-        #     elif args.schema_cmd == "up":
-        #         self._use_schema(config, args)
-        #         compose.up()
-
-        #     elif args.schema_cmd == "ps":
-        #         self._use_schema(config, args)
-        #         compose.list_processes()
-
-        #     elif args.schema_cmd == "restart":
-        #         self._use_schema(config, args)
-        #         compose.reup()
-
-            # elif args.schema_cmd == "build":
-            #     self._use_schema(config, args)
-            #     config.build_schema(args.schema)
-
-        # elif command == "export":
-            # if args.clean:
-                # Exporter.clean(config, compose_file)
-                # Logger.info("Generating new compose file...")
-                # config.write_compose(compose_file, config.get_current_schema())
-                # if args.build:
-                # config.build_schema(config.get_current_schema())
-            # else:
-                # Exporter.export(config, compose_file,
-                # args.swarm, args.swarm_registry)
-                # if args.build:
-                # config.build_schema(config.get_current_schema())
-
-        # elif command == "swarm":
-        #     if args.swarm_cmd == "push":
-        #         compose.push_stack()
-
-        #     elif args.swarm_cmd == "up":
-        #         compose.deploy_stack()
-
-        #     elif args.swarm_cmd == "down":
-        #         compose.rm_stack()
-
-        #     elif args.swarm_cmd == "ls":
-        #         compose.service_list()
-
-        #     elif args.swarm_cmd == "ps":
-        #         compose.service_ps(args.machine)
-
-        # elif command == "network":
-        #     if args.network_cmd == "create-overlay":
-        #         compose.create_overlay_network(args.name)
-
-        #     elif args.network_cmd == "ls":
-        #         compose.list_networks()
-
-        #     elif args.network_cmd == "rm":
-        #         compose.remove_network(args.name)
-
-        for p in self.post_parsers:
-            if p(self, args):
+        for parser in self.post_parsers:
+            if parser(self, args):
                 break
 
 def docknv_entry_point():
