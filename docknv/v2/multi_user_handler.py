@@ -20,6 +20,12 @@ class MultiUserHandler(object):
 
     @staticmethod
     def get_user_id():
+        try:
+            os.geteuid()
+        except Exception:
+            import getpass
+            return getpass.getuser()
+        
         return os.geteuid()
 
     @staticmethod

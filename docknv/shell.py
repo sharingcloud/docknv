@@ -14,6 +14,8 @@ from docknv.v2.env_handler import EnvHandler
 from docknv.version import __version__
 
 from docknv.logger import Logger, Fore
+import os
+import imp
 
 
 class Shell(object):
@@ -479,3 +481,23 @@ class Shell(object):
         for parser in self.post_parsers:
             if parser(self, args):
                 break
+
+def docknv_entry_point():
+    current_dir = os.getcwd()
+    commands_dir = os.path.join(current_dir, "commands")
+    shell = Shell()
+
+    if os.path.exists(commands_dir):
+        for root, folders, files in os.walk(commands_dir):
+            for f in files:
+                if f.endswith(".py"):
+                    abs_f = os.path.join(root, f)
+                    src = imp.load_source("commands", abs_f)
+                    if hasattr(src, "pre_parse") and hasattr(src, "post_parse"):
+                        pre_parse = getattr(src, "pre_parse")
+                        post_parse = getattr(src, "post_parse")
+
+                        pre_parse(shell)
+                        shell.register_post_parser(post_parse)
+
+    shell.run(sys.argv[1:])

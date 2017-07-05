@@ -78,14 +78,14 @@ class TemplateRenderer(object):
                 os.makedirs(path)
 
         # Loading template
-        with codecs.open(real_template_path, encoding="utf-8", mode="rt") as handle:
+        with codecs.open(real_template_path, encoding="utf-8", mode="r") as handle:
             template = Template(handle.read())
 
         # Rendering template
         file_output = os.path.join(
             destination_path, os.path.basename(template_path)[:-3])
         rendered_template = template.render(**environment_data)
-        with codecs.open(file_output, encoding="utf-8", mode="wt") as handle:
+        with codecs.open(file_output, encoding="utf-8", mode="w") as handle:
             handle.write(rendered_template)
 
         Logger.info("Template `{0}` rendered to `{1}`.".format(

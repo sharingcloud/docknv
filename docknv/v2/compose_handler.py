@@ -38,7 +38,7 @@ class ComposeHandler(object):
             Logger.error(
                 "Compose file `{0}` does not exist.".format(compose_file_path))
 
-        with codecs.open(real_path, encoding="utf-8", mode="rt") as handle:
+        with codecs.open(real_path, encoding="utf-8", mode="r") as handle:
             content = yaml_utils.ordered_load(handle.read())
 
         return content
@@ -349,7 +349,7 @@ class ComposeHandler(object):
         @param output_path      Output path
         """
 
-        with codecs.open(output_path, encoding="utf-8", mode="wt") as handle:
+        with codecs.open(output_path, encoding="utf-8", mode="w") as handle:
             handle.write(yaml_utils.ordered_dump(compose_content))
 
         Logger.info(

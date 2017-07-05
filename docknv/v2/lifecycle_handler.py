@@ -230,8 +230,7 @@ class LifecycleHandler(object):
         """
         Start a registry
         """
-
-        Logger.info("Starting registry...")
+        Logger.info("Starting registry... {0}".format(path))
 
         cmd = "docker run -d -p 5000:5000 {0} --restart=always --name registry registry:2"
         if path:

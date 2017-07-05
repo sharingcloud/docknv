@@ -32,9 +32,12 @@ def exec_docker(project_path, args):
     """
     Execute a Docker command.
     """
+    if os.name == 'nt':
+        commands = "cd {0} & docker {1}".format(project_path, " ".join(args))
+    else:
+        commands = "cd {0}; docker {1}; cd - > /dev/null".format(project_path, " ".join(args))
 
-    os.system(
-        "cd {0}; docker {1}; cd - > /dev/null".format(project_path, " ".join(args)))
+    os.system(commands)
 
 
 def exec_compose(project_path, args):
@@ -47,5 +50,10 @@ def exec_compose(project_path, args):
     config = ConfigHandler.load_config_from_path(project_path)
 
     with MultiUserHandler.temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
-        os.system("cd {0}; docker-compose -f {1} {2}; cd - > /dev/null".format(
-            project_path, user_file, " ".join(args)))
+        if os.name == 'nt':
+            commands = "cd {0} & docker-compose -f {1} {2}".format(project_path, user_file, " ".join(args))
+        else:
+            commands = "cd {0}; docker-compose -f {1} {2}; cd - > /dev/null".format(project_path, user_file,
+                                                                                    " ".join(args))
+
+        os.system(commands)
