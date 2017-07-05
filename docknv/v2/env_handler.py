@@ -42,6 +42,23 @@ class EnvHandler(object):
                     Logger.raw("  > {0}".format(name))
 
     @staticmethod
+    def show_environment(project_path, name):
+        """
+        Print an environment file.
+
+        @param project_path Project path
+        @param name         Environment file name
+        """
+
+        loaded_env = EnvHandler.load_env_in_memory(project_path, name)
+
+        Logger.info("Showing environment file `{0}`:".format(name))
+        for key in loaded_env:
+            Logger.raw("  {0}".format(key), color=Fore.YELLOW, linebreak=False)
+            Logger.raw(" = ", linebreak=False)
+            Logger.raw(loaded_env[key], color=Fore.BLUE)
+
+    @staticmethod
     def check_environment_file(project_path, name):
         """
         Check if an environment file exist.
@@ -78,12 +95,6 @@ class EnvHandler(object):
         loaded_env = OrderedDict()
         for variable in env_vars:
             loaded_env[variable] = getattr(env_data, variable)
-
-        Logger.info("Loaded environment:")
-        for key in loaded_env:
-            Logger.raw("  {0}".format(key), color=Fore.YELLOW, linebreak=False)
-            Logger.raw(" = ", linebreak=False)
-            Logger.raw(loaded_env[key], color=Fore.BLUE)
 
         return loaded_env
 

@@ -287,6 +287,10 @@ class Shell(object):
         cmd = self.subparsers.add_parser("env", help="manage environments")
         subs = cmd.add_subparsers(dest="env_cmd", metavar="")
 
+        show_cmd = subs.add_parser("show", help="show an environment file")
+        show_cmd.add_argument(
+            "env_name", help="environment file name (debug, etc.)")
+
         ls_cmd = subs.add_parser("ls", help="list envs")
 
         use_cmd = subs.add_parser("use", help="set env and render templates")
@@ -360,6 +364,9 @@ class Shell(object):
         elif command == "env":
             if args.env_cmd == "ls":
                 EnvHandler.list_environments(".")
+
+            elif args.env_cmd == "show":
+                EnvHandler.show_environment(".", args.env_name)
 
         elif command == "schema":
             if args.schema_cmd == "build":
