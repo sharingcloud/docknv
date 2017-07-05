@@ -6,6 +6,8 @@ from __future__ import print_function
 import os
 import shutil
 import six
+import sys
+import imp
 
 
 def get_input():
@@ -66,3 +68,4 @@ def create_path_tree(path_to_create):
         current = os.path.join(current, path)
         if not os.path.exists(current):
             os.makedirs(current)
+

@@ -102,11 +102,18 @@ class SchemaHandler(object):
         @param config_name      Configuration nickname
         """
 
+        user = None
+        try:
+            user = os.geteuid()
+        except Exception:
+            import getpass
+            user = getpass.getuser()
+        
         current_combination = {
             "schema": schema_name,
             "namespace": namespace,
             "environment": environment,
-            "user": os.geteuid()
+            "user": user
         }
 
         # Load config file

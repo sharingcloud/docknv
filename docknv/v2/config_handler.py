@@ -47,7 +47,7 @@ class ConfigHandler(object):
             project_path, ConfigHandler.CONFIG_FILE_NAME)
 
         if os.path.isfile(project_file_path):
-            with codecs.open(project_file_path, encoding="utf-8", mode="rt") as handle:
+            with codecs.open(project_file_path, encoding="utf-8", mode="r") as handle:
                 config_data = yaml_utils.ordered_load(handle.read())
         else:
             Logger.error(
@@ -69,7 +69,7 @@ class ConfigHandler(object):
             project_path, ConfigHandler.TEMPORARY_FILE_NAME)
 
         if os.path.isfile(project_file_path):
-            with codecs.open(project_file_path, encoding="utf-8", mode="rt") as handle:
+            with codecs.open(project_file_path, encoding="utf-8", mode="r") as handle:
                 config_data = yaml_utils.ordered_load(handle.read())
 
             return config_data
@@ -240,7 +240,7 @@ class ConfigHandler(object):
         project_file_path = os.path.join(
             project_path, ConfigHandler.TEMPORARY_FILE_NAME)
 
-        with codecs.open(project_file_path, encoding="utf-8", mode="wt") as handle:
+        with codecs.open(project_file_path, encoding="utf-8", mode="w") as handle:
             handle.write(yaml_utils.ordered_dump(content))
 
     @staticmethod
