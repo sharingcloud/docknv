@@ -242,6 +242,9 @@ class Shell(object):
         update_cmd.add_argument("name", help="configuration name")
         update_cmd.add_argument(
             "-s", "--set-current", action="store_true", help="set this configuration as current")
+        update_cmd.add_argument(
+            "-r", "--restart", action="store_true", help="restart current schema"
+        )
 
         remove_cmd = subs.add_parser(
             "rm", help="remove a known configuration")
@@ -462,6 +465,8 @@ class Shell(object):
                 if args.set_current:
                     ConfigHandler.use_composefile_configuration(
                         ".", args.name)
+                if args.restart:
+                    LifecycleHandler.restart_schema(".")
 
             elif args.config_cmd == "status":
                 config = ConfigHandler.get_current_config(".")
@@ -481,6 +486,7 @@ class Shell(object):
         for parser in self.post_parsers:
             if parser(self, args):
                 break
+
 
 def docknv_entry_point():
     current_dir = os.getcwd()
