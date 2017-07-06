@@ -466,7 +466,8 @@ class Shell(object):
                     ConfigHandler.use_composefile_configuration(
                         ".", args.name)
                 if args.restart:
-                    LifecycleHandler.restart_schema(".")
+                    LifecycleHandler.stop_schema(".")
+                    LifecycleHandler.start_schema(".")
 
             elif args.config_cmd == "status":
                 config = ConfigHandler.get_current_config(".")
