@@ -246,6 +246,22 @@ class Shell(object):
             "-r", "--restart", action="store_true", help="restart current schema"
         )
 
+        change_schema_cmd = subs.add_parser(
+            "change-schema", help="change a configuration schema")
+        change_schema_cmd.add_argument(
+            "config_name", help="configuration name")
+        change_schema_cmd.add_argument("schema_name", help="schema name")
+        change_schema_cmd.add_argument(
+            "-u", "--update", action="store_true", help="auto-update configuration")
+
+        change_env_cmd = subs.add_parser(
+            "change-env", help="change a configuration environment file")
+        change_env_cmd.add_argument(
+            "config_name", help="configuration name")
+        change_env_cmd.add_argument("environment", help="environment name")
+        change_env_cmd.add_argument(
+            "-u", "--update", action="store_true", help="auto-update configuration")
+
         remove_cmd = subs.add_parser(
             "rm", help="remove a known configuration")
         remove_cmd.add_argument("name", help="configuration name")
@@ -457,6 +473,26 @@ class Shell(object):
             elif args.config_cmd == "use":
                 ConfigHandler.use_composefile_configuration(
                     ".", args.name)
+
+            elif args.config_cmd == "change-schema":
+                ConfigHandler.update_config_schema(
+                    ".", args.config_name, args.schema_name)
+
+                if args.update:
+                    SchemaHandler.generate_compose_from_configuration(
+                        ".", args.config_name)
+                    ConfigHandler.use_composefile_configuration(
+                        ".", args.config_name)
+
+            elif args.config_cmd == "change-env":
+                ConfigHandler.update_config_environment(
+                    ".", args.config_name, args.environment)
+
+                if args.update:
+                    SchemaHandler.generate_compose_from_configuration(
+                        ".", args.config_name)
+                    ConfigHandler.use_composefile_configuration(
+                        ".", args.config_name)
 
             elif args.config_cmd == "update":
                 SchemaHandler.generate_compose_from_configuration(

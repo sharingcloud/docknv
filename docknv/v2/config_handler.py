@@ -162,6 +162,13 @@ class ConfigHandler(object):
             "Configuration `{0}` set as current configuration.".format(config_name))
 
     @staticmethod
+    def do_config_exist(config_data, config_name):
+        if config_name not in config_data["values"]:
+            Logger.error("Missing configuration `{0}`.".format(config_name))
+
+        return True
+
+    @staticmethod
     def remove_config(project_path, config_name):
         """
         Remove a config
@@ -197,6 +204,45 @@ class ConfigHandler(object):
 
             ConfigHandler.write_temporary_config(project_path, config)
             Logger.info("Configuration `{0}` removed.".format(config_name))
+
+    @staticmethod
+    def update_config_schema(project_path, config_name, schema_name):
+        """
+        Change a config schema
+        """
+
+        from docknv.v2.schema_handler import SchemaHandler
+
+        project_config = ConfigHandler.load_config_from_path(project_path)
+        if SchemaHandler.do_schema_exist(project_config, schema_name):
+            docknv_config = ConfigHandler.load_temporary_config_from_path(
+                project_path)
+
+            if ConfigHandler.do_config_exist(docknv_config, config_name):
+                docknv_config["values"][config_name]["schema"] = schema_name
+                ConfigHandler.write_temporary_config(
+                    project_path, docknv_config)
+                Logger.info("Configuration `{0}` updated with schema `{1}`".format(
+                    config_name, schema_name))
+
+    @staticmethod
+    def update_config_environment(project_path, config_name, environment_name):
+        """
+        Change a config environment
+        """
+
+        from docknv.v2.env_handler import EnvHandler
+
+        if EnvHandler.check_environment_file(project_path, environment_name):
+            docknv_config = ConfigHandler.load_temporary_config_from_path(
+                project_path)
+
+            if ConfigHandler.do_config_exist(docknv_config, config_name):
+                docknv_config["values"][config_name]["environment"] = environment_name
+                ConfigHandler.write_temporary_config(
+                    project_path, docknv_config)
+                Logger.info("Configuration `{0}` updated with environment `{1}`".format(
+                    config_name, environment_name))
 
     @staticmethod
     def get_current_config(project_path):

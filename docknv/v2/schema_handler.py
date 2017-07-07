@@ -80,6 +80,18 @@ class SchemaHandler(object):
             return {"name": schema_name, "config": schema_config}
 
     @staticmethod
+    def do_schema_exist(config_data, schema_name):
+        """
+        Check if a schema exist
+        """
+        if schema_name == "all":
+            return True
+        if schema_name not in config_data.schemas:
+            Logger.error("Schema `{0}` does not exist.".format(schema_name))
+
+        return True
+
+    @staticmethod
     def generate_compose_from_configuration(project_path, config_name):
         """
         Generate a valid Docker Compose file from a known configuration name.
@@ -110,7 +122,7 @@ class SchemaHandler(object):
         except Exception:
             import getpass
             user = getpass.getuser()
-        
+
         current_combination = {
             "schema": schema_name,
             "namespace": namespace,
