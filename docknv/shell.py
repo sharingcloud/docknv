@@ -26,8 +26,6 @@ class Shell(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(
             description="Docker w/ environments (docknv {0})".format(__version__))
-        self.parser.add_argument(
-            "-f", "--config", default="config.yml", help="compose config file")
         self.parser.add_argument('-v', '--version', action='version',
                                  version='%(prog)s ' + __version__)
 
