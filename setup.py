@@ -2,10 +2,8 @@
 Docknv
 """
 
-__version__ = ""
-
 from setuptools import setup
-execfile('docknv/version.py')
+from docknv.version import __version__
 
 setup(
     name='docknv',
@@ -21,8 +19,7 @@ setup(
           'PyYAML',
           'colorama',
           'Jinja2'
-      ],
-    #scripts=['bin/docknv'],
+    ],
     zip_safe=False,
     entry_points={
         'console_scripts': [

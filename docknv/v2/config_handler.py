@@ -3,7 +3,6 @@ docknv config handler
 """
 
 import os
-import random
 import codecs
 from contextlib import contextmanager
 
@@ -11,6 +10,8 @@ from docknv.logger import Logger, Fore
 from docknv import yaml_utils, utils
 
 from docknv.v2.project_handler import get_composefile_path
+from docknv.v2.environment_handler import EnvironmentHandler
+from docknv.v2.multi_user_handler import MultiUserHandler
 
 
 class ConfigHandler(object):
@@ -19,7 +20,7 @@ class ConfigHandler(object):
     """
 
     CONFIG_FILE_NAME = "config.yml"
-    TEMPORARY_FILE_NAME = ".docknv.yml"
+    SESSION_FILE_NAME = ".docknv.yml"
 
     class ConfigHandlerData(object):
         """
@@ -37,7 +38,7 @@ class ConfigHandler(object):
             self.config_data = config_data
 
     @staticmethod
-    def load_config_from_path(project_path):
+    def read_docknv_configuration(project_path):
         """
         Load a docknv config file from a project path.
 
@@ -53,6 +54,7 @@ class ConfigHandler(object):
         else:
             Logger.error(
                 "Config file `{0}` does not exist.".format(project_file_path))
+            return
 
         # Validation
         ConfigHandler._validate_config(project_file_path, config_data)
@@ -60,14 +62,14 @@ class ConfigHandler(object):
         return ConfigHandler.ConfigHandlerData(project_path, config_data)
 
     @staticmethod
-    def load_temporary_config_from_path(project_path):
+    def read_session_configuration(project_path):
         """
-        Load a temporary config file.
+        Read a session config file.
         Contains available namespaces.
         """
 
         project_file_path = os.path.join(
-            project_path, ConfigHandler.TEMPORARY_FILE_NAME)
+            project_path, ConfigHandler.SESSION_FILE_NAME)
 
         if os.path.isfile(project_file_path):
             with codecs.open(project_file_path, encoding="utf-8", mode="r") as handle:
@@ -78,49 +80,21 @@ class ConfigHandler(object):
         return {"values": {}}
 
     @staticmethod
-    def _get_word_from_dictionary():
-        with codecs.open("/usr/share/dict/words", encoding="utf-8", mode="rt") as handle:
-            words = handle.readlines()
-
-        return random.choice(words).lower()[:-1]
-
-    @staticmethod
-    def generate_config_name(config_list):
-        """
-        Generate a unique config name.
-        """
-
-        if os.path.isfile("/usr/share/dict/words"):
-            success = False
-            key = None
-
-            while not success:
-                word1 = ConfigHandler._get_word_from_dictionary()
-                word2 = ConfigHandler._get_word_from_dictionary()
-                key = "{0}_{1}".format(word1, word2)
-
-                if key not in config_list:
-                    success = True
-
-            return key
-
-        return "config_{0}".format(len(config_list) + 1)
-
-    @staticmethod
-    def get_configurations_list(project_path):
+    def list_configurations(project_path):
         """
         Get configurations list
         """
-        config = ConfigHandler.load_temporary_config_from_path(project_path)
+
+        config = ConfigHandler.read_session_configuration(project_path)
         return config["values"]
 
     @staticmethod
-    def list_known_configurations(project_path):
+    def show_configuration_list(project_path):
         """
         List known configurations.
         """
 
-        config = ConfigHandler.load_temporary_config_from_path(project_path)
+        config = ConfigHandler.read_session_configuration(project_path)
         len_values = len(config["values"])
         if len_values == 0:
             Logger.warn(
@@ -137,11 +111,11 @@ class ConfigHandler(object):
                     key, namespace, environment, schema, user), color=Fore.BLUE)
 
     @staticmethod
-    def get_known_configuration(project_path, name):
+    def get_configuration(project_path, name):
         """
         Get a known configuration by name.
         """
-        config = ConfigHandler.load_temporary_config_from_path(project_path)
+        config = ConfigHandler.read_session_configuration(project_path)
         if name in config["values"]:
             return config["values"][name]
         else:
@@ -149,32 +123,29 @@ class ConfigHandler(object):
                 "Missing configuration `{0}` in known configuration.".format(name))
 
     @staticmethod
-    def set_current_config(project_path, config_name):
+    def set_active_configuration(project_path, config_name):
         """
         Set a current config
         """
-        config = ConfigHandler.load_config_from_path(project_path)
-
-        from docknv.v2.multi_user_handler import MultiUserHandler
-        MultiUserHandler.set_current_config(config.project_name, config_name)
+        config = ConfigHandler.read_docknv_configuration(project_path)
+        MultiUserHandler.set_current_configuration(config.project_name, config_name)
 
         Logger.info(
             "Configuration `{0}` set as current configuration.".format(config_name))
 
     @staticmethod
-    def do_config_exist(config_data, config_name):
+    def check_configuration(config_data, config_name):
         if config_name not in config_data["values"]:
             Logger.error("Missing configuration `{0}`.".format(config_name))
 
         return True
 
     @staticmethod
-    def remove_config(project_path, config_name):
+    def remove_configuration(project_path, config_name):
         """
         Remove a config
         """
-        from docknv.v2.multi_user_handler import MultiUserHandler
-        config = ConfigHandler.load_temporary_config_from_path(project_path)
+        config = ConfigHandler.read_session_configuration(project_path)
         if config_name not in config["values"]:
             Logger.error("Missing configuration `{0}`.".format(config_name))
         uid = MultiUserHandler.get_user_id()
@@ -197,74 +168,70 @@ class ConfigHandler(object):
             # Remove configuration and docker-compose file.
             config_to_remove = config["values"][config_name]
             path = get_composefile_path(
-                project_path, config_to_remove["namespace"], config_to_remove["environment"], config_to_remove["schema"])
+                project_path, config_to_remove["namespace"], config_to_remove["environment"],
+                config_to_remove["schema"])
             os.remove(path)
 
             del config["values"][config_name]
 
-            ConfigHandler.write_temporary_config(project_path, config)
+            ConfigHandler.write_session_configuration(project_path, config)
             Logger.info("Configuration `{0}` removed.".format(config_name))
 
     @staticmethod
-    def update_config_schema(project_path, config_name, schema_name):
+    def update_configuration_schema(project_path, config_name, schema_name):
         """
         Change a config schema
         """
 
         from docknv.v2.schema_handler import SchemaHandler
 
-        project_config = ConfigHandler.load_config_from_path(project_path)
+        project_config = ConfigHandler.read_docknv_configuration(project_path)
         if SchemaHandler.do_schema_exist(project_config, schema_name):
-            docknv_config = ConfigHandler.load_temporary_config_from_path(
+            docknv_config = ConfigHandler.read_session_configuration(
                 project_path)
 
-            if ConfigHandler.do_config_exist(docknv_config, config_name):
+            if ConfigHandler.check_configuration(docknv_config, config_name):
                 docknv_config["values"][config_name]["schema"] = schema_name
-                ConfigHandler.write_temporary_config(
+                ConfigHandler.write_session_configuration(
                     project_path, docknv_config)
                 Logger.info("Configuration `{0}` updated with schema `{1}`".format(
                     config_name, schema_name))
 
     @staticmethod
-    def update_config_environment(project_path, config_name, environment_name):
+    def update_configuration_environment(project_path, config_name, environment_name):
         """
         Change a config environment
         """
 
-        from docknv.v2.env_handler import EnvHandler
-
-        if EnvHandler.check_environment_file(project_path, environment_name):
-            docknv_config = ConfigHandler.load_temporary_config_from_path(
+        if EnvironmentHandler.check_environment_file(project_path, environment_name):
+            docknv_config = ConfigHandler.read_session_configuration(
                 project_path)
 
-            if ConfigHandler.do_config_exist(docknv_config, config_name):
+            if ConfigHandler.check_configuration(docknv_config, config_name):
                 docknv_config["values"][config_name]["environment"] = environment_name
-                ConfigHandler.write_temporary_config(
+                ConfigHandler.write_session_configuration(
                     project_path, docknv_config)
                 Logger.info("Configuration `{0}` updated with environment `{1}`".format(
                     config_name, environment_name))
 
     @staticmethod
-    def get_current_config(project_path):
+    def get_active_configuration(project_path):
         """
         Get the current config
         """
-        config = ConfigHandler.load_config_from_path(project_path)
-
-        from docknv.v2.multi_user_handler import MultiUserHandler
-        return MultiUserHandler.get_current_config(config.project_name)
+        config = ConfigHandler.read_docknv_configuration(project_path)
+        return MultiUserHandler.get_current_configuration(config.project_name)
 
     @staticmethod
-    def use_composefile_configuration(project_path, config_name):
+    def use_configuration(project_path, config_name):
         """
         Use a composefile from a known configuration.
         Set it at .docker-compose.yml.
         """
-        from docknv.v2.multi_user_handler import MultiUserHandler
 
-        config_content = ConfigHandler.load_config_from_path(project_path)
+        config_content = ConfigHandler.read_docknv_configuration(project_path)
 
-        config = ConfigHandler.get_known_configuration(
+        config = ConfigHandler.get_configuration(
             project_path, config_name)
 
         current_id = MultiUserHandler.get_user_id()
@@ -282,36 +249,37 @@ class ConfigHandler(object):
         MultiUserHandler.copy_file_to_user_config_path(
             config_content.project_name, path)
 
-        ConfigHandler.set_current_config(project_path, config_name)
+        ConfigHandler.set_active_configuration(project_path, config_name)
 
     @staticmethod
-    def write_temporary_config(project_path, content):
+    def write_session_configuration(project_path, content):
         """
         Write a temporary config file.
         """
         project_file_path = os.path.join(
-            project_path, ConfigHandler.TEMPORARY_FILE_NAME)
+            project_path, ConfigHandler.SESSION_FILE_NAME)
 
         with codecs.open(project_file_path, encoding="utf-8", mode="w") as handle:
             handle.write(yaml_utils.ordered_dump(content))
 
     @staticmethod
     @contextmanager
-    def using_temporary_config(project_path, config_name):
+    def using_temporary_configuration(project_path, config_name):
         """
         Use a temporary config
         """
 
-        old_config = ConfigHandler.get_current_config(project_path)
+        old_config = ConfigHandler.get_active_configuration(project_path)
         if old_config is None:
             Logger.error(
                 "You should already use one config before using this tool")
 
-        ConfigHandler.use_composefile_configuration(project_path, config_name)
+        ConfigHandler.use_configuration(project_path, config_name)
         yield
-        ConfigHandler.use_composefile_configuration(project_path, old_config)
+        ConfigHandler.use_configuration(project_path, old_config)
 
-    # PRIVATE METHODS #############
+    ###############
+    # Internal
 
     @staticmethod
     def _validate_config(project_file_path, config_data):

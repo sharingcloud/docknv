@@ -7,7 +7,7 @@ import os
 import codecs
 import shutil
 
-from docknv.v2.env_handler import EnvHandler
+from docknv.v2.environment_handler import EnvironmentHandler
 from docknv.yaml_utils import ordered_load, ordered_dump
 from docknv.logger import Logger
 from docknv.utils import prompt_yes_no
@@ -114,7 +114,7 @@ class Scaffolder(object):
         # Write env to file
         env_content_len = len(env_content)
         if env_content_len > 0:
-            EnvHandler.write_env_to_file(env_content, env_path)
+            EnvironmentHandler.write_env_to_file(env_content, env_path)
         else:
             Logger.info(
                 "Empty environment file `{0}` created.".format(env_name))

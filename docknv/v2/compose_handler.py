@@ -22,9 +22,9 @@ class ComposeHandler(object):
     """
 
     @staticmethod
-    def load_compose_file(project_path, compose_file_path):
+    def read_compose_file(project_path, compose_file_path):
         """
-        Load a compose file.
+        Read a compose file.
 
         @param project_path         Project path
         @param compose_file_path    Compose file path
@@ -44,9 +44,9 @@ class ComposeHandler(object):
         return content
 
     @staticmethod
-    def load_multiple_compose_files(project_path, compose_file_paths):
+    def read_multiple_compose_files(project_path, compose_file_paths):
         """
-        Load multiple compose files.
+        Read multiple compose files.
 
         @param project_path         Project path
         @param compose_file_paths   Compose file paths
@@ -55,12 +55,12 @@ class ComposeHandler(object):
         """
 
         return filter(None, [
-            ComposeHandler.load_compose_file(project_path, path) for path in compose_file_paths])
+            ComposeHandler.read_compose_file(project_path, path) for path in compose_file_paths])
 
     @staticmethod
-    def filter_content_with_schema(compose_files_content, schema_configuration):
+    def filter_content_using_schema(compose_files_content, schema_configuration):
         """
-        Filter multiple compose files content from a schema configuration.
+        Filter multiple compose files content using a schema configuration.
 
         @param compose_files_content    Compose file content
         @param schema_configuration     Schema configuration
@@ -201,7 +201,7 @@ class ComposeHandler(object):
         return output_content
 
     @staticmethod
-    def resolve_compose_content(compose_content, environment_data=None):
+    def render_compose_template(compose_content, environment_data=None):
         """
         Resolve compose content.
 
@@ -341,7 +341,7 @@ class ComposeHandler(object):
         return output_content
 
     @staticmethod
-    def write_compose_content_to_file(compose_content, output_path):
+    def write_compose_content(compose_content, output_path):
         """
         Write compose content to a file.
 

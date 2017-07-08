@@ -28,11 +28,11 @@ class LifecycleHandler(object):
         from docknv.v2.config_handler import ConfigHandler
         from docknv.v2.schema_handler import SchemaHandler
 
-        current_config = ConfigHandler.get_current_config(project_path)
-        current_config_data = ConfigHandler.get_known_configuration(
+        current_config = ConfigHandler.get_active_configuration(project_path)
+        current_config_data = ConfigHandler.get_configuration(
             project_path, current_config)
 
-        config_data = ConfigHandler.load_config_from_path(project_path)
+        config_data = ConfigHandler.read_docknv_configuration(project_path)
         schema_config = SchemaHandler.get_schema_configuration(
             config_data, current_config_data["schema"])
 
