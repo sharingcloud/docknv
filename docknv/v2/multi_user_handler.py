@@ -35,7 +35,7 @@ class MultiUserHandler(object):
         except Exception:
             import getpass
             return getpass.getuser()
-        
+
         return os.geteuid()
 
     @staticmethod
@@ -66,7 +66,7 @@ class MultiUserHandler(object):
     def create_user_project_config(project_name, config):
         """
         Create a docknv config path for a project
-        
+
         :param project_name: Project name 
         :param config: Config
         """
@@ -156,4 +156,5 @@ class MultiUserHandler(object):
 
         yield generated_file_name
 
-        os.remove(generated_file_name)
+        if os.path.exists(generated_file_name):
+            os.remove(generated_file_name)
