@@ -9,11 +9,11 @@ from docknv.v2.schema_handler import SchemaHandler
 from docknv.v2.scaffolder import Scaffolder
 from docknv.v2.lifecycle_handler import LifecycleHandler
 from docknv.v2.config_handler import ConfigHandler
-from docknv.v2.env_handler import EnvHandler
+from docknv.v2.environment_handler import EnvironmentHandler
 
 from docknv.version import __version__
+from docknv.logger import Logger
 
-from docknv.logger import Logger, Fore
 import os
 import imp
 
@@ -26,8 +26,6 @@ class Shell(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(
             description="Docker w/ environments (docknv {0})".format(__version__))
-        self.parser.add_argument(
-            "-f", "--config", default="config.yml", help="compose config file")
         self.parser.add_argument('-v', '--version', action='version',
                                  version='%(prog)s ' + __version__)
 
@@ -349,13 +347,6 @@ class Shell(object):
         rm_cmd = subs.add_parser("rm", help="remove network")
         rm_cmd.add_argument("name", help="network name")
 
-    def _use_schema(self, config, args):
-        Logger.raw("Using schema `{0}`".format(args.schema), Fore.GREEN)
-
-        config.write_compose(".docker-compose.yml", args.schema)
-        if "build" in args and args.build:
-            config.build_schema(args.schema)
-
     def _parse_args(self, args):
         command = args.command
 
@@ -384,10 +375,10 @@ class Shell(object):
 
         elif command == "env":
             if args.env_cmd == "ls":
-                EnvHandler.list_environments(".")
+                EnvironmentHandler.list_environments(".")
 
             elif args.env_cmd == "show":
-                EnvHandler.show_environment(".", args.env_name)
+                EnvironmentHandler.show_environment(".", args.env_name)
 
         elif command == "schema":
             if args.schema_cmd == "build":
@@ -461,37 +452,37 @@ class Shell(object):
 
         elif command == "config":
             if args.config_cmd == "ls":
-                ConfigHandler.list_known_configurations(".")
+                ConfigHandler.show_configuration_list(".")
 
             elif args.config_cmd == "rm":
-                ConfigHandler.remove_config(".", args.name)
+                ConfigHandler.remove_configuration(".", args.name)
 
             elif args.config_cmd == "generate":
                 SchemaHandler.generate_compose(
                     ".", args.name, args.namespace, args.environment, args.config_name)
 
             elif args.config_cmd == "use":
-                ConfigHandler.use_composefile_configuration(
+                ConfigHandler.use_configuration(
                     ".", args.name)
 
             elif args.config_cmd == "change-schema":
-                ConfigHandler.update_config_schema(
+                ConfigHandler.update_configuration_schema(
                     ".", args.config_name, args.schema_name)
 
                 if args.update:
                     SchemaHandler.generate_compose_from_configuration(
                         ".", args.config_name)
-                    ConfigHandler.use_composefile_configuration(
+                    ConfigHandler.use_configuration(
                         ".", args.config_name)
 
             elif args.config_cmd == "change-env":
-                ConfigHandler.update_config_environment(
+                ConfigHandler.update_configuration_environment(
                     ".", args.config_name, args.environment)
 
                 if args.update:
                     SchemaHandler.generate_compose_from_configuration(
                         ".", args.config_name)
-                    ConfigHandler.use_composefile_configuration(
+                    ConfigHandler.use_configuration(
                         ".", args.config_name)
 
             elif args.config_cmd == "update":
@@ -499,14 +490,14 @@ class Shell(object):
                     ".", args.name)
 
                 if args.set_current:
-                    ConfigHandler.use_composefile_configuration(
+                    ConfigHandler.use_configuration(
                         ".", args.name)
                 if args.restart:
                     LifecycleHandler.stop_schema(".")
                     LifecycleHandler.start_schema(".")
 
             elif args.config_cmd == "status":
-                config = ConfigHandler.get_current_config(".")
+                config = ConfigHandler.get_active_configuration(".")
                 if not config:
                     Logger.warn(
                         "No configuration selected. Use 'docknv config use [configuration]' to select a configuration.")

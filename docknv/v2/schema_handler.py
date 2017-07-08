@@ -6,7 +6,7 @@ import os
 import copy
 
 from docknv.v2.config_handler import ConfigHandler
-from docknv.v2.env_handler import EnvHandler
+from docknv.v2.environment_handler import EnvironmentHandler
 from docknv.v2.compose_handler import ComposeHandler
 
 from docknv.v2.project_handler import get_composefile_path
@@ -26,7 +26,7 @@ class SchemaHandler(object):
         List available schemas for the project.
         """
 
-        config_data = ConfigHandler.load_config_from_path(project_path)
+        config_data = ConfigHandler.read_docknv_configuration(project_path)
         schemas_count = len(config_data.schemas)
         if schemas_count == 0:
             Logger.warn("No schema found.")
@@ -99,7 +99,7 @@ class SchemaHandler(object):
         @param project_path Project path
         @param config_name  Configuration nickname
         """
-        config = ConfigHandler.get_known_configuration(
+        config = ConfigHandler.get_configuration(
             project_path, config_name)
         SchemaHandler.generate_compose(
             ".", config["schema"], config["namespace"], config["environment"], config_name)
@@ -131,14 +131,14 @@ class SchemaHandler(object):
         }
 
         # Load config file
-        config_data = ConfigHandler.load_config_from_path(project_path)
+        config_data = ConfigHandler.read_docknv_configuration(project_path)
 
         # Load environment
-        if not EnvHandler.check_environment_file(project_path, environment):
+        if not EnvironmentHandler.check_environment_file(project_path, environment):
             Logger.error(
                 "Environment file `{0}` does not exist.".format(environment))
 
-        env_content = EnvHandler.load_env_in_memory(project_path, environment)
+        env_content = EnvironmentHandler.load_env_in_memory(project_path, environment)
 
         # Generate .env file
         # EnvHandler.write_env_to_file(
@@ -149,15 +149,15 @@ class SchemaHandler(object):
             config_data, schema_name)
 
         # List linked composefiles
-        compose_files_content = ComposeHandler.load_multiple_compose_files(
+        compose_files_content = ComposeHandler.read_multiple_compose_files(
             project_path, config_data.composefiles)
 
         # Merge and filter using schema
-        merged_content = ComposeHandler.filter_content_with_schema(
+        merged_content = ComposeHandler.filter_content_using_schema(
             compose_files_content, schema_config)
 
         # Resolve compose content
-        resolved_content = ComposeHandler.resolve_compose_content(
+        resolved_content = ComposeHandler.render_compose_template(
             merged_content, env_content)
 
         # Generate volumes declared in composefiles
@@ -174,11 +174,11 @@ class SchemaHandler(object):
         if not os.path.exists(output_compose_file):
             utils.create_path_tree(os.path.dirname(output_compose_file))
 
-        ComposeHandler.write_compose_content_to_file(
+        ComposeHandler.write_compose_content(
             namespaced_content, output_compose_file)
 
         # Get temporary config
-        config = ConfigHandler.load_temporary_config_from_path(project_path)
+        config = ConfigHandler.read_session_configuration(project_path)
 
         # Insert combination into temporary config
         new_combination = True
@@ -200,12 +200,12 @@ class SchemaHandler(object):
 
         if new_combination:
             if config_name and config_name in config["values"].keys():
-                new_name = ConfigHandler.generate_config_name(old_keys)
+                new_name = utils.generate_config_name(old_keys)
                 Logger.warn(
                     "Configuration name `{0}` already exist. New name generated: `{1}`".format(config_name, new_name))
                 config_name = new_name
             elif config_name is None:
-                config_name = ConfigHandler.generate_config_name(old_keys)
+                config_name = utils.generate_config_name(old_keys)
                 Logger.info("Generated config name: `{0}`".format(config_name))
             else:
                 Logger.info("Config name: `{0}`".format(config_name))
@@ -214,7 +214,7 @@ class SchemaHandler(object):
 
         elif changing_key:
             if config_name is None:
-                config_name = ConfigHandler.generate_config_name(old_keys)
+                config_name = utils.generate_config_name(old_keys)
 
             config["values"][config_name] = config["values"][changing_key]
             del config["values"][changing_key]
@@ -224,4 +224,4 @@ class SchemaHandler(object):
         else:
             Logger.info("Config name: `{0}`".format(config_name))
 
-        ConfigHandler.write_temporary_config(project_path, config)
+        ConfigHandler.write_session_configuration(project_path, config)

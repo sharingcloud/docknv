@@ -18,6 +18,10 @@ class VolumeHandler(object):
             self.container_path = container_path
             self.mode = mode
 
+            self.is_absolute = False
+            self.is_relative = False
+            self.is_named = False
+
             self.update_filters()
 
         def update_filters(self):

@@ -11,7 +11,7 @@ from collections import OrderedDict
 from docknv.logger import Logger, Fore
 
 
-class EnvHandler(object):
+class EnvironmentHandler(object):
     """
     Handle docknv environment files
     """
@@ -50,7 +50,7 @@ class EnvHandler(object):
         @param name         Environment file name
         """
 
-        loaded_env = EnvHandler.load_env_in_memory(project_path, name)
+        loaded_env = EnvironmentHandler.load_env_in_memory(project_path, name)
 
         Logger.info("Showing environment file `{0}`:".format(name))
         for key in loaded_env:

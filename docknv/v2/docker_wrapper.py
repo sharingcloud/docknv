@@ -13,7 +13,7 @@ def get_container(project_path, machine):
     from docknv.v2.config_handler import ConfigHandler
     from docknv.v2.multi_user_handler import MultiUserHandler
 
-    config = ConfigHandler.load_config_from_path(project_path)
+    config = ConfigHandler.read_docknv_configuration(project_path)
 
     with MultiUserHandler.temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
         cmd = "docker-compose -f {0} ps -q {1}".format(
@@ -47,7 +47,7 @@ def exec_compose(project_path, args):
     from docknv.v2.config_handler import ConfigHandler
     from docknv.v2.multi_user_handler import MultiUserHandler
 
-    config = ConfigHandler.load_config_from_path(project_path)
+    config = ConfigHandler.read_docknv_configuration(project_path)
 
     with MultiUserHandler.temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
         if os.name == 'nt':
