@@ -82,11 +82,16 @@ class LifecycleHandler(object):
     # MACHINE FUNCTIONS #############
 
     @staticmethod
-    def build_machine(project_path, machine_name, push_to_registry=False):
+    def build_machine(project_path, machine_name, push_to_registry=False, no_cache=False):
         """
         Build a machine
         """
-        exec_compose(project_path, ["build", machine_name])
+        if no_cache:
+            args = ["build", "--no-cache", machine_name]
+        else:
+            args = ["build", machine_name]
+
+        exec_compose(project_path, args)
 
         if push_to_registry:
             exec_compose(

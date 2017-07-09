@@ -171,6 +171,8 @@ class Shell(object):
         build_cmd.add_argument("machine", help="machine name")
         build_cmd.add_argument(
             "-p", "--push", help="push to registry", action="store_true")
+        build_cmd.add_argument(
+            "-n", "--no-cache", help="build without cache", action="store_true")
 
     def _init_scaffold_commands(self):
         cmd = self.subparsers.add_parser("scaffold", help="scaffolding")
@@ -402,7 +404,8 @@ class Shell(object):
 
         elif command == "machine":
             if args.machine_cmd == "build":
-                LifecycleHandler.build_machine(".", args.machine, args.push)
+                LifecycleHandler.build_machine(
+                    ".", args.machine, args.push, args.no_cache)
 
             elif args.machine_cmd == "daemon":
                 LifecycleHandler.daemon_machine(
