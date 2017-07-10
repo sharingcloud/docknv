@@ -155,8 +155,11 @@ def exec_compose_pretty(project_path, args):
                 elif line.startswith("Name"):
                     continue
 
-                name, cmd, state, port = (
-                    n.strip() for n in line.split("  ") if n != "")
+                spl = [n.strip() for n in line.split("  ") if n.strip() != ""]
+                if len(spl) != 4:
+                    continue
+
+                name, cmd, state, port = spl
 
                 color = Fore.GREEN if state == "Up" else Fore.RED
                 small_state = "ok" if state == "Up" else "ko {0}".format(state.split()[

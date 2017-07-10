@@ -117,6 +117,9 @@ class Shell(object):
         restart_cmd.add_argument("-f", "--force", help="force restart")
         restart_cmd.add_argument("configs", nargs="+")
 
+        ps_cmd = subs.add_parser("ps", help="list schemas processes")
+        ps_cmd.add_argument("configs", nargs="+")
+
     def _init_registry_commands(self):
         cmd = self.subparsers.add_parser(
             "registry", help="start and stop registry")
@@ -473,6 +476,8 @@ class Shell(object):
                 LifecycleHandler.stop_bundle(".", args.configs)
             elif args.bundle_cmd == "restart":
                 LifecycleHandler.restart_bundle(".", args.configs, args.force)
+            elif args.bundle_cmd == "ps":
+                LifecycleHandler.ps_bundle(".", args.configs)
 
         elif command == "registry":
             if args.registry_cmd == "start":

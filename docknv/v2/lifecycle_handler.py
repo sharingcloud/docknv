@@ -110,6 +110,14 @@ class LifecycleHandler(object):
             with ConfigHandler.using_temporary_configuration(project_path, config_name):
                 LifecycleHandler.restart_schema(project_path, force)
 
+    @staticmethod
+    def ps_bundle(project_path, config_names):
+        from docknv.v2.config_handler import ConfigHandler
+
+        for config_name in config_names:
+            with ConfigHandler.using_temporary_configuration(project_path, config_name):
+                LifecycleHandler.ps_schema(project_path)
+
     # MACHINE FUNCTIONS #############
 
     @staticmethod
