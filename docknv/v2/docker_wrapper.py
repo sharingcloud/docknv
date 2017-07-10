@@ -102,9 +102,6 @@ def exec_compose_pretty(project_path, args):
             # Ignore network not found
             elif line.startswith("Network") and line.endswith("not found"):
                 continue
-            # Ignore many beginning spaces or dashes
-            elif line.startswith("  ") or line.startswith("--"):
-                continue
 
             if "up" in args or "down" in args or "restart" in args:
                 # Handle network creation
@@ -152,6 +149,12 @@ def exec_compose_pretty(project_path, args):
                     Logger.info(repr(line))
 
             elif "ps" in args:
+                # Ignore many beginning spaces or dashes
+                if line.startswith(" ") or line.startswith("-"):
+                    continue
+                elif line.startswith("Name"):
+                    continue
+
                 name, cmd, state, port = (
                     n.strip() for n in line.split("  ") if n != "")
 
