@@ -7,7 +7,7 @@ import sys
 
 from docknv.logger import Logger
 
-from docknv.v2.docker_wrapper import exec_compose, get_container
+from docknv.v2.docker_wrapper import exec_compose, exec_compose_pretty, get_container
 from docknv.v2.project_handler import get_project_name
 
 
@@ -56,21 +56,21 @@ class LifecycleHandler(object):
         if not foreground:
             command.append("-d")
 
-        exec_compose(project_path, command)
+        exec_compose_pretty(project_path, command)
 
     @staticmethod
     def stop_schema(project_path):
         """
         Stop a schema
         """
-        exec_compose(project_path, ["down"])
+        exec_compose_pretty(project_path, ["down"])
 
     @staticmethod
     def ps_schema(project_path):
         """
         Check processes of a schema
         """
-        exec_compose(project_path, ["ps"])
+        exec_compose_pretty(project_path, ["ps"])
 
     @staticmethod
     def restart_schema(project_path, force=False):
@@ -79,7 +79,7 @@ class LifecycleHandler(object):
         """
 
         if not force:
-            exec_compose(project_path, ["restart"])
+            exec_compose_pretty(project_path, ["restart"])
         else:
             LifecycleHandler.stop_schema(project_path)
             LifecycleHandler.start_schema(project_path)
@@ -133,14 +133,14 @@ class LifecycleHandler(object):
         """
         Stop a machine
         """
-        exec_compose(project_path, ["stop", machine_name])
+        exec_compose_pretty(project_path, ["stop", machine_name])
 
     @staticmethod
     def start_machine(project_path, machine_name):
         """
         Start a machine
         """
-        exec_compose(project_path, ["start", machine_name])
+        exec_compose_pretty(project_path, ["start", machine_name])
 
     @staticmethod
     def shell_machine(project_path, machine_name, shell_path="/bin/bash"):
@@ -155,7 +155,7 @@ class LifecycleHandler(object):
         """
         Execute a process in background for a machine
         """
-        exec_compose(
+        exec_compose_pretty(
             project_path, ["run", "--service-ports", "-d", machine_name, command])
 
     @staticmethod
@@ -167,7 +167,7 @@ class LifecycleHandler(object):
             LifecycleHandler.stop_machine(project_path, machine_name)
             LifecycleHandler.start_machine(project_path, machine_name)
         else:
-            exec_compose(
+            exec_compose_pretty(
                 project_path, ["restart", machine_name])
 
     @staticmethod
