@@ -123,15 +123,17 @@ class ConfigHandler(object):
                 "Missing configuration `{0}` in known configuration.".format(name))
 
     @staticmethod
-    def set_active_configuration(project_path, config_name):
+    def set_active_configuration(project_path, config_name, quiet=False):
         """
         Set a current config
         """
         config = ConfigHandler.read_docknv_configuration(project_path)
-        MultiUserHandler.set_current_configuration(config.project_name, config_name)
+        MultiUserHandler.set_current_configuration(
+            config.project_name, config_name)
 
-        Logger.info(
-            "Configuration `{0}` set as current configuration.".format(config_name))
+        if not quiet:
+            Logger.info(
+                "Configuration `{0}` set as current configuration.".format(config_name))
 
     @staticmethod
     def check_configuration(config_data, config_name):
@@ -223,7 +225,7 @@ class ConfigHandler(object):
         return MultiUserHandler.get_current_configuration(config.project_name)
 
     @staticmethod
-    def use_configuration(project_path, config_name):
+    def use_configuration(project_path, config_name, quiet=False):
         """
         Use a composefile from a known configuration.
         Set it at .docker-compose.yml.
@@ -249,7 +251,8 @@ class ConfigHandler(object):
         MultiUserHandler.copy_file_to_user_config_path(
             config_content.project_name, path)
 
-        ConfigHandler.set_active_configuration(project_path, config_name)
+        ConfigHandler.set_active_configuration(
+            project_path, config_name, quiet)
 
     @staticmethod
     def write_session_configuration(project_path, content):
@@ -274,9 +277,9 @@ class ConfigHandler(object):
             Logger.error(
                 "You should already use one config before using this tool")
 
-        ConfigHandler.use_configuration(project_path, config_name)
+        ConfigHandler.use_configuration(project_path, config_name, quiet=True)
         yield
-        ConfigHandler.use_configuration(project_path, old_config)
+        ConfigHandler.use_configuration(project_path, old_config, quiet=True)
 
     ###############
     # Internal

@@ -73,11 +73,42 @@ class LifecycleHandler(object):
         exec_compose(project_path, ["ps"])
 
     @staticmethod
-    def restart_schema(project_path):
+    def restart_schema(project_path, force=False):
         """
         Restart a schema
         """
-        exec_compose(project_path, ["restart"])
+
+        if not force:
+            exec_compose(project_path, ["restart"])
+        else:
+            LifecycleHandler.stop_schema(project_path)
+            LifecycleHandler.start_schema(project_path)
+
+    # BUNDLE FUNCTIONS ##############
+
+    @staticmethod
+    def stop_bundle(project_path, config_names):
+        from docknv.v2.config_handler import ConfigHandler
+
+        for config_name in config_names:
+            with ConfigHandler.using_temporary_configuration(project_path, config_name):
+                LifecycleHandler.stop_schema(project_path)
+
+    @staticmethod
+    def start_bundle(project_path, config_names):
+        from docknv.v2.config_handler import ConfigHandler
+
+        for config_name in config_names:
+            with ConfigHandler.using_temporary_configuration(project_path, config_name):
+                LifecycleHandler.start_schema(project_path)
+
+    @staticmethod
+    def restart_bundle(project_path, config_names, force=False):
+        from docknv.v2.config_handler import ConfigHandler
+
+        for config_name in config_names:
+            with ConfigHandler.using_temporary_configuration(project_path, config_name):
+                LifecycleHandler.restart_schema(project_path, force)
 
     # MACHINE FUNCTIONS #############
 

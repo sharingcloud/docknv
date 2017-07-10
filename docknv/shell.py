@@ -67,6 +67,7 @@ class Shell(object):
     def _init_commands(self):
         self._init_schema_commands()
         self._init_machine_commands()
+        self._init_bundle_commands()
         self._init_swarm_commands()
         self._init_environment_commands()
         self._init_scaffold_commands()
@@ -97,6 +98,24 @@ class Shell(object):
         build_cmd = subs.add_parser("build", help="build machines from schema")
         build_cmd.add_argument(
             "-p", "--push", help="push to registry", action="store_true")
+
+    def _init_bundle_commands(self):
+        cmd = self.subparsers.add_parser(
+            "bundle", help="manage groups of configs at once (bundle mode)")
+
+        subs = cmd.add_subparsers(dest="bundle_cmd", metavar="")
+
+        start_cmd = subs.add_parser("start", help="boot machines from schemas")
+        start_cmd.add_argument("configs", nargs="+")
+
+        stop_cmd = subs.add_parser(
+            "stop", help="shutdown machines from schemas")
+        stop_cmd.add_argument("configs", nargs="+")
+
+        restart_cmd = subs.add_parser(
+            "restart", help="restart machines from schemas")
+        restart_cmd.add_argument("-f", "--force", help="force restart")
+        restart_cmd.add_argument("configs", nargs="+")
 
     def _init_registry_commands(self):
         cmd = self.subparsers.add_parser(
@@ -394,7 +413,7 @@ class Shell(object):
                 LifecycleHandler.stop_schema(".")
 
             elif args.schema_cmd == "restart":
-                LifecycleHandler.restart_schema(".")
+                LifecycleHandler.restart_schema(".", args.force)
 
             elif args.schema_cmd == "ps":
                 LifecycleHandler.ps_schema(".")
@@ -446,6 +465,14 @@ class Shell(object):
             elif args.machine_cmd == "logs":
                 LifecycleHandler.logs_machine(
                     ".", args.machine, tail=args.tail)
+
+        elif command == "bundle":
+            if args.bundle_cmd == "start":
+                LifecycleHandler.start_bundle(".", args.configs)
+            elif args.bundle_cmd == "stop":
+                LifecycleHandler.stop_bundle(".", args.configs)
+            elif args.bundle_cmd == "restart":
+                LifecycleHandler.restart_bundle(".", args.configs, args.force)
 
         elif command == "registry":
             if args.registry_cmd == "start":
