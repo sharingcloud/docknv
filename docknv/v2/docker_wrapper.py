@@ -139,6 +139,13 @@ def exec_compose_pretty(project_path, args):
                         Logger.raw("{1}[removed]{2} {0}".format(
                             service_name, Fore.RED, Fore.RESET))
 
+                # Handle restarts
+                elif line.startswith("Restarting"):
+                    if line.endswith("\r"):
+                        service_name = line.split()[1]
+                        Logger.raw("{1}[restarted]{2} {0}".format(
+                            service_name, Fore.GREEN, Fore.RESET))
+
                 # Handle is up-to-date
                 elif line.endswith("is up-to-date"):
                     service_name = line.split()[0]
@@ -155,14 +162,24 @@ def exec_compose_pretty(project_path, args):
                 elif line.startswith("Name"):
                     continue
 
-                spl = [n.strip() for n in line.split("  ") if n.strip() != ""]
-                if len(spl) != 4:
+                spl = [n.strip() for n in line.split("   ") if n.strip() != ""]
+                if len(spl) == 3:
+                    name, cmd, state = spl
+                    port = ""
+                elif len(spl) == 4:
+                    name, cmd, state, port = spl
+                else:
                     continue
 
-                name, cmd, state, port = spl
+                if state == "Up":
+                    color = Fore.GREEN
+                    small_state = "ok"
+                elif state.startswith("Exit"):
+                    color = Fore.RED
+                    small_state = "ko {0}".format(state.split()[1])
+                elif state == "Restarting":
+                    color = Fore.YELLOW
+                    small_state = "restarting"
 
-                color = Fore.GREEN if state == "Up" else Fore.RED
-                small_state = "ok" if state == "Up" else "ko {0}".format(state.split()[
-                                                                         1])
                 Logger.raw("{0}[{1}]{2} {3} - {4}{5}{2} - {6}{7}{2}".format(
                     color, small_state, Fore.RESET, name, Fore.YELLOW, cmd, Fore.CYAN, port))
