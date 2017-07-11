@@ -100,7 +100,7 @@ def exec_compose_pretty(project_path, args):
             elif line.endswith("has active endpoints"):
                 continue
             # Ignore network not found
-            elif line.startswith("Network") and line.endswith("not found"):
+            elif line.startswith("Network") and line.endswith("not found."):
                 continue
 
             if "up" in args or "down" in args or "restart" in args:
