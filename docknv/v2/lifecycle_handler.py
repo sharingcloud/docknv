@@ -16,6 +16,10 @@ class LifecycleHandler(object):
     docknv machines and schema lifecycle handling
     """
 
+    @staticmethod
+    def get_machine_name(machine_name, environment_name=None):
+        return "{0}_{1}".format(environment_name, machine_name) if environment_name else machine_name
+
     # SCHEMA FUNCTIONS ###############
 
     @staticmethod
@@ -121,10 +125,14 @@ class LifecycleHandler(object):
     # MACHINE FUNCTIONS #############
 
     @staticmethod
-    def build_machine(project_path, machine_name, push_to_registry=False, no_cache=False):
+    def build_machine(project_path, machine_name, push_to_registry=False, no_cache=False, environment_name=None):
         """
         Build a machine
         """
+
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
+
         if no_cache:
             args = ["build", "--no-cache", machine_name]
         else:
@@ -137,40 +145,52 @@ class LifecycleHandler(object):
                 project_path, ["push", machine_name])
 
     @staticmethod
-    def stop_machine(project_path, machine_name):
+    def stop_machine(project_path, machine_name, environment_name=None):
         """
         Stop a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
+
         exec_compose_pretty(project_path, ["stop", machine_name])
 
     @staticmethod
-    def start_machine(project_path, machine_name):
+    def start_machine(project_path, machine_name, environment_name=None):
         """
         Start a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
+
         exec_compose_pretty(project_path, ["start", machine_name])
 
     @staticmethod
-    def shell_machine(project_path, machine_name, shell_path="/bin/bash"):
+    def shell_machine(project_path, machine_name, shell_path="/bin/bash", environment_name=None):
         """
         Execute a shell on a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
         LifecycleHandler.exec_machine(
             project_path, machine_name, shell_path, False, False)
 
     @staticmethod
-    def daemon_machine(project_path, machine_name, command=None):
+    def daemon_machine(project_path, machine_name, command=None, environment_name=None):
         """
         Execute a process in background for a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
         exec_compose_pretty(
             project_path, ["run", "--service-ports", "-d", machine_name, command])
 
     @staticmethod
-    def restart_machine(project_path, machine_name, force=False):
+    def restart_machine(project_path, machine_name, force=False, environment_name=None):
         """
         Restart a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
         if force:
             LifecycleHandler.stop_machine(project_path, machine_name)
             LifecycleHandler.start_machine(project_path, machine_name)
@@ -179,18 +199,22 @@ class LifecycleHandler(object):
                 project_path, ["restart", machine_name])
 
     @staticmethod
-    def run_machine(project_path, machine_name, command=None):
+    def run_machine(project_path, machine_name, command=None, environment_name=None):
         """
         Run a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
         exec_compose(
             project_path, ["run", "--service-ports", machine_name, command])
 
     @staticmethod
-    def push_machine(project_path, machine_name, host_path, container_path):
+    def push_machine(project_path, machine_name, host_path, container_path, environment_name=None):
         """
         Push a file to a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
         container = get_container(project_path, machine_name)
         if not container:
             Logger.error("Machine `{0}` is not running.".format(
@@ -202,10 +226,12 @@ class LifecycleHandler(object):
                 host_path, container, container_path))
 
     @staticmethod
-    def pull_machine(project_path, machine_name, container_path, host_path):
+    def pull_machine(project_path, machine_name, container_path, host_path, environment_name=None):
         """
         Pull a file from a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
         container = get_container(project_path, machine_name)
         if not container:
             Logger.error("Machine `{0}` is not running.".format(
@@ -217,10 +243,12 @@ class LifecycleHandler(object):
                 container, container_path, host_path))
 
     @staticmethod
-    def exec_machine(project_path, machine_name, command=None, no_tty=False, return_code=False):
+    def exec_machine(project_path, machine_name, command=None, no_tty=False, return_code=False, environment_name=None):
         """
         Execute a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
         container = get_container(project_path, machine_name)
         if not container:
             Logger.error("Machine `{0}` is not running.".format(
@@ -232,10 +260,12 @@ class LifecycleHandler(object):
                 sys.exit(os.WEXITSTATUS(code))
 
     @staticmethod
-    def logs_machine(project_path, machine_name, tail=0):
+    def logs_machine(project_path, machine_name, tail=0, environment_name=None):
         """
         Get logs from a machine
         """
+        machine_name = LifecycleHandler.get_machine_name(
+            machine_name, environment_name)
         container = get_container(project_path, machine_name)
         if not container:
             Logger.error("Machine `{0}` is not running.".format(

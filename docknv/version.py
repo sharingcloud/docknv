@@ -2,4 +2,4 @@
 Version number
 """
 
-__version__ = "2.3.beta.4"
+__version__ = "2.3.beta.5"
