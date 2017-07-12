@@ -125,6 +125,15 @@ def exec_compose_pretty(project_path, args):
                     Logger.raw("{1}[started]{2} {0}".format(
                         service_name, Fore.GREEN, Fore.RESET))
 
+                # Handle starts
+                elif line.startswith("Starting"):
+                    if line.endswith("\r"):
+                        continue
+
+                    service_name = line.split()[1]
+                    Logger.raw("{1}[started]{2} {0}".format(
+                        service_name, Fore.GREEN, Fore.RESET))
+
                 # Handle stops
                 elif line.startswith("Stopping"):
                     if line.endswith("\r"):
