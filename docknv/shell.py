@@ -58,7 +58,7 @@ class Shell(object):
             self.parser.parse_args(args + ["-h"])
             sys.exit(1)
 
-        with user_try_lock():
+        with user_try_lock("."):
             self._parse_args(self.parser.parse_args(args))
 
     # PRIVATE METHODS ##########
