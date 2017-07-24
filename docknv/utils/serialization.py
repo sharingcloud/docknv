@@ -9,7 +9,7 @@ import six
 import yaml
 
 
-def merge_yaml(contents):
+def yaml_merge(contents):
     """
     Merge two YAML dict together
     """
@@ -26,7 +26,7 @@ def merge_yaml(contents):
         return src1
 
 
-def ordered_load(stream, loader_class=yaml.Loader, object_pairs_hook=OrderedDict):
+def yaml_ordered_load(stream, loader_class=yaml.Loader, object_pairs_hook=OrderedDict):
     """
     Load ordered YAML content
     """
@@ -47,7 +47,7 @@ def ordered_load(stream, loader_class=yaml.Loader, object_pairs_hook=OrderedDict
     return yaml.load(stream, OrderedLoader)
 
 
-def ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
+def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
     """
     Dump ordered YAML content
     """

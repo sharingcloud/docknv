@@ -4,18 +4,18 @@ Shell
 
 import argparse
 import sys
-
-from docknv.v2.schema_handler import SchemaHandler
-from docknv.v2.scaffolder import Scaffolder
-from docknv.v2.lifecycle_handler import LifecycleHandler
-from docknv.v2.config_handler import ConfigHandler
-from docknv.v2.environment_handler import EnvironmentHandler
+import os
+import imp
 
 from docknv.version import __version__
 from docknv.logger import Logger
 
-import os
-import imp
+from docknv.scaffolder import scaffold_environment, scaffold_environment_copy, scaffold_image, scaffold_link_composefile, scaffold_project
+from docknv.environment_handler import env_list, env_show
+from docknv.schema_handler import schema_list
+from docknv.session_handler import session_show_configuration_list, session_remove_configuration, session_update_environment
+from docknv.project_handler import project_generate_compose, project_use_configuration, project_update_configuration_schema, project_generate_compose_from_configuration, project_get_active_configuration
+from docknv.lifecycle_handler import *
 
 
 class Shell(object):
@@ -397,163 +397,162 @@ class Shell(object):
 
         if command == "scaffold":
             if args.scaffold_cmd == "project":
-                Scaffolder.scaffold_project(
+                scaffold_project(
                     args.project_path, args.project_name)
 
             elif args.scaffold_cmd == "image":
-                Scaffolder.scaffold_image(
+                scaffold_image(
                     ".", args.image_name, args.image_tag, args.image_version)
 
             elif args.scaffold_cmd == "env":
                 if args.from_env:
-                    Scaffolder.scaffold_environment_copy(
+                    scaffold_environment_copy(
                         ".", args.from_env, args.name)
                 else:
-                    Scaffolder.scaffold_environment(".", args.name)
+                    scaffold_environment(".", args.name)
 
             elif args.scaffold_cmd == "link-compose":
-                Scaffolder.scaffold_link_composefile(
+                scaffold_link_composefile(
                     ".", args.composefile_name, unlink=False)
             elif args.scaffold_cmd == "unlink-compose":
-                Scaffolder.scaffold_link_composefile(
+                scaffold_link_composefile(
                     ".", args.composefile_name, unlink=True)
 
         elif command == "env":
             if args.env_cmd == "ls":
-                EnvironmentHandler.list_environments(".")
+                env_list(".")
 
             elif args.env_cmd == "show":
-                EnvironmentHandler.show_environment(".", args.env_name)
+                env_show(".", args.env_name)
 
         elif command == "schema":
             if args.schema_cmd == "build":
-                LifecycleHandler.build_schema(".", args.push)
+                lifecycle_schema_build(".", args.push)
 
             elif args.schema_cmd == "start":
-                LifecycleHandler.start_schema(
+                lifecycle_schema_start(
                     ".", foreground=args.foreground)
 
             elif args.schema_cmd == "stop":
-                LifecycleHandler.stop_schema(".")
+                lifecycle_schema_stop(".")
 
             elif args.schema_cmd == "restart":
-                LifecycleHandler.restart_schema(".", args.force)
+                lifecycle_schema_restart(".", args.force)
 
             elif args.schema_cmd == "ps":
-                LifecycleHandler.ps_schema(".")
+                lifecycle_schema_ps(".")
 
             elif args.schema_cmd == "ls":
-                SchemaHandler.list_schemas(".")
+                schema_list(".")
 
         elif command == "machine":
             if args.machine_cmd == "build":
-                LifecycleHandler.build_machine(
+                lifecycle_machine_build(
                     ".", args.machine, args.push, args.no_cache, args.environment)
 
             elif args.machine_cmd == "daemon":
-                LifecycleHandler.daemon_machine(
+                lifecycle_machine_daemon(
                     ".", args.machine, args.run_command, args.environment)
 
             elif args.machine_cmd == "run":
-                LifecycleHandler.run_machine(
+                lifecycle_machine_run(
                     ".", args.machine, args.run_command, args.environment)
 
             elif args.machine_cmd == "exec":
-                LifecycleHandler.exec_machine(
+                lifecycle_machine_exec(
                     ".", args.machine, args.run_command, args.no_tty, args.return_code, args.environment)
 
             elif args.machine_cmd == "shell":
-                LifecycleHandler.shell_machine(
+                lifecycle_machine_shell(
                     ".", args.machine, args.shell, args.environment)
 
             elif args.machine_cmd == "restart":
-                LifecycleHandler.restart_machine(
+                lifecycle_machine_restart(
                     ".", args.machine, args.force, args.environment)
 
             elif args.machine_cmd == "stop":
-                LifecycleHandler.stop_machine(
+                lifecycle_machine_stop(
                     ".", args.machine, args.environment)
 
             elif args.machine_cmd == "start":
-                LifecycleHandler.start_machine(
+                lifecycle_machine_start(
                     ".", args.machine, args.environment)
 
             elif args.machine_cmd == "push":
-                LifecycleHandler.push_machine(
+                lifecycle_machine_push(
                     ".", args.machine, args.host_path, args.container_path, args.environment)
 
             elif args.machine_cmd == "pull":
-                LifecycleHandler.pull_machine(
+                lifecycle_machine_pull(
                     ".", args.machine, args.container_path, args.host_path, args.environment)
 
             elif args.machine_cmd == "logs":
-                LifecycleHandler.logs_machine(
+                lifecycle_machine_logs(
                     ".", args.machine, tail=args.tail, environment_name=args.environment)
 
         elif command == "bundle":
             if args.bundle_cmd == "start":
-                LifecycleHandler.start_bundle(".", args.configs)
+                lifecycle_bundle_start(".", args.configs)
             elif args.bundle_cmd == "stop":
-                LifecycleHandler.stop_bundle(".", args.configs)
+                lifecycle_bundle_stop(".", args.configs)
             elif args.bundle_cmd == "restart":
-                LifecycleHandler.restart_bundle(".", args.configs, args.force)
+                lifecycle_bundle_restart(".", args.configs, args.force)
             elif args.bundle_cmd == "ps":
-                LifecycleHandler.ps_bundle(".", args.configs)
+                lifecycle_bundle_ps(".", args.configs)
 
         elif command == "registry":
             if args.registry_cmd == "start":
-                LifecycleHandler.start_registry(args.path)
+                lifecycle_registry_start(args.path)
             elif args.registry_cmd == "stop":
-                LifecycleHandler.stop_registry()
+                lifecycle_registry_stop()
 
         elif command == "config":
             if args.config_cmd == "ls":
-                ConfigHandler.show_configuration_list(".")
+                session_show_configuration_list(".")
 
             elif args.config_cmd == "rm":
-                ConfigHandler.remove_configuration(".", args.name)
+                session_remove_configuration(".", args.name)
 
             elif args.config_cmd == "generate":
-                SchemaHandler.generate_compose(
+                project_generate_compose(
                     ".", args.name, args.namespace, args.environment, args.config_name)
 
             elif args.config_cmd == "use":
-                ConfigHandler.use_configuration(
+                project_use_configuration(
                     ".", args.name)
 
             elif args.config_cmd == "change-schema":
-                ConfigHandler.update_configuration_schema(
+                project_update_configuration_schema(
                     ".", args.config_name, args.schema_name)
 
                 if args.update:
-                    SchemaHandler.generate_compose_from_configuration(
+                    project_generate_compose_from_configuration(
                         ".", args.config_name)
-                    ConfigHandler.use_configuration(
-                        ".", args.config_name)
+                    project_use_configuration(".", args.config_name)
 
             elif args.config_cmd == "change-env":
-                ConfigHandler.update_configuration_environment(
+                session_update_environment(
                     ".", args.config_name, args.environment)
 
                 if args.update:
-                    SchemaHandler.generate_compose_from_configuration(
+                    project_generate_compose_from_configuration(
                         ".", args.config_name)
-                    ConfigHandler.use_configuration(
+                    project_use_configuration(
                         ".", args.config_name)
 
             elif args.config_cmd == "update":
-                SchemaHandler.generate_compose_from_configuration(
+                project_generate_compose_from_configuration(
                     ".", args.name)
 
                 if args.set_current:
-                    ConfigHandler.use_configuration(
+                    project_use_configuration(
                         ".", args.name)
                 if args.restart:
-                    LifecycleHandler.stop_schema(".")
-                    LifecycleHandler.start_schema(".")
+                    lifecycle_schema_stop(".")
+                    lifecycle_schema_start(".")
 
             elif args.config_cmd == "status":
-                config = ConfigHandler.get_active_configuration(".")
+                config = project_get_active_configuration(".")
                 if not config:
                     Logger.warn(
                         "No configuration selected. Use 'docknv config use [configuration]' to select a configuration.")
@@ -562,10 +561,10 @@ class Shell(object):
 
         elif command == "volume":
             if args.volume_cmd == "ls":
-                LifecycleHandler.list_volumes(".")
+                lifecycle_volume_list(".")
 
             elif args.volume_cmd == "rm":
-                LifecycleHandler.remove_volume(".", args.name)
+                lifecycle_volume_remove(".", args.name)
 
         for parser in self.post_parsers:
             if parser(self, args):
@@ -573,15 +572,19 @@ class Shell(object):
 
 
 def docknv_entry_point():
+    """
+    Main entry point
+    """
+
     current_dir = os.getcwd()
     commands_dir = os.path.join(current_dir, "commands")
     shell = Shell()
 
     if os.path.exists(commands_dir):
-        for root, folders, files in os.walk(commands_dir):
-            for f in files:
-                if f.endswith(".py"):
-                    abs_f = os.path.join(root, f)
+        for root, _, files in os.walk(commands_dir):
+            for filename in files:
+                if filename.endswith(".py"):
+                    abs_f = os.path.join(root, filename)
                     src = imp.load_source("commands", abs_f)
                     if hasattr(src, "pre_parse") and hasattr(src, "post_parse"):
                         pre_parse = getattr(src, "pre_parse")

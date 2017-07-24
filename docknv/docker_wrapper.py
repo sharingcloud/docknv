@@ -7,17 +7,17 @@ import subprocess
 
 from docknv.logger import Logger, Fore
 
+from docknv.project_handler import project_read
+from docknv.user_handler import user_temporary_copy_file
 
-def get_container(project_path, machine):
+
+def get_docker_container(project_path, machine):
     """
     Return a Docker container ID.
     """
-    from docknv.v2.config_handler import ConfigHandler
-    from docknv.v2.multi_user_handler import MultiUserHandler
+    config = project_read(project_path)
 
-    config = ConfigHandler.read_docknv_configuration(project_path)
-
-    with MultiUserHandler.temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
+    with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
         cmd = "docker-compose -f {0} ps -q {1}".format(
             user_file, machine)
         proc = subprocess.Popen(cmd, cwd=project_path,
@@ -47,12 +47,10 @@ def exec_compose(project_path, args):
     """
     Execute a Docker Compose command.
     """
-    from docknv.v2.config_handler import ConfigHandler
-    from docknv.v2.multi_user_handler import MultiUserHandler
 
-    config = ConfigHandler.read_docknv_configuration(project_path)
+    config = project_read(project_path)
 
-    with MultiUserHandler.temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
+    with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
         if os.name == 'nt':
             commands = "cd {0} & docker-compose -f {1} {2}".format(
                 project_path, user_file, " ".join(args))
@@ -67,11 +65,9 @@ def exec_compose_pretty(project_path, args):
     """
     Execute a Docker Compose command, property filtered.
     """
-    from docknv.v2.config_handler import ConfigHandler
-    from docknv.v2.multi_user_handler import MultiUserHandler
 
-    config = ConfigHandler.read_docknv_configuration(project_path)
-    with MultiUserHandler.temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
+    config = project_read(project_path)
+    with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
         cmd = "docker-compose -f {0} {1}".format(
             user_file, " ".join(args))
 

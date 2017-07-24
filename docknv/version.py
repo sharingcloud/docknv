@@ -2,4 +2,6 @@
 Version number
 """
 
-__version__ = "2.3.beta.5"
+VERSION = (3, 0, 0, "beta1")
+
+__version__ = ".".join(str(x) for x in VERSION)

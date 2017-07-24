@@ -4,7 +4,7 @@ Volume handler tests
 
 import unittest
 
-from docknv.v2.volume_handler import VolumeHandler
+from docknv.volume_handler import VolumeHandler
 
 
 class TestVolumeHandler(unittest.TestCase):
