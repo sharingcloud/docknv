@@ -16,6 +16,7 @@ from docknv.schema_handler import schema_list
 from docknv.session_handler import session_show_configuration_list, session_remove_configuration, session_update_environment
 from docknv.project_handler import project_generate_compose, project_use_configuration, project_update_configuration_schema, project_generate_compose_from_configuration, project_get_active_configuration
 from docknv.lifecycle_handler import *
+from docknv.user_handler import user_try_lock
 
 
 class Shell(object):
@@ -57,7 +58,8 @@ class Shell(object):
             self.parser.parse_args(args + ["-h"])
             sys.exit(1)
 
-        self._parse_args(self.parser.parse_args(args))
+        with user_try_lock():
+            self._parse_args(self.parser.parse_args(args))
 
     # PRIVATE METHODS ##########
 

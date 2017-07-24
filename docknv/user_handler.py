@@ -8,6 +8,9 @@ import shutil
 from contextlib import contextmanager
 
 
+from docknv.logger import Logger
+
+
 def user_current_is_root():
     """
     Check if the user is root
@@ -104,6 +107,41 @@ def user_copy_file_to_config_path(project_name, path_to_file):
     file_name = os.path.basename(path_to_file)
 
     shutil.copyfile(path_to_file, os.path.join(config_path, file_name))
+
+
+def user_get_lock_file(project_path):
+    return "{0}/.{1}.lock".format(project_path, user_current_get_id())
+
+
+def user_check_lock(project_path):
+    return os.path.exists(user_get_lock_file(project_path))
+
+
+def user_enable_lock(project_path):
+    lockfile = user_get_lock_file(project_path)
+    if user_check_lock(project_path):
+        return False
+
+    with open(lockfile, mode="w") as handle:
+        handle.write("$")
+
+    return True
+
+
+def user_disable_lock(project_path):
+    lockfile = user_get_lock_file(project_path)
+    if user_check_lock(project_path):
+        os.remove(lockfile)
+
+
+@contextmanager
+def user_try_lock(project_path):
+    if not user_enable_lock(project_path):
+        Logger.error(
+            "docknv is already running with your account. wait until completion.")
+    yield
+
+    user_disable_lock(project_path)
 
 
 @staticmethod
