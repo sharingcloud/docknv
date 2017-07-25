@@ -160,6 +160,8 @@ class Shell(object):
             "shell", help="shell executable", default="/bin/bash", nargs="?")
         shell_cmd.add_argument("-e", "--environment",
                                help="environment name", default=None)
+        shell_cmd.add_argument(
+            "-c", "--create", help="create the container if it does not exist", action="store_true")
 
         stop_cmd = subs.add_parser("stop", help="stop a container")
         stop_cmd.add_argument("machine", help="machine name")
@@ -466,7 +468,7 @@ class Shell(object):
 
             elif args.machine_cmd == "shell":
                 lifecycle_machine_shell(
-                    ".", args.machine, args.shell, args.environment)
+                    ".", args.machine, args.shell, args.environment, args.create)
 
             elif args.machine_cmd == "restart":
                 lifecycle_machine_restart(

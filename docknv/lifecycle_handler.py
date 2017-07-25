@@ -152,14 +152,19 @@ def lifecycle_machine_start(project_path, machine_name, environment_name=None):
     exec_compose_pretty(project_path, ["start", machine_name])
 
 
-def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", environment_name=None):
+def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", environment_name=None, create=False):
     """
     Execute a shell on a machine
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
-    lifecycle_machine_exec(
-        project_path, machine_name, shell_path, False, False)
+
+    if create:
+        lifecycle_machine_run(
+            project_path, machine_name, shell_path, environment_name)
+    else:
+        lifecycle_machine_exec(
+            project_path, machine_name, shell_path, False, False)
 
 
 def lifecycle_machine_daemon(project_path, machine_name, command=None, environment_name=None):
