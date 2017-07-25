@@ -24,7 +24,8 @@ def scaffold_project(project_path, project_name=None):
 
     project_name = project_name if project_name else os.path.basename(
         project_path)
-    paths = ["envs", "data", "templates", "composefiles", "images"]
+    paths = ["envs", "data", "composefiles", "images"]
+    data_paths = ["files", "templates"]
 
     if os.path.exists(project_path):
         choice = prompt_yes_no(
@@ -47,6 +48,11 @@ def scaffold_project(project_path, project_name=None):
     # Create paths
     for path in paths:
         joined_path = os.path.join(project_path, path)
+        if not os.path.exists(joined_path):
+            os.makedirs(joined_path)
+
+    for path in data_paths:
+        joined_path = os.path.join(project_path, "data", path)
         if not os.path.exists(joined_path):
             os.makedirs(joined_path)
 

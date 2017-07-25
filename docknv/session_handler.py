@@ -131,6 +131,11 @@ def session_get_configuration(project_path, name):
     """
     Get a known configuration by name.
     """
+
+    if name is None:
+        Logger.error(
+            "No configuration set. Please set an active configuration.")
+
     config = session_read_configuration(project_path)
     if name in config["values"]:
         return config["values"][name]

@@ -139,12 +139,16 @@ def user_try_lock(project_path):
     if not user_enable_lock(project_path):
         Logger.error(
             "docknv is already running with your account. wait until completion.")
-    yield
+    else:
+        try:
+            yield
+        except:
+            user_disable_lock(project_path)
+            raise
 
     user_disable_lock(project_path)
 
 
-@staticmethod
 @contextmanager
 def user_temporary_copy_file(project_name, path_to_file):
     """

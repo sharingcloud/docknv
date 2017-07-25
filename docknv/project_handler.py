@@ -137,7 +137,6 @@ def project_use_configuration(project_path, config_name, quiet=False):
         project_path, config_name, quiet)
 
 
-@staticmethod
 @contextmanager
 def project_use_temporary_configuration(project_path, config_name):
     """
@@ -223,11 +222,10 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     # List linked composefiles
     compose_files_content = composefile_multiple_read(
         project_path, config_data.composefiles)
-    merged_content = yaml_merge(compose_files_content)
 
     # Merge and filter using schema
     merged_content = composefile_filter(
-        compose_files_content, schema_config)
+        yaml_merge(compose_files_content), schema_config)
 
     # Resolve compose content
     resolved_content = renderer_render_compose_template(

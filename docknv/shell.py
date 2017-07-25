@@ -99,7 +99,7 @@ class Shell(object):
             "-f", "--force", action="store_true", help="force restart")
         build_cmd = subs.add_parser("build", help="build machines from schema")
         build_cmd.add_argument(
-            "-p", "--push", help="push to registry", action="store_true")
+            "-n", "--no-push", help="do not push to registry", action="store_true")
 
     def _init_bundle_commands(self):
         cmd = self.subparsers.add_parser(
@@ -272,7 +272,7 @@ class Shell(object):
         generate_cmd = subs.add_parser(
             "generate", help="generate docker compose file using configuration")
         generate_cmd.add_argument(
-            "name", help="schema name", nargs="?", default="all")
+            "name", help="schema name")
         generate_cmd.add_argument(
             "-n", "--namespace", help="namespace name", nargs="?", default="default")
         generate_cmd.add_argument(
@@ -429,7 +429,7 @@ class Shell(object):
 
         elif command == "schema":
             if args.schema_cmd == "build":
-                lifecycle_schema_build(".", args.push)
+                lifecycle_schema_build(".", args.no_push)
 
             elif args.schema_cmd == "start":
                 lifecycle_schema_start(

@@ -1,0 +1,13 @@
+project_name: sample01
+
+composefiles:
+  - composefiles/sample.yml
+
+schemas:
+  standard:
+    volumes:
+      - portainer
+    services:
+      - portainer
+    networks:
+      - net

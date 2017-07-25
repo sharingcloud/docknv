@@ -19,7 +19,7 @@ def lifecycle_get_machine_name(machine_name, environment_name=None):
 # SCHEMA FUNCTIONS ###############
 
 
-def lifecycle_schema_build(project_path, push_to_registry=False):
+def lifecycle_schema_build(project_path, no_push_to_registry=False):
     """
     Build a schema
     """
@@ -41,8 +41,9 @@ def lifecycle_schema_build(project_path, push_to_registry=False):
 
         exec_compose(
             project_path, ["build", service_name])
-        exec_compose(
-            project_path, ["push", service_name])
+        if not no_push_to_registry:
+            exec_compose(
+                project_path, ["push", service_name])
 
 
 def lifecycle_schema_start(project_path, foreground=False):

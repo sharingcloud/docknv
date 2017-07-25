@@ -16,7 +16,8 @@ def schema_list(project_path):
     """
 
     config_data = project_read(project_path)
-    schemas_count = len(config_data.schemas)
+    schemas_count = len(
+        config_data.schemas) if config_data.schemas is not None else 0
     if schemas_count == 0:
         Logger.warn("No schema found.")
     else:
@@ -46,10 +47,7 @@ def schema_get_configuration(config_data, schema_name):
     @param schema_name  Schema name
     """
 
-    if schema_name == "all":
-        return {"name": "all", "config": {}}
-
-    elif schema_name not in config_data.schemas:
+    if schema_name not in config_data.schemas:
         Logger.error("Schema `{0}` does not exist.".format(schema_name))
     else:
         schema_config = config_data.schemas[schema_name]
@@ -73,8 +71,6 @@ def schema_check(config_data, schema_name):
     """
     Check if a schema exist
     """
-    if schema_name == "all":
-        return True
     if schema_name not in config_data.schemas:
         Logger.error("Schema `{0}` does not exist.".format(schema_name))
 

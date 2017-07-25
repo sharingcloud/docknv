@@ -65,7 +65,6 @@ def volume_generate_namespaced_path(file_type, namespace, environment):
         return "./data/global"
 
 
-@staticmethod
 def volume_extract_from_line(line):
     """
     Extract a VolumeObject from a line string.

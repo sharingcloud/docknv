@@ -53,7 +53,6 @@ def env_show(project_path, name):
         Logger.raw(loaded_env[key], color=Fore.BLUE)
 
 
-@staticmethod
 def env_check_file(project_path, name):
     """
     Check if an environment file exist.
@@ -68,7 +67,6 @@ def env_check_file(project_path, name):
     return os.path.exists(env_path)
 
 
-@staticmethod
 def env_load_in_memory(project_path, name):
     """
     Load environment file in memory.
@@ -95,7 +93,6 @@ def env_load_in_memory(project_path, name):
     return loaded_env
 
 
-@staticmethod
 def env_write_to_file(env, path):
     """
     Write environment to a file.

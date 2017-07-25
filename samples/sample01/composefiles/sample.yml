@@ -1,0 +1,27 @@
+version: "3"
+
+# Services
+services:
+
+  # Portainer service: Docker web interface
+  portainer:
+    # Path to image (always "images/image_name")
+    build: images/portainer/
+    # Image tag
+    image: localhost:5000/sample01_portainer
+    volumes:
+      standard:
+        - portainer:/data
+        - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "{{ PORTAINER_OUTPUT_PORT }}:9000"
+    networks:
+      net:
+
+    restart: on-failure
+
+volumes:
+  portainer:
+
+networks:
+  net:
