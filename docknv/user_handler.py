@@ -48,6 +48,14 @@ def user_get_project_config_path(project_name):
     return os.path.join(user_get_config_path(), project_name)
 
 
+def user_get_project_config_name_path(project_name, config_name):
+    """
+    :param project_name: Project name
+    :return: The docknv project config path
+    """
+    return os.path.join(user_get_config_path(), project_name, config_name)
+
+
 def user_get_project_config_file_path(project_name):
     """
     Get project config file from user path.

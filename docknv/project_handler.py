@@ -12,7 +12,7 @@ from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yam
 from docknv.utils.words import generate_config_name
 from docknv.utils.paths import create_path_tree
 
-from docknv.user_handler import user_get_project_config_file_path, user_current_get_id, user_copy_file_to_config_path
+from docknv.user_handler import user_get_project_config_file_path, user_current_get_id, user_copy_file_to_config_path, user_get_project_config_name_path
 from docknv.session_handler import session_update_schema, session_get_configuration, session_read_configuration, session_write_configuration
 from docknv.environment_handler import env_check_file, env_load_in_memory
 from docknv.composefile_handler import composefile_multiple_read, composefile_filter, composefile_resolve_volumes, composefile_apply_namespace, composefile_write
@@ -124,7 +124,7 @@ def project_use_configuration(project_path, config_name, quiet=False):
             "Can not access to `{0}` configuration. Access denied.".format(config_name))
 
     path = project_get_composefile(
-        project_path, config["namespace"], config["environment"], config["schema"])
+        project_path, config_name)
 
     if not os.path.exists(path):
         Logger.error(
@@ -153,11 +153,14 @@ def project_use_temporary_configuration(project_path, config_name):
     project_use_configuration(project_path, old_config, quiet=True)
 
 
-def project_get_composefile(project_path, namespace, environment, schema):
+def project_get_composefile(project_path, config_name):
     """
     Generate a composefile path.
     """
-    return os.path.join(project_path, "data", "local", namespace, environment, "composefiles", schema, "docker-compose.yml")
+    project_name = project_get_name(project_path)
+    config_path = user_get_project_config_name_path(project_name, config_name)
+
+    return os.path.join(config_path, "docker-compose.yml")
 
 
 def project_generate_compose_from_configuration(project_path, config_name):
@@ -200,53 +203,8 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
         "user": user
     }
 
-    # Load config file
-    config_data = project_read(project_path)
-
-    # Load environment
-    if not env_check_file(project_path, environment):
-        Logger.error(
-            "Environment file `{0}` does not exist.".format(environment))
-
-    env_content = env_load_in_memory(
-        project_path, environment)
-
-    # Generate .env file
-    # EnvHandler.write_env_to_file(
-    # env_content, os.path.join(project_path, ".env"))
-
-    # Get schema configuration
-    schema_config = schema_get_configuration(
-        config_data, schema_name)
-
-    # List linked composefiles
-    compose_files_content = composefile_multiple_read(
-        project_path, config_data.composefiles)
-
-    # Merge and filter using schema
-    merged_content = composefile_filter(
-        yaml_merge(compose_files_content), schema_config)
-
-    # Resolve compose content
-    resolved_content = renderer_render_compose_template(
-        merged_content, env_content)
-
-    # Generate volumes declared in composefiles
-    rendered_content = composefile_resolve_volumes(
-        project_path, resolved_content, namespace, environment, env_content)
-
-    # Apply namespace
-    namespaced_content = composefile_apply_namespace(
-        rendered_content, namespace, environment)
-
-    # Generate main compose file
-    output_compose_file = project_get_composefile(
-        project_path, namespace, environment, schema_name)
-    if not os.path.exists(output_compose_file):
-        create_path_tree(os.path.dirname(output_compose_file))
-
-    composefile_write(
-        namespaced_content, output_compose_file)
+    ####################
+    # Configuration name
 
     # Get temporary config
     config = session_read_configuration(project_path)
@@ -294,6 +252,52 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 
     else:
         Logger.info("Config name: `{0}`".format(config_name))
+
+    ###############
+
+    # Load config file
+    config_data = project_read(project_path)
+
+    # Load environment
+    if not env_check_file(project_path, environment):
+        Logger.error(
+            "Environment file `{0}` does not exist.".format(environment))
+
+    env_content = env_load_in_memory(
+        project_path, environment)
+
+    # Get schema configuration
+    schema_config = schema_get_configuration(
+        config_data, schema_name)
+
+    # List linked composefiles
+    compose_files_content = composefile_multiple_read(
+        project_path, config_data.composefiles)
+
+    # Merge and filter using schema
+    merged_content = composefile_filter(
+        yaml_merge(compose_files_content), schema_config)
+
+    # Resolve compose content
+    resolved_content = renderer_render_compose_template(
+        merged_content, env_content)
+
+    # Generate volumes declared in composefiles
+    rendered_content = composefile_resolve_volumes(
+        project_path, resolved_content, config_name, namespace, environment, env_content)
+
+    # Apply namespace
+    namespaced_content = composefile_apply_namespace(
+        rendered_content, namespace, environment)
+
+    # Generate main compose file
+    output_compose_file = project_get_composefile(
+        project_path, config_name)
+    if not os.path.exists(output_compose_file):
+        create_path_tree(os.path.dirname(output_compose_file))
+
+    composefile_write(
+        namespaced_content, output_compose_file)
 
     session_write_configuration(project_path, config)
 

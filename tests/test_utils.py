@@ -8,7 +8,8 @@ import six
 
 from contextlib import contextmanager
 
-from docknv.utils import prompt_yes_no, create_path_tree
+from docknv.utils.prompt import prompt_yes_no
+from docknv.utils.paths import create_path_tree
 
 
 class TestUtils(unittest.TestCase):

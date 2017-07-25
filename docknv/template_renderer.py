@@ -11,6 +11,7 @@ from jinja2 import Template
 from docknv.logger import Logger
 
 from docknv.utils.serialization import yaml_ordered_dump, yaml_ordered_load
+from docknv.user_handler import user_get_project_config_name_path
 
 
 def renderer_render_compose_template(compose_content, environment_data=None):
@@ -52,7 +53,7 @@ def renderer_render_template_inplace(content, environment_data=None):
     return template_output
 
 
-def renderer_render_template(project_path, template_path, namespace="default", environment="default", environment_data=None):
+def renderer_render_template(project_path, template_path, config_name, environment_data=None):
     """
     Render a Jinja template, using a namespace and environment.
 
@@ -63,9 +64,13 @@ def renderer_render_template(project_path, template_path, namespace="default", e
     @param environment_data Environment data
     """
 
+    from docknv.project_handler import project_get_name
+
+    project_name = project_get_name(project_path)
+    user_config_name = user_get_project_config_name_path(
+        project_name, config_name)
     environment_data = environment_data if environment_data else {}
     templates_path = os.path.join(project_path, "data", "templates")
-    data_path = os.path.join(project_path, "data")
 
     real_template_path = os.path.join(templates_path, template_path)
 
@@ -79,14 +84,12 @@ def renderer_render_template(project_path, template_path, namespace="default", e
     Logger.debug("Rendering template `{0}`...".format(template_path))
 
     # Creating tree
-    local_path = os.path.join(data_path, "local")
-    namespace_path = os.path.join(local_path, namespace)
-    environment_path = os.path.join(namespace_path, environment)
-    tpl_output_path = os.path.join(environment_path, "templates")
+    local_path = os.path.join(user_config_name, "data")
+    tpl_output_path = os.path.join(local_path, "templates")
     destination_path = os.path.join(
         tpl_output_path, os.path.dirname(template_path))
 
-    for path in (local_path, namespace_path, environment_path, tpl_output_path, destination_path):
+    for path in (local_path, tpl_output_path, destination_path):
         if not os.path.exists(path):
             os.makedirs(path)
 

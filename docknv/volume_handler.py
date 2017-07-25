@@ -2,6 +2,8 @@
 Volume handler
 """
 
+from docknv.user_handler import user_get_project_config_name_path
+
 
 class VolumeObject(object):
     """
@@ -30,7 +32,7 @@ class VolumeObject(object):
             character in self.host_path for character in "/\\")
         self.is_named = not self.is_absolute and not self.is_relative
 
-    def generate_namespaced_volume_path(self, file_type, path, namespace, environment):
+    def generate_namespaced_volume_path(self, file_type, path, project_name, config_name):
         """
         Generate a namespaced volume path.
 
@@ -42,13 +44,13 @@ class VolumeObject(object):
         @return Path
         """
 
-        return "{0}/{1}".format(volume_generate_namespaced_path(file_type, namespace, environment), path)
+        return "{0}/{1}".format(volume_generate_namespaced_path(file_type, project_name, config_name), path)
 
     def __str__(self):
         return ":".join((self.host_path, self.container_path, self.mode))
 
 
-def volume_generate_namespaced_path(file_type, namespace, environment):
+def volume_generate_namespaced_path(file_type, project_name, config_name):
     """
     Generate a namespaced volume path.
 
@@ -59,8 +61,11 @@ def volume_generate_namespaced_path(file_type, namespace, environment):
     @return Path
     """
 
+    user_config_path = user_get_project_config_name_path(
+        project_name, config_name)
+
     if file_type == "static":
-        return "./data/local/{0}/{1}/static".format(namespace, environment)
+        return "{0}/data/static".format(user_config_path)
     elif file_type == "shared":
         return "./data/global"
 

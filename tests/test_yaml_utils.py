@@ -6,7 +6,7 @@ import unittest
 import mock
 import six
 
-from docknv import yaml_utils
+from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yaml_merge
 
 
 class TestYAMLUtils(unittest.TestCase):
@@ -32,7 +32,7 @@ two:
 aaa:
 """
 
-        loaded = yaml_utils.ordered_load(content)
+        loaded = yaml_ordered_load(content)
 
         self.assertEqual(loaded.keys()[0], "one")
         self.assertEqual(loaded.keys()[1], "two")
@@ -52,7 +52,7 @@ aaa:
             "aaa": None
         }
 
-        dump = yaml_utils.ordered_dump(content)
+        dump = yaml_ordered_dump(content)
         self.assertTrue(dump.startswith("aaa: null\n"))
 
     def test_merge(self):
@@ -81,12 +81,12 @@ aaa:
             "four": ["4"]
         }
 
-        merge = yaml_utils.merge_yaml((content1, content2))
+        merge = yaml_merge((content1, content2))
 
         self.assertIn("three", merge)
         self.assertIn("four", merge)
 
-        merge_solo = yaml_utils.merge_yaml((content1,))
+        merge_solo = yaml_merge((content1,))
 
         self.assertEqual(merge_solo, content1)
-        self.assertIsNone(yaml_utils.merge_yaml(()))
+        self.assertIsNone(yaml_merge(()))

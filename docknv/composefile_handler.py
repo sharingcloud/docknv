@@ -208,25 +208,30 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
     return output_content
 
 
-def composefile_resolve_volumes(project_path, compose_content, namespace="default", environment="default", environment_data=None):
+def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default", environment="default", environment_data=None):
     """
     Resolve volumes, using namespacing.
     Resolve Jinja templates paths.
 
     @param project_path     Project path
     @param compose_content  Compose content
+    @param project_name     Project name
     @param namespace        Namespace name
     @param environment      Environment file name
     @param environment_data Environment data
     """
 
+    from docknv.project_handler import project_get_name
+
     Logger.info("Resolving volumes...")
     output_content = copy.deepcopy(compose_content)
+
+    project_name = project_get_name(project_path)
 
     # Cleaning static files
     create_path_or_replace(
         volume_generate_namespaced_path(
-            "static", namespace, environment)
+            "static", project_name, config_name)
     )
 
     if "services" in output_content:
@@ -250,7 +255,7 @@ def composefile_resolve_volumes(project_path, compose_content, namespace="defaul
 
                         # Render template
                         rendered_path = renderer_render_template(
-                            project_path, template_path, namespace, environment, environment_data)
+                            project_path, template_path, config_name, environment_data)
                         volume_object.host_path = rendered_path
                         final_volumes.append(str(volume_object))
 
@@ -264,10 +269,10 @@ def composefile_resolve_volumes(project_path, compose_content, namespace="defaul
 
                         # Create dirs & copy
                         output_path = volume_object.generate_namespaced_volume_path(
-                            "static", volume_object.host_path, namespace, environment)
+                            "static", volume_object.host_path, project_name, config_name)
 
                         data_path = os.path.join(
-                            project_path, "data", "global", volume_object.host_path)
+                            project_path, "data", "files", volume_object.host_path)
 
                         Logger.debug("Copying static content from `{0}` to `{1}`...".format(
                             data_path, output_path))
@@ -298,7 +303,7 @@ def composefile_resolve_volumes(project_path, compose_content, namespace="defaul
                             shared_def)
 
                         data_path = os.path.join(
-                            project_path, "data", "global", volume_object.host_path)
+                            project_path, "data", "files", volume_object.host_path)
 
                         Logger.debug("Detecting shared content at `{0}`...".format(
                             data_path))
