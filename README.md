@@ -1,4 +1,4 @@
-# docknv 3.0.0
+# docknv 3.1.0
 
 ## Installation
 
@@ -30,7 +30,7 @@ To use **Docknv**, you need to respect the following structure, all contained in
 - **composefiles**: The location of your Docker Compose files.
 - **data**: Your project data, organized in three different folders:
     - **templates**: The location of the Jinja2 templates, with one folder per container.
-    - **global**: Static files imported via volumes should be stored here, with one folder per container
+    - **files**: Static files imported via volumes should be stored here, with one folder per container
     - **standard**: Here you can put private files to be imported
 - **envs**: The location of your environment configuration files, ending with `.env.py` (example for *debug*, the filename is `debug.env.py`). By default, there is always a `default.env.py`.
 - **images**: The location of your Docker images, one folder per container. You should always use the "building" way (instead of the direct fetching) when including new Docker images in your Compose files.

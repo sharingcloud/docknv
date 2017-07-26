@@ -317,3 +317,17 @@ def project_validate(project_file_path, config_data):
             "Missing `schemas` key in config file `{0}`"
             .format(project_file_path)
         )
+
+
+def project_clean_user_config_path(project_path, config_name=None):
+    from docknv.user_handler import user_clean_config_path
+
+    project_name = project_get_name(project_path)
+    if not config_name:
+        Logger.info(
+            "Attempting to clean user configuration for project `{0}`".format(project_name))
+    else:
+        Logger.info("Attempting to clean user configuration for project `{0}` and config `{1}`".format(
+            project_name, config_name))
+
+    user_clean_config_path(project_name, config_name)

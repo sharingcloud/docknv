@@ -14,7 +14,7 @@ from docknv.scaffolder import scaffold_environment, scaffold_environment_copy, s
 from docknv.environment_handler import env_list, env_show
 from docknv.schema_handler import schema_list
 from docknv.session_handler import session_show_configuration_list, session_remove_configuration, session_update_environment
-from docknv.project_handler import project_generate_compose, project_use_configuration, project_update_configuration_schema, project_generate_compose_from_configuration, project_get_active_configuration
+from docknv.project_handler import project_generate_compose, project_use_configuration, project_update_configuration_schema, project_generate_compose_from_configuration, project_get_active_configuration, project_clean_user_config_path
 from docknv.lifecycle_handler import *
 from docknv.user_handler import user_try_lock
 
@@ -78,6 +78,7 @@ class Shell(object):
         self._init_network_commands()
         self._init_config_commands()
         self._init_volume_commands()
+        self._init_user_commands()
 
     def _init_schema_commands(self):
         cmd = self.subparsers.add_parser(
@@ -396,6 +397,15 @@ class Shell(object):
         rm_cmd = subs.add_parser("rm", help="remove network")
         rm_cmd.add_argument("name", help="network name")
 
+    def _init_user_commands(self):
+        cmd = self.subparsers.add_parser(
+            "user", help="manage user config files")
+        subs = cmd.add_subparsers(dest="user_cmd", metavar="")
+
+        clean_cmd = subs.add_parser(
+            "clean", help="clean user config files for this project")
+        clean_cmd.add_argument("config_name", nargs="?", default=None)
+
     def _parse_args(self, args):
         command = args.command
 
@@ -569,6 +579,10 @@ class Shell(object):
 
             elif args.volume_cmd == "rm":
                 lifecycle_volume_remove(".", args.name)
+
+        elif command == "user":
+            if args.user_cmd == "clean":
+                project_clean_user_config_path(".", args.config_name)
 
         for parser in self.post_parsers:
             if parser(self, args):

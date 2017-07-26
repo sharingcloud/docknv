@@ -79,7 +79,9 @@ def session_remove_configuration(project_path, config_name):
         Logger.error("Missing configuration `{0}`.".format(config_name))
     uid = user_current_get_id()
 
-    if config["user"] != uid:
+    config_to_remove = config["values"][config_name]
+
+    if config_to_remove["user"] != uid:
         Logger.error(
             "You can not remove configuration `{0}`. Access denied.".format(config_name))
 
@@ -88,18 +90,12 @@ def session_remove_configuration(project_path, config_name):
 
     if choice:
         # Check current
-        if "current" in config and config["current"] == config_name:
-            if os.path.exists(os.path.join(project_path, ".docker-compose.yml")):
-                os.remove(os.path.join(
-                    project_path, ".docker-compose.yml"))
-            del config["current"]
 
         # Remove configuration and docker-compose file.
-        config_to_remove = config["values"][config_name]
         path = project_get_composefile(
-            project_path, config_to_remove["namespace"], config_to_remove["environment"],
-            config_to_remove["schema"])
-        os.remove(path)
+            project_path, config_name)
+        if os.path.exists(path):
+            os.remove(path)
 
         del config["values"][config_name]
 

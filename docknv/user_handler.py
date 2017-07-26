@@ -175,3 +175,21 @@ def user_temporary_copy_file(project_name, path_to_file):
 
     if os.path.exists(generated_file_name):
         os.remove(generated_file_name)
+
+
+def user_clean_config_path(project_name, config_name=None):
+    """
+    Clean a user config path, with an optional config name
+    """
+
+    from docknv.utils.prompt import prompt_yes_no
+
+    if config_name:
+        folder_path = user_get_project_config_name_path(
+            project_name, config_name)
+    else:
+        folder_path = user_get_project_config_path(project_name)
+
+    if prompt_yes_no("Are you sure you want to remove the user folder {0} ?".format(folder_path)):
+        shutil.rmtree(folder_path)
+        Logger.info("Folder `{0}` removed".format(folder_path))
