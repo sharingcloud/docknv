@@ -47,8 +47,8 @@ def composefile_multiple_read(project_path, compose_file_paths):
     @return List of file contents
     """
 
-    return filter(None, [
-        composefile_read(project_path, path) for path in compose_file_paths])
+    return [composefile_read(project_path, path)
+            for path in compose_file_paths if path]
 
 
 def composefile_write(compose_content, output_path):
