@@ -252,7 +252,7 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
             sys.exit(os.WEXITSTATUS(code))
 
 
-def lifecycle_machine_logs(project_path, machine_name, tail=0, environment_name=None):
+def lifecycle_machine_logs(project_path, machine_name, tail=0, follow=False, environment_name=None):
     """
     Get logs from a machine
     """
@@ -264,6 +264,8 @@ def lifecycle_machine_logs(project_path, machine_name, tail=0, environment_name=
             machine_name), crash=False)
     else:
         cmd = "docker logs {0}".format(container)
+        if follow:
+            cmd = "{0} -f".format(cmd)
         if tail != 0:
             cmd = "{0} --tail {1}".format(cmd, tail)
 

@@ -196,6 +196,8 @@ class Shell(object):
         logs_cmd.add_argument("machine", help="machine name")
         logs_cmd.add_argument("--tail", type=int,
                               help="tail logs", default=0)
+        logs_cmd.add_argument(
+            "-f", "--follow", help="follow logs", action="store_true", default=False)
         logs_cmd.add_argument("-e", "--environment",
                               help="environment name", default=None)
 
@@ -502,7 +504,7 @@ class Shell(object):
 
             elif args.machine_cmd == "logs":
                 lifecycle_machine_logs(
-                    ".", args.machine, tail=args.tail, environment_name=args.environment)
+                    ".", args.machine, tail=args.tail, follow=args.follow, environment_name=args.environment)
 
         elif command == "bundle":
             if args.bundle_cmd == "start":
