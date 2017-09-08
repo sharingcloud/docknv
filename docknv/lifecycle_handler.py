@@ -9,7 +9,7 @@ from docknv.logger import Logger
 
 from docknv.docker_wrapper import exec_compose, exec_compose_pretty, get_docker_container
 from docknv.project_handler import project_get_name, project_get_active_configuration, project_read, project_use_temporary_configuration
-from docknv.session_handler import session_get_configuration
+from docknv.session_handler import session_get_configuration, session_check_bundle_configurations
 from docknv.schema_handler import schema_get_configuration
 
 
@@ -89,30 +89,40 @@ def lifecycle_schema_restart(project_path, force=False):
 
 
 def lifecycle_bundle_stop(project_path, config_names):
+    session_check_bundle_configurations(project_path, config_names)
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
             lifecycle_schema_stop(project_path)
 
 
 def lifecycle_bundle_start(project_path, config_names):
+    session_check_bundle_configurations(project_path, config_names)
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
             lifecycle_schema_start(project_path)
 
 
 def lifecycle_bundle_restart(project_path, config_names, force=False):
+    session_check_bundle_configurations(project_path, config_names)
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
             lifecycle_schema_restart(project_path, force)
 
 
 def lifecycle_bundle_ps(project_path, config_names):
+    session_check_bundle_configurations(project_path, config_names)
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
             lifecycle_schema_ps(project_path)
 
 
 def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_registry=True):
+    session_check_bundle_configurations(project_path, config_names)
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
             lifecycle_schema_build(project_path, no_cache, push_to_registry)

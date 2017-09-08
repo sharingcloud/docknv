@@ -51,6 +51,15 @@ def session_check_configuration(config_data, config_name):
     return True
 
 
+def session_check_bundle_configurations(project_path, config_names):
+    config_data = session_read_configuration(project_path)
+
+    for config_name in config_names:
+        session_check_configuration(config_data, config_name)
+
+    return True
+
+
 def session_update_environment(project_path, config_name, environment_name):
     """
     Change a config environment
