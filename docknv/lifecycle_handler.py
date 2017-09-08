@@ -19,7 +19,7 @@ def lifecycle_get_machine_name(machine_name, environment_name=None):
 # SCHEMA FUNCTIONS ###############
 
 
-def lifecycle_schema_build(project_path, no_push_to_registry=False):
+def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
     """
     Build a schema
     """
@@ -39,9 +39,11 @@ def lifecycle_schema_build(project_path, no_push_to_registry=False):
         service_name = "{0}_{1}".format(
             namespace, service) if namespace != "default" else service
 
+        no_cache_cmd = "--no-cache" if no_cache else ""
         exec_compose(
-            project_path, ["build", service_name])
-        if not no_push_to_registry:
+            project_path, ["build", service_name, no_cache_cmd])
+
+        if push_to_registry:
             exec_compose(
                 project_path, ["push", service_name])
 
@@ -109,10 +111,16 @@ def lifecycle_bundle_ps(project_path, config_names):
         with project_use_temporary_configuration(project_path, config_name):
             lifecycle_schema_ps(project_path)
 
+
+def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_registry=True):
+    for config_name in config_names:
+        with project_use_temporary_configuration(project_path, config_name):
+            lifecycle_schema_build(project_path, no_cache, push_to_registry)
+
 # MACHINE FUNCTIONS #############
 
 
-def lifecycle_machine_build(project_path, machine_name, push_to_registry=False, no_cache=False, environment_name=None):
+def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_registry=True, environment_name=None):
     """
     Build a machine
     """

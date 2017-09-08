@@ -100,7 +100,9 @@ class Shell(object):
             "-f", "--force", action="store_true", help="force restart")
         build_cmd = subs.add_parser("build", help="build machines from schema")
         build_cmd.add_argument(
-            "-n", "--no-push", help="do not push to registry", action="store_true")
+            "-n", "--no-cache", help="no cache", action="store_true")
+        build_cmd.add_argument(
+            "-d", "--do-not-push", help="do not push to registry", action="store_true")
 
     def _init_bundle_commands(self):
         cmd = self.subparsers.add_parser(
@@ -122,6 +124,14 @@ class Shell(object):
 
         ps_cmd = subs.add_parser("ps", help="list schemas processes")
         ps_cmd.add_argument("configs", nargs="+")
+
+        build_cmd = subs.add_parser(
+            "build", help="build machines from schemas")
+        build_cmd.add_argument("configs", nargs="+")
+        build_cmd.add_argument(
+            "-n", "--no-cache", help="no cache", action="store_true")
+        build_cmd.add_argument(
+            "-d", "--do-not-push", help="do not push to registry", action="store_true")
 
     def _init_registry_commands(self):
         cmd = self.subparsers.add_parser(
@@ -218,7 +228,7 @@ class Shell(object):
         build_cmd = subs.add_parser("build", help="build a machine")
         build_cmd.add_argument("machine", help="machine name")
         build_cmd.add_argument(
-            "-p", "--push", help="push to registry", action="store_true")
+            "-d", "--do-not-push", help="do not push to registry", action="store_true")
         build_cmd.add_argument(
             "-n", "--no-cache", help="build without cache", action="store_true")
         build_cmd.add_argument("-e", "--environment",
@@ -443,7 +453,8 @@ class Shell(object):
 
         elif command == "schema":
             if args.schema_cmd == "build":
-                lifecycle_schema_build(".", args.no_push)
+                lifecycle_schema_build(
+                    ".", args.no_cache, not args.do_not_push)
 
             elif args.schema_cmd == "start":
                 lifecycle_schema_start(
@@ -464,7 +475,7 @@ class Shell(object):
         elif command == "machine":
             if args.machine_cmd == "build":
                 lifecycle_machine_build(
-                    ".", args.machine, args.push, args.no_cache, args.environment)
+                    ".", args.machine, args.no_cache, not args.do_not_push, args.environment)
 
             elif args.machine_cmd == "daemon":
                 lifecycle_machine_daemon(
@@ -515,6 +526,9 @@ class Shell(object):
                 lifecycle_bundle_restart(".", args.configs, args.force)
             elif args.bundle_cmd == "ps":
                 lifecycle_bundle_ps(".", args.configs)
+            elif args.bundle_cmd == "build":
+                lifecycle_bundle_build(
+                    ".", args.configs, args.no_cache, not args.do_not_push)
 
         elif command == "registry":
             if args.registry_cmd == "start":
