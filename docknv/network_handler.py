@@ -1,7 +1,7 @@
-"""
-Network handler
-"""
+"""Network handler."""
 
 
 class NetworkHandler(object):
+    """Network handler."""
+
     pass

@@ -17,10 +17,10 @@ def composefile_read(project_path, compose_file_path):
     """
     Read a compose file.
 
-    :param project_path         Project path
-    :param compose_file_path    Compose file path
+    :param project_path         Project path (str)
+    :param compose_file_path    Compose file path (str)
 
-    :return File content
+    :return File content (dict)
     """
     real_path = os.path.join(project_path, compose_file_path)
 
@@ -38,10 +38,10 @@ def composefile_multiple_read(project_path, compose_file_paths):
     """
     Read multiple compose files.
 
-    :param project_path         Project path
-    :param compose_file_paths   Compose file paths
+    :param project_path         Project path (str)
+    :param compose_file_paths   Compose file paths (str)
 
-    :return List of file contents
+    :return List of file contents (iterable)
     """
     return filter(None, [
         composefile_read(project_path, path) for path in compose_file_paths])
@@ -51,22 +51,22 @@ def composefile_write(compose_content, output_path):
     """
     Write compose content to a file.
 
-    :param compose_content  Compose content
-    :param output_path      Output path
+    :param compose_content  Compose content (dict)
+    :param output_path      Output path (str)
     """
     with codecs.open(output_path, encoding="utf-8", mode="w") as handle:
         handle.write(yaml_ordered_dump(compose_content))
 
-    Logger.info(
-        "Compose content written to file `{0}`".format(output_path))
+    Logger.info("Compose content written to file `{0}`".format(output_path))
 
 
 def composefile_filter(merged_content, schema_configuration):
     """
     Filter composefile content using a schema configuration.
 
-    :param merged_content           Compose file content
-    :param schema_configuration     Schema configuration
+    :param merged_content           Compose file content (dict)
+    :param schema_configuration     Schema configuration (str)
+    :return Filtered content (dict)
     """
     all_schema = schema_configuration["name"] == "all"
 
@@ -123,7 +123,7 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
     :param compose_content  Compose content (dict)
     :param namespace        Namespace name (str) (default: default)
     :param environment      Environment file name (str) (default: default)
-    :return str
+    :return dict
     """
     output_content = copy.deepcopy(compose_content)
 
@@ -213,7 +213,7 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     :param namespace        Namespace name (str) (default: default)
     :param environment      Environment file name (str) (default: default)
     :param environment_data Environment data (str?) (default: None)
-    :return str
+    :return dict
     """
     from docknv.project_handler import project_get_name
 

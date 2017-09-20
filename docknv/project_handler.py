@@ -1,6 +1,4 @@
-"""
-Project handler
-"""
+"""Project handler."""
 
 import os
 import codecs
@@ -12,21 +10,28 @@ from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yam
 from docknv.utils.words import generate_config_name
 from docknv.utils.paths import create_path_tree
 
-from docknv.user_handler import user_get_project_config_file_path, user_current_get_id, user_copy_file_to_config_path, user_get_project_config_name_path
-from docknv.session_handler import session_update_schema, session_get_configuration, session_read_configuration, session_write_configuration
+from docknv.user_handler import user_get_project_config_file_path, user_current_get_id, user_copy_file_to_config_path, \
+                                user_get_project_config_name_path
+from docknv.session_handler import session_update_schema, session_get_configuration, session_read_configuration, \
+                                   session_write_configuration
 from docknv.environment_handler import env_check_file, env_load_in_memory
-from docknv.composefile_handler import composefile_multiple_read, composefile_filter, composefile_resolve_volumes, composefile_apply_namespace, composefile_write
+from docknv.composefile_handler import composefile_multiple_read, composefile_filter, composefile_resolve_volumes, \
+                                       composefile_apply_namespace, composefile_write
 from docknv.template_renderer import renderer_render_compose_template
 
 CONFIG_FILE_NAME = "config.yml"
 
 
 class ProjectData(object):
-    """
-    docknv config data object
-    """
+    """docknv config data object."""
 
     def __init__(self, project_path, config_data):
+        """
+        The ProjectData constructor.
+
+        :param project_path     Project path (str)
+        :param config_data      Config data (dict)
+        """
         self.project_path = project_path
         self.project_name = os.path.basename(
             os.path.abspath(project_path)).lower()
@@ -41,9 +46,9 @@ def project_read(project_path):
     """
     Load a docknv config file from a project path.
 
-    @param project_path Project path
+    :param project_path Project path (str)
+    :return Project data (ProjectData)
     """
-
     project_file_path = os.path.join(
         project_path, CONFIG_FILE_NAME)
 
@@ -63,7 +68,11 @@ def project_read(project_path):
 
 def project_set_active_configuration(project_path, config_name, quiet=False):
     """
-    Set a current config
+    Set the active configuration.
+
+    :param project_path     Project path (str)
+    :param config_name      Config name (str)
+    :param quiet            Be quiet (bool) (default: False)
     """
     config = project_read(project_path)
     config_path = user_get_project_config_file_path(config.project_name)
@@ -78,6 +87,12 @@ def project_set_active_configuration(project_path, config_name, quiet=False):
 
 
 def project_get_active_configuration(project_path):
+    """
+    Get the active configuration.
+
+    :param project_path     Project path (str)
+    :return Active configuration (str?)
+    """
     config = project_read(project_path)
     config_path = user_get_project_config_file_path(config.project_name)
     content = None
@@ -91,9 +106,12 @@ def project_get_active_configuration(project_path):
 
 def project_update_configuration_schema(project_path, config_name, schema_name):
     """
-    Change a config schema
-    """
+    Update a configuration schema.
 
+    :param project_path     Project path (str)
+    :param config_name      Config name (str)
+    :param schema_name      Schema name (str)
+    """
     project_config = project_read(project_path)
     session_update_schema(
         project_path, project_config, config_name, schema_name)
@@ -102,17 +120,23 @@ def project_update_configuration_schema(project_path, config_name, schema_name):
 def project_get_name(project_path):
     """
     Get project name from path.
-    """
 
+    :param project_path     Project path (str)
+    :return Project path (str)
+    """
     return os.path.basename(os.path.abspath(project_path)).lower()
 
 
 def project_use_configuration(project_path, config_name, quiet=False):
     """
     Use a composefile from a known configuration.
-    Set it at .docker-compose.yml.
-    """
 
+    Set it at .docker-compose.yml.
+
+    :param project_path     Project path (str)
+    :param config_name      Config name (str)
+    :param quiet            Be quiet (bool) (default: False)
+    """
     config_content = project_read(project_path)
 
     config = session_get_configuration(
@@ -140,9 +164,12 @@ def project_use_configuration(project_path, config_name, quiet=False):
 @contextmanager
 def project_use_temporary_configuration(project_path, config_name):
     """
-    Use a temporary config
-    """
+    Use a temporary configuration.
 
+    :param project_path     Project path (str)
+    :param config_name      Config name (str)
+    :coroutine
+    """
     old_config = project_get_active_configuration(project_path)
     if old_config is None:
         Logger.error(
@@ -156,6 +183,9 @@ def project_use_temporary_configuration(project_path, config_name):
 def project_get_composefile(project_path, config_name):
     """
     Generate a composefile path.
+
+    :param project_path     Project path (str)
+    :param config_name      Config name (str)
     """
     project_name = project_get_name(project_path)
     config_path = user_get_project_config_name_path(project_name, config_name)
@@ -167,8 +197,8 @@ def project_generate_compose_from_configuration(project_path, config_name):
     """
     Generate a valid Docker Compose file from a known configuration name.
 
-    @param project_path Project path
-    @param config_name  Configuration nickname
+    :param project_path     Project path (str)
+    :param config_name      Config name (str)
     """
     config = session_get_configuration(
         project_path, config_name)
@@ -176,17 +206,17 @@ def project_generate_compose_from_configuration(project_path, config_name):
         ".", config["schema"], config["namespace"], config["environment"], config_name)
 
 
-def project_generate_compose(project_path, schema_name="all", namespace="default", environment="default", config_name=None):
+def project_generate_compose(project_path, schema_name="all", namespace="default", environment="default",
+                             config_name=None):
     """
     Generate a valid Docker Compose file.
 
-    @param project_path     Project path
-    @param schema_name      Schema name
-    @param namespace        Namespace name
-    @param environment      Environment config
-    @param config_name      Configuration nickname
+    :param project_path     Project path (str)
+    :param schema_name      Schema name (str) (default: all)
+    :param namespace        Namespace name (str) (default: default)
+    :param environment      Environment config (str) (default: default)
+    :param config_name      Config name (str?) (default: None)
     """
-
     from docknv.schema_handler import schema_get_configuration
 
     user = None
@@ -304,7 +334,10 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 
 def project_validate(project_file_path, config_data):
     """
-    Validate project file structure
+    Validate project file structure.
+
+    :param project_file_path    Project path (str)
+    :param config_data          Config data (dict)
     """
     if "composefiles" not in config_data:
         Logger.error(
@@ -320,6 +353,12 @@ def project_validate(project_file_path, config_data):
 
 
 def project_clean_user_config_path(project_path, config_name=None):
+    """
+    Clean the user config path.
+
+    :param project_path     Project path (str)
+    :param config_name      Config name (str?) (default: None)
+    """
     from docknv.user_handler import user_clean_config_path
 
     project_name = project_get_name(project_path)

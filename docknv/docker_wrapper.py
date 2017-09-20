@@ -1,6 +1,4 @@
-"""
-Docker commands wrapper
-"""
+"""Docker commands wrapper."""
 
 import os
 import subprocess
@@ -14,14 +12,16 @@ from docknv.user_handler import user_temporary_copy_file
 def get_docker_container(project_path, machine):
     """
     Return a Docker container ID.
+
+    :param project_path     Project path (str)
+    :param machine          Machine name (str)
+    :return Container name (str)
     """
     config = project_read(project_path)
 
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
-        cmd = "docker-compose -f {0} ps -q {1}".format(
-            user_file, machine)
-        proc = subprocess.Popen(cmd, cwd=project_path,
-                                stdout=subprocess.PIPE, shell=True)
+        cmd = "docker-compose -f {0} ps -q {1}".format(user_file, machine)
+        proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE, shell=True)
         (out, _) = proc.communicate()
 
         if out == "":
@@ -33,6 +33,9 @@ def get_docker_container(project_path, machine):
 def exec_docker(project_path, args):
     """
     Execute a Docker command.
+
+    :param project_path     Project path (str)
+    :param args             Arguments (...)
     """
     if os.name == 'nt':
         commands = "cd {0} & docker {1}".format(project_path, " ".join(args))
@@ -46,8 +49,10 @@ def exec_docker(project_path, args):
 def exec_compose(project_path, args):
     """
     Execute a Docker Compose command.
-    """
 
+    :param project_path     Project path (str)
+    :param args             Arguments (...)
+    """
     config = project_read(project_path)
 
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
@@ -63,9 +68,11 @@ def exec_compose(project_path, args):
 
 def exec_compose_pretty(project_path, args):
     """
-    Execute a Docker Compose command, property filtered.
-    """
+    Execute a Docker Compose command, properly filtered.
 
+    :param project_path     Project path (str)
+    :param args             Arguments (...)
+    """
     config = project_read(project_path)
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
         cmd = "docker-compose -f {0} {1}".format(
@@ -77,12 +84,11 @@ def exec_compose_pretty(project_path, args):
 
         lines = []
         if out != "":
-            lines = lines + [l for l in out.split("\n") if l != ""]
+            lines = lines + [line for line in out.split("\n") if line != ""]
         if err != "":
-            lines = lines + [l for l in err.split("\n") if l != ""]
+            lines = lines + [line for line in err.split("\n") if line != ""]
 
         for line in lines:
-
             # Ignore swarm warning
             if line.startswith("Some services"):
                 continue

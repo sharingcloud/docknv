@@ -1,6 +1,4 @@
-"""
-Schema handler
-"""
+"""Schema handler."""
 
 import copy
 
@@ -13,11 +11,11 @@ from docknv.utils.serialization import yaml_merge
 def schema_list(project_path):
     """
     List available schemas for the project.
-    """
 
+    :param project_path     Project path (str)
+    """
     config_data = project_read(project_path)
-    schemas_count = len(
-        config_data.schemas) if config_data.schemas is not None else 0
+    schemas_count = len(config_data.schemas) if config_data.schemas is not None else 0
     if schemas_count == 0:
         Logger.warn("No schema found.")
     else:
@@ -41,12 +39,12 @@ def schema_list(project_path):
 
 def schema_get_configuration(config_data, schema_name):
     """
-    Get schema configuration
+    Get schema configuration.
 
-    @param config_data  Config data
-    @param schema_name  Schema name
+    :param config_data  Config data (dict)
+    :param schema_name  Schema name (str)
+    :return Schema configuration (dict)
     """
-
     if schema_name not in config_data.schemas:
         Logger.error("Schema `{0}` does not exist.".format(schema_name))
     else:
@@ -69,7 +67,11 @@ def schema_get_configuration(config_data, schema_name):
 
 def schema_check(config_data, schema_name):
     """
-    Check if a schema exist
+    Check if a schema exist.
+
+    :param config_data      Config data (dict)
+    :param schema_name      Schema name (str)
+    :return bool
     """
     if schema_name not in config_data.schemas:
         Logger.error("Schema `{0}` does not exist.".format(schema_name))

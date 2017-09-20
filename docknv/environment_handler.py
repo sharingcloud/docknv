@@ -1,6 +1,4 @@
-"""
-Handle docknv environment files
-"""
+"""Handle docknv environment files."""
 
 import os
 import imp
@@ -15,9 +13,8 @@ def env_list(project_path):
     """
     List environment configurations.
 
-    @param project_path Project path
+    :param project_path     Project path (str)
     """
-
     env_path = os.path.join(project_path, "envs")
 
     if not os.path.isdir(env_path):
@@ -40,10 +37,9 @@ def env_show(project_path, name):
     """
     Print an environment file.
 
-    @param project_path Project path
-    @param name         Environment file name
+    :param project_path     Project path (str)
+    :param name             Environment file name (str)
     """
-
     loaded_env = env_load_in_memory(project_path, name)
 
     Logger.info("Showing environment file `{0}`:".format(name))
@@ -57,11 +53,10 @@ def env_check_file(project_path, name):
     """
     Check if an environment file exist.
 
-    @param project_path Project path
-    @param name         Environment file name
-    @return True/False
+    :param project_path     Project path (str)
+    :param name             Environment file name (str)
+    :return bool
     """
-
     env_path = os.path.join(project_path, "envs",
                             "".join((name, ".env.py")))
     return os.path.exists(env_path)
@@ -71,12 +66,11 @@ def env_load_in_memory(project_path, name):
     """
     Load environment file in memory.
 
-    @param project_path Project path
-    @param name         Environment file name
+    :param project_path     Project path (str)
+    :param name             Environment file name (str)
+    :return Environment data (dict)
     """
-
-    env_path = os.path.join(project_path, "envs",
-                            "".join((name, ".env.py")))
+    env_path = os.path.join(project_path, "envs", "".join((name, ".env.py")))
 
     if not os.path.isfile(env_path):
         raise RuntimeError("File `{0}` does not exist".format(env_path))
@@ -97,10 +91,9 @@ def env_write_to_file(env, path):
     """
     Write environment to a file.
 
-    @param env  Environment configuration data
-    @param path Output file
+    :param env      Environment configuration data (dict)
+    :param path     Output file (str)
     """
-
     Logger.info("Writing environment to file {0}...".format(path))
 
     with codecs.open(path, encoding="utf-8", mode="wt+") as handle:

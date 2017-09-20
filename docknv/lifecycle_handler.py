@@ -18,7 +18,7 @@ def lifecycle_get_machine_name(machine_name, environment_name=None):
 
     :param machine_name     Machine name (str)
     :param environment_name Environment name (str?) (default: None)
-    :return str
+    :return Machine name (str)
     """
     return "{0}_{1}".format(environment_name, machine_name) if environment_name else machine_name
 

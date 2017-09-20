@@ -1,6 +1,4 @@
-"""
-Jinja template renderer
-"""
+"""Jinja template renderer."""
 
 import os
 import codecs
@@ -18,10 +16,10 @@ def renderer_render_compose_template(compose_content, environment_data=None):
     """
     Resolve compose content.
 
-    @param compose_content  Compose content
-    @param environment_data Environment data
+    :param compose_content      Compose content (dict)
+    :param environment_data     Environment data (dict?) (default: None)
+    :return Template data (dict)
     """
-
     Logger.info("Resolving compose content...")
     output_content = copy.deepcopy(compose_content)
 
@@ -35,10 +33,10 @@ def renderer_render_template_inplace(content, environment_data=None):
     """
     Render a Jinja template in-place, using environment data.
 
-    @param content          Template content
-    @param environment_data Environment data
+    :param content              Template content (dict)
+    :param environment_data     Environment data (dict?) (default: None)
+    :param Template data (str)
     """
-
     environment_data = environment_data if environment_data else {}
 
     Logger.debug("Rendering template in-place...")
@@ -57,13 +55,12 @@ def renderer_render_template(project_path, template_path, config_name, environme
     """
     Render a Jinja template, using a namespace and environment.
 
-    @param project_path     Project path
-    @param template_path    Template path
-    @param namespace        Namespace name
-    @param environment_name Environment file name
-    @param environment_data Environment data
+    :param project_path         Project path (str)
+    :param template_path        Template path (str)
+    :param config_name          Config name (str)
+    :param environment_data     Environment data (dict?) (default: None)
+    :return File output name (str)
     """
-
     from docknv.project_handler import project_get_name
 
     project_name = project_get_name(project_path)

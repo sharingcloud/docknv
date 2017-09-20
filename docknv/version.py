@@ -1,6 +1,4 @@
-"""
-Version number
-"""
+"""Version number."""
 
 VERSION = (3, 3, 0, 'beta')
 
