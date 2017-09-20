@@ -1,6 +1,4 @@
-"""
-Shell
-"""
+"""Shell."""
 
 import argparse
 import sys
@@ -10,21 +8,25 @@ import imp
 from docknv.version import __version__
 from docknv.logger import Logger
 
-from docknv.scaffolder import scaffold_environment, scaffold_environment_copy, scaffold_image, scaffold_link_composefile, scaffold_project
+from docknv.scaffolder import scaffold_environment, scaffold_environment_copy, scaffold_image, \
+                              scaffold_link_composefile, scaffold_project
 from docknv.environment_handler import env_list, env_show
 from docknv.schema_handler import schema_list
-from docknv.session_handler import session_show_configuration_list, session_remove_configuration, session_update_environment
-from docknv.project_handler import project_generate_compose, project_use_configuration, project_update_configuration_schema, project_generate_compose_from_configuration, project_get_active_configuration, project_clean_user_config_path
-from docknv.lifecycle_handler import *
+from docknv.session_handler import session_show_configuration_list, session_remove_configuration, \
+                                   session_update_environment
+from docknv.project_handler import project_generate_compose, project_use_configuration, \
+                                   project_update_configuration_schema, project_generate_compose_from_configuration, \
+                                   project_get_active_configuration, project_clean_user_config_path
 from docknv.user_handler import user_try_lock
+
+from docknv import lifecycle_handler
 
 
 class Shell(object):
-    """
-    Shell entry-point
-    """
+    """Shell entry-point."""
 
     def __init__(self):
+        """Init."""
         self.parser = argparse.ArgumentParser(
             description="Docker w/ environments (docknv {0})".format(__version__))
         self.parser.add_argument('-v', '--version', action='version',
@@ -38,17 +40,18 @@ class Shell(object):
 
     def register_post_parser(self, fct):
         """
-        Register a new parser function
+        Register a new parser function.
 
-        @param fct  Parser function
+        :param fct  Parser function (fn)
         """
         self.post_parsers.append(fct)
 
     def run(self, args):
         """
         Start and read command-line arguments.
-        """
 
+        :param args Arguments
+        """
         args_count = len(args)
         if args_count == 0:
             self.parser.print_help()
@@ -86,14 +89,14 @@ class Shell(object):
 
         subs = cmd.add_subparsers(dest="schema_cmd", metavar="")
 
-        ls_cmd = subs.add_parser("ls", help="list schemas")
+        subs.add_parser("ls", help="list schemas")
+        subs.add_parser("ps", help="list schema processes")
+        subs.add_parser("stop", help="shutdown machines from schema")
+        subs.add_parser("status", help="get current config name")
 
-        ps_cmd = subs.add_parser("ps", help="list schema processes")
         start_cmd = subs.add_parser("start", help="boot machines from schema")
         start_cmd.add_argument(
             "-f", "--foreground", action="store_true", help="start in foreground")
-        stop_cmd = subs.add_parser(
-            "stop", help="shutdown machines from schema")
         restart_cmd = subs.add_parser(
             "restart", help="restart machines from schema")
         restart_cmd.add_argument(
@@ -142,7 +145,7 @@ class Shell(object):
         start_cmd = subs.add_parser("start", help="start registry")
         start_cmd.add_argument(
             "-p", "--path", help="storage path", nargs="?", default=None)
-        stop_cmd = subs.add_parser("stop", help="stop registry")
+        subs.add_parser("stop", help="stop registry")
 
     def _init_machine_commands(self):
         cmd = self.subparsers.add_parser(
@@ -281,8 +284,8 @@ class Shell(object):
         use_cmd = subs.add_parser("use", help="use configuration")
         use_cmd.add_argument("name", help="configuration name")
 
-        status_cmd = subs.add_parser(
-            "status", help="show current configuration")
+        subs.add_parser("status", help="show current configuration")
+        subs.add_parser("ls", help="list known configurations")
 
         generate_cmd = subs.add_parser(
             "generate", help="generate docker compose file using configuration")
@@ -294,8 +297,6 @@ class Shell(object):
             "-e", "--environment", help="environment file name", nargs="?", default="default")
         generate_cmd.add_argument(
             "-c", "--config-name", help="configuration nickname", nargs="?", default=None)
-
-        ls_cmd = subs.add_parser("ls", help="list known configurations")
 
         update_cmd = subs.add_parser(
             "update", help="update a known configuration")
@@ -334,13 +335,10 @@ class Shell(object):
             "swarm", help="deploy to swarm (swarm mode)")
         subs = cmd.add_subparsers(dest="swarm_cmd", metavar="")
 
-        push_cmd = subs.add_parser("push", help="push stack to swarm")
-
-        up_cmd = subs.add_parser("up", help="deploy stack to swarm")
-
-        down_cmd = subs.add_parser("down", help="shutdown stack")
-
-        ls_cmd = subs.add_parser("ls", help="list current services")
+        subs.add_parser("push", help="push stack to swarm")
+        subs.add_parser("up", help="deploy stack to swarm")
+        subs.add_parser("down", help="shutdown stack")
+        subs.add_parser("ls", help="list current services")
 
         ps_cmd = subs.add_parser("ps", help="get service info")
         ps_cmd.add_argument("machine",
@@ -372,7 +370,7 @@ class Shell(object):
         show_cmd.add_argument(
             "env_name", help="environment file name (debug, etc.)")
 
-        ls_cmd = subs.add_parser("ls", help="list envs")
+        subs.add_parser("ls", help="list envs")
 
         use_cmd = subs.add_parser("use", help="set env and render templates")
         use_cmd.add_argument(
@@ -382,12 +380,12 @@ class Shell(object):
         cmd = self.subparsers.add_parser("volume", help="manage volumes")
         subs = cmd.add_subparsers(dest="volume_cmd", metavar="")
 
-        ls_cmd = subs.add_parser("ls", help="list volumes")
+        subs.add_parser("ls", help="list volumes")
 
         rm_cmd = subs.add_parser("rm", help="remove volume")
         rm_cmd.add_argument("name", help="volume name")
 
-        nfs_ls_cmd = subs.add_parser("nfs-ls", help="list NFS volumes")
+        subs.add_parser("nfs-ls", help="list NFS volumes")
 
         nfs_rm_cmd = subs.add_parser("nfs-rm", help="remove NFS volume")
         nfs_rm_cmd.add_argument("name", help="NFS volume name")
@@ -400,7 +398,7 @@ class Shell(object):
         cmd = self.subparsers.add_parser("network", help="manage networks")
         subs = cmd.add_subparsers(dest="network_cmd", metavar="")
 
-        ls_cmd = subs.add_parser("ls", help="list networks")
+        subs.add_parser("ls", help="list networks")
 
         create_overlay_cmd = subs.add_parser("create-overlay",
                                              help="create an overlay network to use with swarm")
@@ -453,88 +451,96 @@ class Shell(object):
 
         elif command == "schema":
             if args.schema_cmd == "build":
-                lifecycle_schema_build(
+                lifecycle_handler.lifecycle_schema_build(
                     ".", args.no_cache, not args.do_not_push)
 
             elif args.schema_cmd == "start":
-                lifecycle_schema_start(
+                lifecycle_handler.lifecycle_schema_start(
                     ".", foreground=args.foreground)
 
+            elif args.schema_cmd == "status":
+                config = project_get_active_configuration(".")
+                if not config:
+                    Logger.warn(
+                        "No configuration selected. Use 'docknv config use [configuration]' to select a configuration.")
+                else:
+                    Logger.info("Current configuration: `{0}`".format(config))
+
             elif args.schema_cmd == "stop":
-                lifecycle_schema_stop(".")
+                lifecycle_handler.lifecycle_schema_stop(".")
 
             elif args.schema_cmd == "restart":
-                lifecycle_schema_restart(".", args.force)
+                lifecycle_handler.lifecycle_schema_restart(".", args.force)
 
             elif args.schema_cmd == "ps":
-                lifecycle_schema_ps(".")
+                lifecycle_handler.lifecycle_schema_ps(".")
 
             elif args.schema_cmd == "ls":
                 schema_list(".")
 
         elif command == "machine":
             if args.machine_cmd == "build":
-                lifecycle_machine_build(
+                lifecycle_handler.lifecycle_machine_build(
                     ".", args.machine, args.no_cache, not args.do_not_push, args.environment)
 
             elif args.machine_cmd == "daemon":
-                lifecycle_machine_daemon(
+                lifecycle_handler.lifecycle_machine_daemon(
                     ".", args.machine, args.run_command, args.environment)
 
             elif args.machine_cmd == "run":
-                lifecycle_machine_run(
+                lifecycle_handler.lifecycle_machine_run(
                     ".", args.machine, args.run_command, args.environment)
 
             elif args.machine_cmd == "exec":
-                lifecycle_machine_exec(
+                lifecycle_handler.lifecycle_machine_exec(
                     ".", args.machine, args.run_command, args.no_tty, args.return_code, args.environment)
 
             elif args.machine_cmd == "shell":
-                lifecycle_machine_shell(
+                lifecycle_handler.lifecycle_machine_shell(
                     ".", args.machine, args.shell, args.environment, args.create)
 
             elif args.machine_cmd == "restart":
-                lifecycle_machine_restart(
+                lifecycle_handler.lifecycle_machine_restart(
                     ".", args.machine, args.force, args.environment)
 
             elif args.machine_cmd == "stop":
-                lifecycle_machine_stop(
+                lifecycle_handler.lifecycle_machine_stop(
                     ".", args.machine, args.environment)
 
             elif args.machine_cmd == "start":
-                lifecycle_machine_start(
+                lifecycle_handler.lifecycle_machine_start(
                     ".", args.machine, args.environment)
 
             elif args.machine_cmd == "push":
-                lifecycle_machine_push(
+                lifecycle_handler.lifecycle_machine_push(
                     ".", args.machine, args.host_path, args.container_path, args.environment)
 
             elif args.machine_cmd == "pull":
-                lifecycle_machine_pull(
+                lifecycle_handler.lifecycle_machine_pull(
                     ".", args.machine, args.container_path, args.host_path, args.environment)
 
             elif args.machine_cmd == "logs":
-                lifecycle_machine_logs(
+                lifecycle_handler.lifecycle_machine_logs(
                     ".", args.machine, tail=args.tail, follow=args.follow, environment_name=args.environment)
 
         elif command == "bundle":
             if args.bundle_cmd == "start":
-                lifecycle_bundle_start(".", args.configs)
+                lifecycle_handler.lifecycle_bundle_start(".", args.configs)
             elif args.bundle_cmd == "stop":
-                lifecycle_bundle_stop(".", args.configs)
+                lifecycle_handler.lifecycle_bundle_stop(".", args.configs)
             elif args.bundle_cmd == "restart":
-                lifecycle_bundle_restart(".", args.configs, args.force)
+                lifecycle_handler.lifecycle_bundle_restart(".", args.configs, args.force)
             elif args.bundle_cmd == "ps":
-                lifecycle_bundle_ps(".", args.configs)
+                lifecycle_handler.lifecycle_bundle_ps(".", args.configs)
             elif args.bundle_cmd == "build":
-                lifecycle_bundle_build(
+                lifecycle_handler.lifecycle_bundle_build(
                     ".", args.configs, args.no_cache, not args.do_not_push)
 
         elif command == "registry":
             if args.registry_cmd == "start":
-                lifecycle_registry_start(args.path)
+                lifecycle_handler.lifecycle_registry_start(args.path)
             elif args.registry_cmd == "stop":
-                lifecycle_registry_stop()
+                lifecycle_handler.lifecycle_registry_stop()
 
         elif command == "config":
             if args.config_cmd == "ls":
@@ -578,8 +584,8 @@ class Shell(object):
                     project_use_configuration(
                         ".", args.name)
                 if args.restart:
-                    lifecycle_schema_stop(".")
-                    lifecycle_schema_start(".")
+                    lifecycle_handler.lifecycle_schema_stop(".")
+                    lifecycle_handler.lifecycle_schema_start(".")
 
             elif args.config_cmd == "status":
                 config = project_get_active_configuration(".")
@@ -591,10 +597,10 @@ class Shell(object):
 
         elif command == "volume":
             if args.volume_cmd == "ls":
-                lifecycle_volume_list(".")
+                lifecycle_handler.lifecycle_volume_list(".")
 
             elif args.volume_cmd == "rm":
-                lifecycle_volume_remove(".", args.name)
+                lifecycle_handler.lifecycle_volume_remove(".", args.name)
 
         elif command == "user":
             if args.user_cmd == "clean":
@@ -606,10 +612,7 @@ class Shell(object):
 
 
 def docknv_entry_point():
-    """
-    Main entry point
-    """
-
+    """Main entry point."""
     current_dir = os.getcwd()
     commands_dir = os.path.join(current_dir, "commands")
     shell = Shell()

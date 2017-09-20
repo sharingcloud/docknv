@@ -1,6 +1,4 @@
-"""
-Composefile preprocessor
-"""
+"""Composefile preprocessor."""
 
 import copy
 import os
@@ -19,12 +17,11 @@ def composefile_read(project_path, compose_file_path):
     """
     Read a compose file.
 
-    @param project_path         Project path
-    @param compose_file_path    Compose file path
+    :param project_path         Project path
+    :param compose_file_path    Compose file path
 
-    @return File content
+    :return File content
     """
-
     real_path = os.path.join(project_path, compose_file_path)
 
     if not os.path.exists(real_path):
@@ -41,12 +38,11 @@ def composefile_multiple_read(project_path, compose_file_paths):
     """
     Read multiple compose files.
 
-    @param project_path         Project path
-    @param compose_file_paths   Compose file paths
+    :param project_path         Project path
+    :param compose_file_paths   Compose file paths
 
-    @return List of file contents
+    :return List of file contents
     """
-
     return filter(None, [
         composefile_read(project_path, path) for path in compose_file_paths])
 
@@ -55,10 +51,9 @@ def composefile_write(compose_content, output_path):
     """
     Write compose content to a file.
 
-    @param compose_content  Compose content
-    @param output_path      Output path
+    :param compose_content  Compose content
+    :param output_path      Output path
     """
-
     with codecs.open(output_path, encoding="utf-8", mode="w") as handle:
         handle.write(yaml_ordered_dump(compose_content))
 
@@ -73,7 +68,6 @@ def composefile_filter(merged_content, schema_configuration):
     :param merged_content           Compose file content
     :param schema_configuration     Schema configuration
     """
-
     all_schema = schema_configuration["name"] == "all"
 
     if all_schema:
@@ -126,11 +120,11 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
     """
     Apply namespace to compose content.
 
-    @param compose_content  Compose content
-    @param namespace        Namespace name
-    @param environment      Environment file name
+    :param compose_content  Compose content (dict)
+    :param namespace        Namespace name (str) (default: default)
+    :param environment      Environment file name (str) (default: default)
+    :return str
     """
-
     output_content = copy.deepcopy(compose_content)
 
     if namespace == "default":
@@ -208,19 +202,19 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
     return output_content
 
 
-def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default", environment="default", environment_data=None):
+def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default", environment="default",
+                                environment_data=None):
     """
-    Resolve volumes, using namespacing.
-    Resolve Jinja templates paths.
+    Resolve volumes and Jinja templates path using namespacing.
 
-    @param project_path     Project path
-    @param compose_content  Compose content
-    @param project_name     Project name
-    @param namespace        Namespace name
-    @param environment      Environment file name
-    @param environment_data Environment data
+    :param project_path     Project path (str)
+    :param compose_content  Compose content (dict)
+    :param project_name     Project name (str)
+    :param namespace        Namespace name (str) (default: default)
+    :param environment      Environment file name (str) (default: default)
+    :param environment_data Environment data (str?) (default: None)
+    :return str
     """
-
     from docknv.project_handler import project_get_name
 
     Logger.info("Resolving volumes...")

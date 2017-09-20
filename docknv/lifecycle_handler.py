@@ -1,6 +1,4 @@
-"""
-docknv machines and schema lifecycle handling
-"""
+"""docknv machines and schema lifecycle handling."""
 
 import os
 import sys
@@ -8,12 +6,20 @@ import sys
 from docknv.logger import Logger
 
 from docknv.docker_wrapper import exec_compose, exec_compose_pretty, get_docker_container
-from docknv.project_handler import project_get_name, project_get_active_configuration, project_read, project_use_temporary_configuration
+from docknv.project_handler import project_get_name, project_get_active_configuration, project_read, \
+                                   project_use_temporary_configuration
 from docknv.session_handler import session_get_configuration, session_check_bundle_configurations
 from docknv.schema_handler import schema_get_configuration
 
 
 def lifecycle_get_machine_name(machine_name, environment_name=None):
+    """
+    Get docker container name.
+
+    :param machine_name     Machine name (str)
+    :param environment_name Environment name (str?) (default: None)
+    :return str
+    """
     return "{0}_{1}".format(environment_name, machine_name) if environment_name else machine_name
 
 # SCHEMA FUNCTIONS ###############
@@ -21,11 +27,12 @@ def lifecycle_get_machine_name(machine_name, environment_name=None):
 
 def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
     """
-    Build a schema
+    Build a schema.
+
+    :param project_path         Project path (str)
+    :param no_cache             Do not use cache (bool) (default: False)
+    :param push_to_registry     Push to registry (bool) (default: True)
     """
-
-    # Get services from current config
-
     current_config = project_get_active_configuration(project_path)
     current_config_data = session_get_configuration(
         project_path, current_config)
@@ -50,9 +57,11 @@ def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
 
 def lifecycle_schema_start(project_path, foreground=False):
     """
-    Start a schema
-    """
+    Start a schema.
 
+    :param project_path     Project path (str)
+    :param foreground       Start in foreground (bool) (default: False)
+    """
     command = ["up"]
     if not foreground:
         command.append("-d")
@@ -62,23 +71,28 @@ def lifecycle_schema_start(project_path, foreground=False):
 
 def lifecycle_schema_stop(project_path):
     """
-    Stop a schema
+    Stop a schema.
+
+    :param project_path     Project path (str)
     """
     exec_compose_pretty(project_path, ["down"])
 
 
 def lifecycle_schema_ps(project_path):
     """
-    Check processes of a schema
+    Check processes of a schema.
+
+    :param project_path     Project path (str)
     """
     exec_compose_pretty(project_path, ["ps"])
 
 
 def lifecycle_schema_restart(project_path, force=False):
     """
-    Restart a schema
-    """
+    Restart a schema.
 
+    :param project_path     Project path (str)
+    """
     if not force:
         exec_compose_pretty(project_path, ["restart"])
     else:
@@ -89,6 +103,12 @@ def lifecycle_schema_restart(project_path, force=False):
 
 
 def lifecycle_bundle_stop(project_path, config_names):
+    """
+    Stop multiple configurations.
+
+    :param project_path     Project path (str)
+    :param config_names     Config names (iterable)
+    """
     session_check_bundle_configurations(project_path, config_names)
 
     for config_name in config_names:
@@ -97,6 +117,12 @@ def lifecycle_bundle_stop(project_path, config_names):
 
 
 def lifecycle_bundle_start(project_path, config_names):
+    """
+    Start multiple configurations.
+
+    :param project_path     Project path (str)
+    :param config_names     Config names (iterable)
+    """
     session_check_bundle_configurations(project_path, config_names)
 
     for config_name in config_names:
@@ -105,6 +131,13 @@ def lifecycle_bundle_start(project_path, config_names):
 
 
 def lifecycle_bundle_restart(project_path, config_names, force=False):
+    """
+    Restart multiple configurations.
+
+    :param project_path     Project path (str)
+    :param config_names     Config names (iterable)
+    :param force            Force restart (bool) (default: False)
+    """
     session_check_bundle_configurations(project_path, config_names)
 
     for config_name in config_names:
@@ -113,6 +146,12 @@ def lifecycle_bundle_restart(project_path, config_names, force=False):
 
 
 def lifecycle_bundle_ps(project_path, config_names):
+    """
+    Check processes for multiple configurations.
+
+    :param project_path     Project path (str)
+    :param config_names     Config names (iterable)
+    """
     session_check_bundle_configurations(project_path, config_names)
 
     for config_name in config_names:
@@ -121,6 +160,14 @@ def lifecycle_bundle_ps(project_path, config_names):
 
 
 def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_registry=True):
+    """
+    Build multiple configurations.
+
+    :param project_path         Project path (str)
+    :param config_names         Config names (iterable)
+    :param no_cache             Do not use cache (bool) (default: False)
+    :param push_to_registry     Push to registry (bool) (default: True)
+    """
     session_check_bundle_configurations(project_path, config_names)
 
     for config_name in config_names:
@@ -132,9 +179,14 @@ def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_r
 
 def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_registry=True, environment_name=None):
     """
-    Build a machine
-    """
+    Build a machine.
 
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param no_cache             Do not use cache (bool) (default: False)
+    :param push_to_registry     Push to registry (bool) (default: True)
+    :param environment_name     Environment name (str?) (default: None)
+    """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
 
@@ -152,7 +204,11 @@ def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_
 
 def lifecycle_machine_stop(project_path, machine_name, environment_name=None):
     """
-    Stop a machine
+    Stop a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -162,7 +218,11 @@ def lifecycle_machine_stop(project_path, machine_name, environment_name=None):
 
 def lifecycle_machine_start(project_path, machine_name, environment_name=None):
     """
-    Start a machine
+    Start a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -172,7 +232,13 @@ def lifecycle_machine_start(project_path, machine_name, environment_name=None):
 
 def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", environment_name=None, create=False):
     """
-    Execute a shell on a machine
+    Execute a shell on a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param shell_path           Shell path (str) (default: /bin/bash)
+    :param environment_name     Environment name (str?) (default: None)
+    :param create               Create the container (bool) (default: False)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -187,7 +253,12 @@ def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", 
 
 def lifecycle_machine_daemon(project_path, machine_name, command=None, environment_name=None):
     """
-    Execute a process in background for a machine
+    Execute a process in background for a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param command              Command (str)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -197,7 +268,12 @@ def lifecycle_machine_daemon(project_path, machine_name, command=None, environme
 
 def lifecycle_machine_restart(project_path, machine_name, force=False, environment_name=None):
     """
-    Restart a machine
+    Restart a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param force                Force restart (bool) (default: False)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -211,7 +287,12 @@ def lifecycle_machine_restart(project_path, machine_name, force=False, environme
 
 def lifecycle_machine_run(project_path, machine_name, command=None, environment_name=None):
     """
-    Run a machine
+    Run a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param command              Command (str?) (default: None)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -221,7 +302,13 @@ def lifecycle_machine_run(project_path, machine_name, command=None, environment_
 
 def lifecycle_machine_push(project_path, machine_name, host_path, container_path, environment_name=None):
     """
-    Push a file to a machine
+    Push a file to a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param host_path            Host path (str)
+    :param container_path       Container path (str)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -238,7 +325,13 @@ def lifecycle_machine_push(project_path, machine_name, host_path, container_path
 
 def lifecycle_machine_pull(project_path, machine_name, container_path, host_path, environment_name=None):
     """
-    Pull a file from a machine
+    Pull a file from a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param container_path       Container path (str)
+    :param host_path            Host path (str)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -253,9 +346,17 @@ def lifecycle_machine_pull(project_path, machine_name, container_path, host_path
             container, container_path, host_path))
 
 
-def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=False, return_code=False, environment_name=None):
+def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=False, return_code=False,
+                           environment_name=None):
     """
-    Execute a machine
+    Execute a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param command              Command (str?) (default: None)
+    :param no_tty               Do not use TTY (bool) (default: False)
+    :param return_code          Handle return code (bool) (default: False)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -272,7 +373,13 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
 
 def lifecycle_machine_logs(project_path, machine_name, tail=0, follow=False, environment_name=None):
     """
-    Get logs from a machine
+    Get logs from a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param tail                 Tail lines (int) (default: 0)
+    :param follow               Follow logs (bool) (default: False)
+    :param environment_name     Environment name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(
         machine_name, environment_name)
@@ -292,9 +399,10 @@ def lifecycle_machine_logs(project_path, machine_name, tail=0, follow=False, env
 
 def lifecycle_volume_list(project_path):
     """
-    List volumes
-    """
+    List volumes.
 
+    :param project_path     Project path (str)
+    """
     Logger.info("Listing volumes...")
 
     project_name = project_get_name(project_path)
@@ -303,9 +411,11 @@ def lifecycle_volume_list(project_path):
 
 def lifecycle_volume_remove(project_path, volume_name):
     """
-    Remove a volume
-    """
+    Remove a volume.
 
+    :param project_path     Project path (str)
+    :param volume_name      Volume name (str)
+    """
     Logger.info("Removing volume `{0}`".format(volume_name))
 
     project_name = project_get_name(project_path)
@@ -314,7 +424,9 @@ def lifecycle_volume_remove(project_path, volume_name):
 
 def lifecycle_registry_start(path):
     """
-    Start a registry
+    Start a registry.
+
+    :param path     Registry path (str)
     """
     Logger.info("Starting registry... {0}".format(path))
 
@@ -328,8 +440,5 @@ def lifecycle_registry_start(path):
 
 
 def lifecycle_registry_stop():
-    """
-    Stop a registry
-    """
-
+    """Stop a registry."""
     os.system("docker stop registry && docker rm registry")
