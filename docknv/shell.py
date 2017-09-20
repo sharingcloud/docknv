@@ -300,7 +300,7 @@ class Shell(object):
 
         update_cmd = subs.add_parser(
             "update", help="update a known configuration")
-        update_cmd.add_argument("name", help="configuration name")
+        update_cmd.add_argument("name", help="configuration name", nargs="?", default=None)
         update_cmd.add_argument(
             "-s", "--set-current", action="store_true", help="set this configuration as current")
         update_cmd.add_argument(
@@ -577,15 +577,29 @@ class Shell(object):
                         ".", args.config_name)
 
             elif args.config_cmd == "update":
-                project_generate_compose_from_configuration(
-                    ".", args.name)
+                if args.name is None:
+                    config = project_get_active_configuration(".")
+                    if not config:
+                        Logger.warn(
+                            "No configuration selected. Use 'docknv config use [configuration]' to select a \
+                            configuration.")
+                    else:
+                        project_generate_compose_from_configuration(".", config)
+                        project_use_configuration(".", config)
+                        if args.restart:
+                            lifecycle_handler.lifecycle_schema_stop(".")
+                            lifecycle_handler.lifecycle_schema_start(".")
 
-                if args.set_current:
-                    project_use_configuration(
+                else:
+                    project_generate_compose_from_configuration(
                         ".", args.name)
-                if args.restart:
-                    lifecycle_handler.lifecycle_schema_stop(".")
-                    lifecycle_handler.lifecycle_schema_start(".")
+
+                    if args.set_current:
+                        project_use_configuration(
+                            ".", args.name)
+                    if args.restart:
+                        lifecycle_handler.lifecycle_schema_stop(".")
+                        lifecycle_handler.lifecycle_schema_start(".")
 
             elif args.config_cmd == "status":
                 config = project_get_active_configuration(".")
