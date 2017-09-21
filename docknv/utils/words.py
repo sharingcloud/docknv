@@ -1,6 +1,4 @@
-"""
-Words utilities
-"""
+"""Words utilities."""
 
 import os
 import codecs
@@ -10,9 +8,10 @@ import random
 def generate_config_name(config_list):
     """
     Generate a unique config name.
-    :return: Config name
-    """
 
+    :param config_list  Config list (iterable)
+    :return Config name (str)
+    """
     if os.path.isfile("/usr/share/dict/words"):
         success = False
         key = None
@@ -32,10 +31,10 @@ def generate_config_name(config_list):
 
 def get_random_word_from_dictionary():
     """
-    Get a random word from a dictionary
-    :return: Random word
-    """
+    Get a random word from a dictionary.
 
+    :return Random word (str)
+    """
     with codecs.open("/usr/share/dict/words", encoding="utf-8", mode="rt") as handle:
         words = handle.readlines()
 

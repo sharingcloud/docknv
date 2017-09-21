@@ -1,6 +1,4 @@
-"""
-YAML utilities
-"""
+"""YAML utilities."""
 
 import copy
 from collections import OrderedDict
@@ -11,9 +9,11 @@ import yaml
 
 def yaml_merge(contents):
     """
-    Merge two YAML dict together
-    """
+    Merge two YAML dict together.
 
+    :param contents     Content (dict)
+    :return YAML merge (dict)
+    """
     len_contents = len(contents)
     if len_contents == 1:
         return contents[0]
@@ -28,13 +28,14 @@ def yaml_merge(contents):
 
 def yaml_ordered_load(stream, loader_class=yaml.Loader, object_pairs_hook=OrderedDict):
     """
-    Load ordered YAML content
-    """
+    Load ordered YAML content.
 
+    :param stream               Stream (stream)
+    :param loader_class         Loader class (Loader) (default: yaml.Loader)
+    :param object_pairs_hook    Hook type (any) (default: OrderedDict)
+    """
     class OrderedLoader(loader_class):
-        """
-        Ordered loader
-        """
+        """Ordered loader."""
 
     def _construct_mapping(loader, node):
         loader.flatten_mapping(node)
@@ -49,13 +50,14 @@ def yaml_ordered_load(stream, loader_class=yaml.Loader, object_pairs_hook=Ordere
 
 def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
     """
-    Dump ordered YAML content
-    """
+    Dump ordered YAML content.
 
+    :param stream           Stream (stream)
+    :param dumper_class     Dumper class (Dumper) (default: yaml.Dumper)
+    :param kwds             Keywords arguments
+    """
     class OrderedDumper(dumper_class):
-        """
-        Ordered dumper
-        """
+        """Ordered dumper."""
 
     def _dict_representer(dumper, data):
         return dumper.represent_mapping(
@@ -63,7 +65,6 @@ def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
             data.items())
 
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
-
     return yaml.dump(data, stream, OrderedDumper, **kwds)
 
 
