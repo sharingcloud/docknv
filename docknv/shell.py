@@ -17,7 +17,7 @@ from docknv.session_handler import session_show_configuration_list, session_remo
 from docknv.project_handler import project_generate_compose, project_use_configuration, \
                                    project_update_configuration_schema, project_generate_compose_from_configuration, \
                                    project_get_active_configuration, project_clean_user_config_path
-from docknv.user_handler import user_try_lock
+from docknv.user_handler import user_try_lock, user_disable_lock
 
 from docknv.dockerfile_packer import dockerfile_packer
 
@@ -60,8 +60,7 @@ class Shell(object):
             self.parser.parse_args(args + ["-h"])
             sys.exit(1)
 
-        with user_try_lock("."):
-            self._parse_args(self.parser.parse_args(args))
+        self._parse_args(self.parser.parse_args(args))
 
     # PRIVATE METHODS ##########
 
@@ -413,8 +412,10 @@ class Shell(object):
             "user", help="manage user config files")
         subs = cmd.add_subparsers(dest="user_cmd", metavar="")
 
-        clean_cmd = subs.add_parser("clean", help="clean user config files for this project")
+        clean_cmd = subs.add_parser("clean-config", help="clean user config files for this project")
         clean_cmd.add_argument("config_name", nargs="?", default=None)
+
+        subs.add_parser("rm-lock", help="remove the user lockfile")
 
     def _parse_args(self, args):
         command = args.command
@@ -455,8 +456,9 @@ class Shell(object):
                     ".", args.no_cache, not args.do_not_push)
 
             elif args.schema_cmd == "start":
-                lifecycle_handler.lifecycle_schema_start(
-                    ".", foreground=args.foreground)
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_schema_start(
+                        ".", foreground=args.foreground)
 
             elif args.schema_cmd == "status":
                 config = project_get_active_configuration(".")
@@ -467,10 +469,12 @@ class Shell(object):
                     Logger.info("Current configuration: `{0}`".format(config))
 
             elif args.schema_cmd == "stop":
-                lifecycle_handler.lifecycle_schema_stop(".")
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_schema_stop(".")
 
             elif args.schema_cmd == "restart":
-                lifecycle_handler.lifecycle_schema_restart(".", args.force)
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_schema_restart(".", args.force)
 
             elif args.schema_cmd == "ps":
                 lifecycle_handler.lifecycle_schema_ps(".")
@@ -484,8 +488,7 @@ class Shell(object):
                     ".", args.machine, args.no_cache, not args.do_not_push, args.environment)
 
             elif args.machine_cmd == "daemon":
-                lifecycle_handler.lifecycle_machine_daemon(
-                    ".", args.machine, args.run_command, args.environment)
+                lifecycle_handler.lifecycle_machine_daemon(".", args.machine, args.run_command, args.environment)
 
             elif args.machine_cmd == "run":
                 lifecycle_handler.lifecycle_machine_run(
@@ -500,16 +503,19 @@ class Shell(object):
                     ".", args.machine, args.shell, args.environment, args.create)
 
             elif args.machine_cmd == "restart":
-                lifecycle_handler.lifecycle_machine_restart(
-                    ".", args.machine, args.force, args.environment)
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_machine_restart(
+                        ".", args.machine, args.force, args.environment)
 
             elif args.machine_cmd == "stop":
-                lifecycle_handler.lifecycle_machine_stop(
-                    ".", args.machine, args.environment)
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_machine_stop(
+                        ".", args.machine, args.environment)
 
             elif args.machine_cmd == "start":
-                lifecycle_handler.lifecycle_machine_start(
-                    ".", args.machine, args.environment)
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_machine_start(
+                        ".", args.machine, args.environment)
 
             elif args.machine_cmd == "push":
                 lifecycle_handler.lifecycle_machine_push(
@@ -528,11 +534,14 @@ class Shell(object):
 
         elif command == "bundle":
             if args.bundle_cmd == "start":
-                lifecycle_handler.lifecycle_bundle_start(".", args.configs)
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_bundle_start(".", args.configs)
             elif args.bundle_cmd == "stop":
-                lifecycle_handler.lifecycle_bundle_stop(".", args.configs)
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_bundle_stop(".", args.configs)
             elif args.bundle_cmd == "restart":
-                lifecycle_handler.lifecycle_bundle_restart(".", args.configs, args.force)
+                with user_try_lock():
+                    lifecycle_handler.lifecycle_bundle_restart(".", args.configs, args.force)
             elif args.bundle_cmd == "ps":
                 lifecycle_handler.lifecycle_bundle_ps(".", args.configs)
             elif args.bundle_cmd == "build":
@@ -620,8 +629,10 @@ class Shell(object):
                 lifecycle_handler.lifecycle_volume_remove(".", args.name)
 
         elif command == "user":
-            if args.user_cmd == "clean":
+            if args.user_cmd == "clean-config":
                 project_clean_user_config_path(".", args.config_name)
+            elif args.user_cmd == "rm-lock":
+                user_disable_lock(".")
 
         for parser in self.post_parsers:
             if parser(self, args):
