@@ -33,13 +33,23 @@ class ProjectData(object):
         :param config_data      Config data (dict)
         """
         self.project_path = project_path
-        self.project_name = os.path.basename(
-            os.path.abspath(project_path)).lower()
+        self.project_name = os.path.basename(os.path.abspath(project_path)).lower()
         self.configuration = config_data.get("configuration", {})
         self.schemas = config_data.get("schemas", [])
         self.composefiles = config_data.get("composefiles", [])
-
         self.config_data = config_data
+
+    def __repr__(self):
+        """Repr."""
+        import pprint
+        return pprint.pformat({
+            "project_path": self.project_path,
+            "project_name": self.project_name,
+            "configuration": self.configuration,
+            "schemas": self.schemas,
+            "composefiles": self.composefiles,
+            "config_data": self.config_data
+        }, indent=4)
 
 
 def project_read(project_path):
@@ -49,15 +59,13 @@ def project_read(project_path):
     :param project_path Project path (str)
     :return Project data (ProjectData)
     """
-    project_file_path = os.path.join(
-        project_path, CONFIG_FILE_NAME)
+    project_file_path = os.path.join(project_path, CONFIG_FILE_NAME)
 
     if os.path.isfile(project_file_path):
         with codecs.open(project_file_path, encoding="utf-8", mode="r") as handle:
             config_data = yaml_ordered_load(handle.read())
     else:
-        Logger.error(
-            "Config file `{0}` does not exist.".format(project_file_path))
+        Logger.error("Config file `{0}` does not exist.".format(project_file_path))
         return
 
     # Validation
@@ -290,45 +298,35 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 
     # Load environment
     if not env_check_file(project_path, environment):
-        Logger.error(
-            "Environment file `{0}` does not exist.".format(environment))
+        Logger.error("Environment file `{0}` does not exist.".format(environment))
 
-    env_content = env_load_in_memory(
-        project_path, environment)
+    env_content = env_load_in_memory(project_path, environment)
 
     # Get schema configuration
-    schema_config = schema_get_configuration(
-        config_data, schema_name)
+    schema_config = schema_get_configuration(config_data, schema_name)
 
     # List linked composefiles
-    compose_files_content = composefile_multiple_read(
-        project_path, config_data.composefiles)
+    compose_files_content = composefile_multiple_read(project_path, config_data.composefiles)
 
     # Merge and filter using schema
-    merged_content = composefile_filter(
-        yaml_merge(compose_files_content), schema_config)
+    merged_content = composefile_filter(yaml_merge(compose_files_content), schema_config)
 
     # Resolve compose content
-    resolved_content = renderer_render_compose_template(
-        merged_content, env_content)
+    resolved_content = renderer_render_compose_template(merged_content, env_content)
 
     # Generate volumes declared in composefiles
-    rendered_content = composefile_resolve_volumes(
-        project_path, resolved_content, config_name, namespace, environment, env_content)
+    rendered_content = composefile_resolve_volumes(project_path, resolved_content, config_name, namespace,
+                                                   environment, env_content)
 
     # Apply namespace
-    namespaced_content = composefile_apply_namespace(
-        rendered_content, namespace, environment)
+    namespaced_content = composefile_apply_namespace(rendered_content, namespace, environment)
 
     # Generate main compose file
-    output_compose_file = project_get_composefile(
-        project_path, config_name)
+    output_compose_file = project_get_composefile(project_path, config_name)
     if not os.path.exists(output_compose_file):
         create_path_tree(os.path.dirname(output_compose_file))
 
-    composefile_write(
-        namespaced_content, output_compose_file)
-
+    composefile_write(namespaced_content, output_compose_file)
     session_write_configuration(project_path, config)
 
 

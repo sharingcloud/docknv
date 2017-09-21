@@ -19,6 +19,8 @@ from docknv.project_handler import project_generate_compose, project_use_configu
                                    project_get_active_configuration, project_clean_user_config_path
 from docknv.user_handler import user_try_lock
 
+from docknv.dockerfile_packer import dockerfile_packer
+
 from docknv import lifecycle_handler
 
 
@@ -27,13 +29,10 @@ class Shell(object):
 
     def __init__(self):
         """Init."""
-        self.parser = argparse.ArgumentParser(
-            description="Docker w/ environments (docknv {0})".format(__version__))
-        self.parser.add_argument('-v', '--version', action='version',
-                                 version='%(prog)s ' + __version__)
+        self.parser = argparse.ArgumentParser(description="Docker w/ environments (docknv {0})".format(__version__))
+        self.parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
 
-        self.subparsers = self.parser.add_subparsers(
-            dest="command", metavar="")
+        self.subparsers = self.parser.add_subparsers(dest="command", metavar="")
         self.post_parsers = []
 
         self._init_commands()
@@ -237,6 +236,9 @@ class Shell(object):
         build_cmd.add_argument("-e", "--environment",
                                help="environment name", default=None)
 
+        freeze_cmd = subs.add_parser("freeze", help="freeze a machine")
+        freeze_cmd.add_argument("machine", help="machine name")
+
     def _init_scaffold_commands(self):
         cmd = self.subparsers.add_parser("scaffold", help="scaffolding")
         subs = cmd.add_subparsers(dest="scaffold_cmd", metavar="")
@@ -400,8 +402,7 @@ class Shell(object):
 
         subs.add_parser("ls", help="list networks")
 
-        create_overlay_cmd = subs.add_parser("create-overlay",
-                                             help="create an overlay network to use with swarm")
+        create_overlay_cmd = subs.add_parser("create-overlay", help="create an overlay network to use with swarm")
         create_overlay_cmd.add_argument("name", help="network name")
 
         rm_cmd = subs.add_parser("rm", help="remove network")
@@ -412,8 +413,7 @@ class Shell(object):
             "user", help="manage user config files")
         subs = cmd.add_subparsers(dest="user_cmd", metavar="")
 
-        clean_cmd = subs.add_parser(
-            "clean", help="clean user config files for this project")
+        clean_cmd = subs.add_parser("clean", help="clean user config files for this project")
         clean_cmd.add_argument("config_name", nargs="?", default=None)
 
     def _parse_args(self, args):
@@ -522,6 +522,9 @@ class Shell(object):
             elif args.machine_cmd == "logs":
                 lifecycle_handler.lifecycle_machine_logs(
                     ".", args.machine, tail=args.tail, follow=args.follow, environment_name=args.environment)
+
+            elif args.machine_cmd == "freeze":
+                dockerfile_packer(".", args.machine)
 
         elif command == "bundle":
             if args.bundle_cmd == "start":

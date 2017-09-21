@@ -358,15 +358,37 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
     :param return_code          Handle return code (bool) (default: False)
     :param environment_name     Environment name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, environment_name)
     container = get_docker_container(project_path, machine_name)
     if not container:
-        Logger.error("Machine `{0}` is not running.".format(
-            machine_name), crash=False)
+        Logger.error("Machine `{0}` is not running.".format(machine_name), crash=False)
     else:
-        code = os.system("docker exec {2} {0} {1}".format(
-            container, command, "-ti" if not no_tty else ""))
+        code = os.system("docker exec {2} {0} {1}".format(container, command, "-ti" if not no_tty else ""))
+        if return_code:
+            sys.exit(os.WEXITSTATUS(code))
+
+
+def lifecycle_machine_exec_multiple(project_path, machine_name, commands=None, no_tty=False, return_code=False,
+                                    environment_name=None):
+    """
+    Execute multiple commands on a machine.
+
+    :param project_path         Project path (str)
+    :param machine_name         Machine name (str)
+    :param commands             Commands (iterable) (default: None)
+    :param no_tty               Do not use TTY (bool) (default: False)
+    :param return_code          Handle return code (bool) (default: False)
+    :param environment_name     Environment name (str?) (default: None)
+    """
+    commands = commands if commands else [""]
+    machine_name = lifecycle_get_machine_name(machine_name, environment_name)
+    container = get_docker_container(project_path, machine_name)
+    if not container:
+        Logger.error("Machine `{0}` is not running.".format(machine_name), crash=False)
+    else:
+        code = 0
+        for command in commands:
+            code = os.system("docker exec {2} {0} {1}".format(container, command, "-ti" if not no_tty else ""))
         if return_code:
             sys.exit(os.WEXITSTATUS(code))
 

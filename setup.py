@@ -1,6 +1,4 @@
-"""
-Docknv
-"""
+"""docknv."""
 
 from setuptools import setup
 from docknv.version import __version__
