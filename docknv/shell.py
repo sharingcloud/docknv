@@ -456,7 +456,7 @@ class Shell(object):
                     ".", args.no_cache, not args.do_not_push)
 
             elif args.schema_cmd == "start":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_schema_start(
                         ".", foreground=args.foreground)
 
@@ -469,11 +469,11 @@ class Shell(object):
                     Logger.info("Current configuration: `{0}`".format(config))
 
             elif args.schema_cmd == "stop":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_schema_stop(".")
 
             elif args.schema_cmd == "restart":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_schema_restart(".", args.force)
 
             elif args.schema_cmd == "ps":
@@ -503,17 +503,17 @@ class Shell(object):
                     ".", args.machine, args.shell, args.environment, args.create)
 
             elif args.machine_cmd == "restart":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_restart(
                         ".", args.machine, args.force, args.environment)
 
             elif args.machine_cmd == "stop":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_stop(
                         ".", args.machine, args.environment)
 
             elif args.machine_cmd == "start":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_start(
                         ".", args.machine, args.environment)
 
@@ -534,13 +534,13 @@ class Shell(object):
 
         elif command == "bundle":
             if args.bundle_cmd == "start":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_bundle_start(".", args.configs)
             elif args.bundle_cmd == "stop":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_bundle_stop(".", args.configs)
             elif args.bundle_cmd == "restart":
-                with user_try_lock():
+                with user_try_lock("."):
                     lifecycle_handler.lifecycle_bundle_restart(".", args.configs, args.force)
             elif args.bundle_cmd == "ps":
                 lifecycle_handler.lifecycle_bundle_ps(".", args.configs)
