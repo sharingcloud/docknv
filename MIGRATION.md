@@ -35,8 +35,7 @@ lifecycle_machine_exec(...)
 - commands
 - composefiles
 - data
-    - **files** *(renamed from global)*
-    - **templates** *(moved from project root)*
+    - **files** *(renamed from global, mixed with templates)*
 - envs
 - images
 
@@ -63,7 +62,7 @@ Here is the user folder structure:
 
 ## Lockfile system
 
-Now, you can only execute **one docknv command at once**, by using a lockfile.
+Now, you can only execute **one critical docknv command at once (start, stop, restart, etc.)**, by using a lockfile.
 
 ## New commands
 
@@ -77,4 +76,3 @@ docknv bundle stop base client
 ```
 
 The active configuration will be automatically switched and the last used configuration will be reset when the command will terminate.
-

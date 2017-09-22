@@ -67,7 +67,7 @@ def renderer_render_template(project_path, template_path, config_name, environme
     user_config_name = user_get_project_config_name_path(
         project_name, config_name)
     environment_data = environment_data if environment_data else {}
-    templates_path = os.path.join(project_path, "data", "templates")
+    templates_path = os.path.join(project_path, "data", "files")
 
     real_template_path = os.path.join(templates_path, template_path)
 

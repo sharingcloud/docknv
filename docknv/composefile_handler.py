@@ -43,7 +43,6 @@ def composefile_multiple_read(project_path, compose_file_paths):
 
     :return List of file contents (iterable)
     """
-
     return [composefile_read(project_path, path)
             for path in compose_file_paths if path]
 
