@@ -125,6 +125,9 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
     :param env_name_source  Source environment name (str)
     :param env_name_dest    Destination environment name (str)
     """
+    if env_name_source == env_name_dest:
+        Logger.error('Source environment name and destination environment name cannot be the same.')
+
     env_path_source = os.path.join(
         project_path, "envs", "".join((env_name_source, ".env.py")))
     env_path_dest = os.path.join(
@@ -145,7 +148,9 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
             print("Nothing done.")
             return
 
-    shutil.copy(env_path_source, env_path_dest)
+    with codecs.open(env_path_dest, encoding='utf-8', mode="wt+") as handle:
+        handle.write('# -*- import: {0} -*-'.format(env_name_source))
+
     Logger.info("Environment file `{0}` copied to `{1}`".format(
         env_name_source, env_name_dest))
 

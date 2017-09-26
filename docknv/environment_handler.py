@@ -3,10 +3,13 @@
 import os
 import imp
 import codecs
+import re
 
 from collections import OrderedDict
 
 from docknv.logger import Logger, Fore
+
+IMPORT_DETECTION_RGX = re.compile(r'-\*-\s*import:\s*([a-zA-Z0-9_-]*)\s*-\*-')
 
 
 def env_list(project_path):
@@ -62,6 +65,42 @@ def env_check_file(project_path, name):
     return os.path.exists(env_path)
 
 
+def _env_get_path(project_path, name):
+    """
+    Return environment path from project path and environment name.
+
+    :param project_path     Project path (str)
+    :param name             Environment name (str)
+    :return Environment file path (str)
+    """
+    return os.path.join(project_path, "envs", "".join((name, ".env.py")))
+
+
+def _env_detect_imports(env_content):
+    """
+    Detect imports in an environment file.
+
+    :param env_content  Environment file content (str)
+    :return Detected imports
+    """
+    detected_imports = []
+    for match in IMPORT_DETECTION_RGX.finditer(env_content):
+        detected_imports.append(match.groups()[0])
+
+    return detected_imports
+
+
+def _env_read_file_content(env_path):
+    """
+    Open and read environment file content.
+
+    :param env_path     Environment file path (str)
+    :return Environment file content
+    """
+    with codecs.open(env_path, mode='r', encoding='utf-8') as handle:
+        return handle.read()
+
+
 def env_load_in_memory(project_path, name):
     """
     Load environment file in memory.
@@ -70,17 +109,29 @@ def env_load_in_memory(project_path, name):
     :param name             Environment file name (str)
     :return Environment data (dict)
     """
-    env_path = os.path.join(project_path, "envs", "".join((name, ".env.py")))
+    env_path = _env_get_path(project_path, name)
 
     if not os.path.isfile(env_path):
         raise RuntimeError("File `{0}` does not exist".format(env_path))
     Logger.info(
         "Loading environment configuration file `{0}`...".format(name))
 
+    loaded_env = OrderedDict()
+
+    # Detect imports
+    env_content = _env_read_file_content(env_path)
+    imported_environments = _env_detect_imports(env_content)
+    for imported_env in imported_environments:
+        if imported_env == name:
+            continue
+
+        result = env_load_in_memory(project_path, imported_env)
+        for key in result:
+            loaded_env[key] = result[key]
+
+    # Loading variables
     env_data = imp.load_source("envs", env_path)
     env_vars = [e for e in dir(env_data) if not e.startswith("__")]
-
-    loaded_env = OrderedDict()
     for variable in env_vars:
         loaded_env[variable] = getattr(env_data, variable)
 
