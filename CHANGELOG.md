@@ -1,9 +1,9 @@
-## 3.7.0.beta
+## 3.7.0
 
 - Context sensitive commands !
   - Commands are configurable using the main `config.yml` file in the `commands` key.
 
-## 3.6.0.beta
+## 3.6.0
 
 - Environment import system !
     - You can now import environments using the following snippet.

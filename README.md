@@ -1,4 +1,4 @@
-# docknv 3.5.0.beta
+# docknv 3.7.0
 
 ## Installation
 
