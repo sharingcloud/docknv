@@ -7,9 +7,6 @@ from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.prompt import prompt_yes_no
 from docknv.logger import Logger, Fore
 
-from docknv.environment_handler import env_check_file
-from docknv.user_handler import user_current_get_id
-
 SESSION_FILE_NAME = ".docknv.yml"
 
 
@@ -83,6 +80,8 @@ def session_update_environment(project_path, config_name, environment_name):
     :param config_name          Config name (str)
     :param environment_name     Environment name (str)
     """
+    from docknv.environment_handler import env_check_file
+
     if env_check_file(project_path, environment_name):
         docknv_config = session_read_configuration(
             project_path)
@@ -103,9 +102,12 @@ def session_remove_configuration(project_path, config_name):
     :param config_name      Config name (str)
     """
     from docknv.project_handler import project_get_composefile
+    from docknv.user_handler import user_current_get_id
+
     config = session_read_configuration(project_path)
     if config_name not in config["values"]:
         Logger.error("Missing configuration `{0}`.".format(config_name))
+
     uid = user_current_get_id()
 
     config_to_remove = config["values"][config_name]

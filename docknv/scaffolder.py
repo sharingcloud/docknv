@@ -4,9 +4,7 @@ from __future__ import print_function
 
 import os
 import codecs
-import shutil
 
-from docknv.environment_handler import env_write_to_file
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.prompt import prompt_yes_no
 
@@ -90,6 +88,8 @@ def scaffold_environment(project_path, env_name, env_content=None):
     :param env_name         Environment name (str)
     :param env_content      Environment content (str?) (default: None)
     """
+    from docknv.environment_handler import env_write_to_file
+
     env_content = env_content if env_content else {}
     env_path = os.path.join(project_path, "envs",
                             "".join((env_name, ".env.py")))

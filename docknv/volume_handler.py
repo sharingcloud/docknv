@@ -1,7 +1,5 @@
 """Volume handler."""
 
-from docknv.user_handler import user_get_project_config_name_path
-
 
 class VolumeObject(object):
     """Volume object entry."""
@@ -60,6 +58,8 @@ def volume_generate_namespaced_path(file_type, project_name, config_name):
 
     :return Volume path (str)
     """
+    from docknv.user_handler import user_get_project_config_name_path
+
     user_config_path = user_get_project_config_name_path(project_name, config_name)
 
     if file_type == "static":

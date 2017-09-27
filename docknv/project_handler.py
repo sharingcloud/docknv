@@ -10,15 +10,6 @@ from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yam
 from docknv.utils.words import generate_config_name
 from docknv.utils.paths import create_path_tree
 
-from docknv.user_handler import user_get_project_config_file_path, user_current_get_id, user_copy_file_to_config_path, \
-                                user_get_project_config_name_path
-from docknv.session_handler import session_update_schema, session_get_configuration, session_read_configuration, \
-                                   session_write_configuration
-from docknv.environment_handler import env_check_file, env_load_in_memory
-from docknv.composefile_handler import composefile_multiple_read, composefile_filter, composefile_resolve_volumes, \
-                                       composefile_apply_namespace, composefile_write
-from docknv.template_renderer import renderer_render_compose_template
-
 CONFIG_FILE_NAME = "config.yml"
 
 
@@ -82,6 +73,8 @@ def project_set_active_configuration(project_path, config_name, quiet=False):
     :param config_name      Config name (str)
     :param quiet            Be quiet (bool) (default: False)
     """
+    from docknv.user_handler import user_get_project_config_file_path
+
     config = project_read(project_path)
     config_path = user_get_project_config_file_path(config.project_name)
 
@@ -101,6 +94,8 @@ def project_get_active_configuration(project_path):
     :param project_path     Project path (str)
     :return Active configuration (str?)
     """
+    from docknv.user_handler import user_get_project_config_file_path
+
     config = project_read(project_path)
     config_path = user_get_project_config_file_path(config.project_name)
     content = None
@@ -120,6 +115,8 @@ def project_update_configuration_schema(project_path, config_name, schema_name):
     :param config_name      Config name (str)
     :param schema_name      Schema name (str)
     """
+    from docknv.session_handler import session_update_schema
+
     project_config = project_read(project_path)
     session_update_schema(
         project_path, project_config, config_name, schema_name)
@@ -145,6 +142,9 @@ def project_use_configuration(project_path, config_name, quiet=False):
     :param config_name      Config name (str)
     :param quiet            Be quiet (bool) (default: False)
     """
+    from docknv.session_handler import session_get_configuration
+    from docknv.user_handler import user_current_get_id, user_copy_file_to_config_path
+
     config_content = project_read(project_path)
 
     config = session_get_configuration(
@@ -195,6 +195,8 @@ def project_get_composefile(project_path, config_name):
     :param project_path     Project path (str)
     :param config_name      Config name (str)
     """
+    from docknv.user_handler import user_get_project_config_name_path
+
     project_name = project_get_name(project_path)
     config_path = user_get_project_config_name_path(project_name, config_name)
 
@@ -208,6 +210,8 @@ def project_generate_compose_from_configuration(project_path, config_name):
     :param project_path     Project path (str)
     :param config_name      Config name (str)
     """
+    from docknv.session_handler import session_get_configuration
+
     config = session_get_configuration(
         project_path, config_name)
     project_generate_compose(
@@ -226,6 +230,13 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     :param config_name      Config name (str?) (default: None)
     """
     from docknv.schema_handler import schema_get_configuration
+    from docknv.template_renderer import renderer_render_compose_template
+    from docknv.environment_handler import env_check_file, env_load_in_memory
+    from docknv.session_handler import session_read_configuration, session_write_configuration
+    from docknv.composefile_handler import (
+        composefile_multiple_read, composefile_filter, composefile_resolve_volumes,
+        composefile_apply_namespace, composefile_write
+    )
 
     user = None
     try:

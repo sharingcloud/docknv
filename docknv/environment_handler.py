@@ -65,42 +65,6 @@ def env_check_file(project_path, name):
     return os.path.exists(env_path)
 
 
-def _env_get_path(project_path, name):
-    """
-    Return environment path from project path and environment name.
-
-    :param project_path     Project path (str)
-    :param name             Environment name (str)
-    :return Environment file path (str)
-    """
-    return os.path.join(project_path, "envs", "".join((name, ".env.py")))
-
-
-def _env_detect_imports(env_content):
-    """
-    Detect imports in an environment file.
-
-    :param env_content  Environment file content (str)
-    :return Detected imports
-    """
-    detected_imports = []
-    for match in IMPORT_DETECTION_RGX.finditer(env_content):
-        detected_imports.append(match.groups()[0])
-
-    return detected_imports
-
-
-def _env_read_file_content(env_path):
-    """
-    Open and read environment file content.
-
-    :param env_path     Environment file path (str)
-    :return Environment file content
-    """
-    with codecs.open(env_path, mode='r', encoding='utf-8') as handle:
-        return handle.read()
-
-
 def env_load_in_memory(project_path, name):
     """
     Load environment file in memory.
@@ -113,8 +77,6 @@ def env_load_in_memory(project_path, name):
 
     if not os.path.isfile(env_path):
         raise RuntimeError("File `{0}` does not exist".format(env_path))
-    Logger.info(
-        "Loading environment configuration file `{0}`...".format(name))
 
     loaded_env = OrderedDict()
 
@@ -150,3 +112,43 @@ def env_write_to_file(env, path):
     with codecs.open(path, encoding="utf-8", mode="wt+") as handle:
         for value in env:
             handle.write("{0}={1}\n".format(value, env[value]))
+
+
+##############
+# PRIVATE
+
+
+def _env_get_path(project_path, name):
+    """
+    Return environment path from project path and environment name.
+
+    :param project_path     Project path (str)
+    :param name             Environment name (str)
+    :return Environment file path (str)
+    """
+    return os.path.join(project_path, "envs", "".join((name, ".env.py")))
+
+
+def _env_detect_imports(env_content):
+    """
+    Detect imports in an environment file.
+
+    :param env_content  Environment file content (str)
+    :return Detected imports
+    """
+    detected_imports = []
+    for match in IMPORT_DETECTION_RGX.finditer(env_content):
+        detected_imports.append(match.groups()[0])
+
+    return detected_imports
+
+
+def _env_read_file_content(env_path):
+    """
+    Open and read environment file content.
+
+    :param env_path     Environment file path (str)
+    :return Environment file content
+    """
+    with codecs.open(env_path, mode='r', encoding='utf-8') as handle:
+        return handle.read()

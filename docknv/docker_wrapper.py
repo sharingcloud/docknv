@@ -5,9 +5,6 @@ import subprocess
 
 from docknv.logger import Logger, Fore
 
-from docknv.project_handler import project_read
-from docknv.user_handler import user_temporary_copy_file
-
 
 def get_docker_container(project_path, machine):
     """
@@ -17,6 +14,9 @@ def get_docker_container(project_path, machine):
     :param machine          Machine name (str)
     :return Container name (str)
     """
+    from docknv.project_handler import project_read
+    from docknv.user_handler import user_temporary_copy_file
+
     config = project_read(project_path)
 
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
@@ -53,6 +53,9 @@ def exec_compose(project_path, args):
     :param project_path     Project path (str)
     :param args             Arguments (...)
     """
+    from docknv.project_handler import project_read
+    from docknv.user_handler import user_temporary_copy_file
+
     config = project_read(project_path)
 
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
@@ -73,7 +76,11 @@ def exec_compose_pretty(project_path, args):
     :param project_path     Project path (str)
     :param args             Arguments (...)
     """
+    from docknv.project_handler import project_read
+    from docknv.user_handler import user_temporary_copy_file
+
     config = project_read(project_path)
+
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
         cmd = "docker-compose -f {0} {1}".format(
             user_file, " ".join(args))

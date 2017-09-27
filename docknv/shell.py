@@ -18,8 +18,8 @@ from docknv.project_handler import project_generate_compose, project_use_configu
                                    project_update_configuration_schema, project_generate_compose_from_configuration, \
                                    project_get_active_configuration, project_clean_user_config_path
 from docknv.user_handler import user_try_lock, user_disable_lock
-
 from docknv.dockerfile_packer import dockerfile_packer
+from docknv.command_handler import command_get_config, command_get_context
 
 from docknv import lifecycle_handler
 
@@ -37,13 +37,15 @@ class Shell(object):
 
         self._init_commands()
 
-    def register_post_parser(self, fct):
+    def register_post_parser(self, fct, cfg, ctx):
         """
         Register a new parser function.
 
         :param fct  Parser function (fn)
+        :param cfg  Configuration (dict)
+        :param ctx  Context (dict)
         """
-        self.post_parsers.append(fct)
+        self.post_parsers.append((fct, cfg, ctx))
 
     def run(self, args):
         """
@@ -634,8 +636,13 @@ class Shell(object):
             elif args.user_cmd == "rm-lock":
                 user_disable_lock(".")
 
-        for parser in self.post_parsers:
-            if parser(self, args):
+        for parser, cfg, ctx in self.post_parsers:
+            try:
+                result = parser(self, args, cfg, ctx)
+            except TypeError:
+                result = parser(self, args)
+
+            if result:
                 break
 
 
@@ -649,13 +656,21 @@ def docknv_entry_point():
         for root, _, files in os.walk(commands_dir):
             for filename in files:
                 if filename.endswith(".py"):
+                    base_filename, ext = os.path.splitext(filename)
                     abs_f = os.path.join(root, filename)
                     src = imp.load_source("commands", abs_f)
                     if hasattr(src, "pre_parse") and hasattr(src, "post_parse"):
                         pre_parse = getattr(src, "pre_parse")
                         post_parse = getattr(src, "post_parse")
 
-                        pre_parse(shell)
-                        shell.register_post_parser(post_parse)
+                        command_config = command_get_config(current_dir, base_filename)
+                        command_context = command_get_context(current_dir)
+
+                        try:
+                            pre_parse(shell, command_config, command_context)
+                        except TypeError:
+                            pre_parse(shell)
+
+                        shell.register_post_parser(post_parse, command_config, command_context)
 
     shell.run(sys.argv[1:])

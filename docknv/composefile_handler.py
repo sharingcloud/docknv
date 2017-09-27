@@ -9,8 +9,6 @@ from collections import OrderedDict
 from docknv.logger import Logger
 from docknv.utils.paths import create_path_or_replace, create_path_tree
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
-from docknv.volume_handler import volume_extract_from_line, volume_generate_namespaced_path
-from docknv.template_renderer import renderer_render_template
 
 
 def composefile_read(project_path, compose_file_path):
@@ -178,6 +176,8 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
 
 
 def _composefile_apply_namespace_replacement(output_content, namespace, environment, shared_volumes):
+    from docknv.volume_handler import volume_extract_from_line
+
     # Service replacement
     new_keys_repl = OrderedDict()
     for key in output_content["services"]:
@@ -231,6 +231,7 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     :return dict
     """
     from docknv.project_handler import project_get_name
+    from docknv.volume_handler import volume_generate_namespaced_path
 
     Logger.info("Resolving volumes...")
     output_content = copy.deepcopy(compose_content)
@@ -277,6 +278,8 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
 
 
 def _composefile_resolve_static_volumes(project_path, project_name, config_name, volumes_data, final_volumes):
+    from docknv.volume_handler import volume_extract_from_line
+
     if "static" in volumes_data:
         for static_def in volumes_data["static"]:
             volume_object = volume_extract_from_line(static_def)
@@ -308,6 +311,8 @@ def _composefile_resolve_static_volumes(project_path, project_name, config_name,
 
 
 def _composefile_resolve_shared_volumes(project_path, volumes_data, final_volumes):
+    from docknv.volume_handler import volume_extract_from_line
+
     if "shared" in volumes_data:
         for shared_def in volumes_data["shared"]:
             volume_object = volume_extract_from_line(shared_def)
@@ -324,6 +329,9 @@ def _composefile_resolve_shared_volumes(project_path, volumes_data, final_volume
 
 
 def _composefile_resolve_template_volumes(project_path, config_name, environment_data, volumes_data, final_volumes):
+    from docknv.volume_handler import volume_extract_from_line
+    from docknv.template_renderer import renderer_render_template
+
     # Jinja templates
     if "templates" in volumes_data:
         for template_def in volumes_data["templates"]:

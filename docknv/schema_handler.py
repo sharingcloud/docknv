@@ -2,7 +2,6 @@
 
 import copy
 
-from docknv.project_handler import project_read
 from docknv.logger import Logger, Fore
 
 from docknv.utils.serialization import yaml_merge
@@ -14,6 +13,8 @@ def schema_list(project_path):
 
     :param project_path     Project path (str)
     """
+    from docknv.project_handler import project_read
+
     config_data = project_read(project_path)
     schemas_count = len(config_data.schemas) if config_data.schemas is not None else 0
     if schemas_count == 0:
