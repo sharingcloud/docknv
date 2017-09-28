@@ -158,41 +158,29 @@ class Shell(object):
         daemon_cmd.add_argument("machine", help="machine name")
         daemon_cmd.add_argument(
             "run_command", help="command to run", nargs="?", default="")
-        daemon_cmd.add_argument("-e", "--environment",
-                                help="environment name", default=None)
 
         run_cmd = subs.add_parser("run", help="run a command on a container")
         run_cmd.add_argument("machine", help="machine name")
         run_cmd.add_argument(
             "run_command", help="command to run", nargs="?", default="")
-        run_cmd.add_argument("-e", "--environment",
-                             help="environment name", default=None)
 
         shell_cmd = subs.add_parser("shell", help="run shell")
         shell_cmd.add_argument("machine", help="machine name")
         shell_cmd.add_argument(
             "shell", help="shell executable", default="/bin/bash", nargs="?")
-        shell_cmd.add_argument("-e", "--environment",
-                               help="environment name", default=None)
         shell_cmd.add_argument(
             "-c", "--create", help="create the container if it does not exist", action="store_true")
 
         stop_cmd = subs.add_parser("stop", help="stop a container")
         stop_cmd.add_argument("machine", help="machine name")
-        stop_cmd.add_argument("-e", "--environment",
-                              help="environment name", default=None)
 
         start_cmd = subs.add_parser("start", help="start a container")
         start_cmd.add_argument("machine", help="machine name")
-        start_cmd.add_argument("-e", "--environment",
-                               help="environment name", default=None)
 
         restart_cmd = subs.add_parser("restart", help="restart a container")
         restart_cmd.add_argument("machine", help="machine name")
         restart_cmd.add_argument(
             "-f", "--force", action="store_true", help="force restart")
-        restart_cmd.add_argument(
-            "-e", "--environment", help="environment name", default=None)
 
         exec_cmd = subs.add_parser(
             "exec", help="execute command on a running container")
@@ -202,8 +190,6 @@ class Shell(object):
             "-t", "--no-tty", help="disable tty", action="store_true")
         exec_cmd.add_argument("-r", "--return-code",
                               help="forward ret code", action="store_true")
-        exec_cmd.add_argument("-e", "--environment",
-                              help="environment name", default=None)
 
         logs_cmd = subs.add_parser("logs", help="show container logs")
         logs_cmd.add_argument("machine", help="machine name")
@@ -211,22 +197,16 @@ class Shell(object):
                               help="tail logs", default=0)
         logs_cmd.add_argument(
             "-f", "--follow", help="follow logs", action="store_true", default=False)
-        logs_cmd.add_argument("-e", "--environment",
-                              help="environment name", default=None)
 
         pull_cmd = subs.add_parser("pull", help="pull a file from a container")
         pull_cmd.add_argument("machine", help="machine name")
         pull_cmd.add_argument("container_path", help="container path")
         pull_cmd.add_argument("host_path", help="host path")
-        pull_cmd.add_argument("-e", "--environment",
-                              help="environment name", default=None)
 
         push_cmd = subs.add_parser("push", help="push a file to a container")
         push_cmd.add_argument("machine", help="machine name")
         push_cmd.add_argument("host_path", help="host path")
         push_cmd.add_argument("container_path", help="container path")
-        push_cmd.add_argument("-e", "--environment",
-                              help="environment name", default=None)
 
         build_cmd = subs.add_parser("build", help="build a machine")
         build_cmd.add_argument("machine", help="machine name")
@@ -234,8 +214,6 @@ class Shell(object):
             "-d", "--do-not-push", help="do not push to registry", action="store_true")
         build_cmd.add_argument(
             "-n", "--no-cache", help="build without cache", action="store_true")
-        build_cmd.add_argument("-e", "--environment",
-                               help="environment name", default=None)
 
         freeze_cmd = subs.add_parser("freeze", help="freeze a machine")
         freeze_cmd.add_argument("machine", help="machine name")
@@ -485,51 +463,54 @@ class Shell(object):
                 schema_list(".")
 
         elif command == "machine":
+            context = command_get_context(".")
+            environment_name = context.environment_name
+
             if args.machine_cmd == "build":
                 lifecycle_handler.lifecycle_machine_build(
-                    ".", args.machine, args.no_cache, not args.do_not_push, args.environment)
+                    ".", args.machine, args.no_cache, not args.do_not_push, environment_name)
 
             elif args.machine_cmd == "daemon":
-                lifecycle_handler.lifecycle_machine_daemon(".", args.machine, args.run_command, args.environment)
+                lifecycle_handler.lifecycle_machine_daemon(".", args.machine, args.run_command, environment_name)
 
             elif args.machine_cmd == "run":
                 lifecycle_handler.lifecycle_machine_run(
-                    ".", args.machine, args.run_command, args.environment)
+                    ".", args.machine, args.run_command, environment_name)
 
             elif args.machine_cmd == "exec":
                 lifecycle_handler.lifecycle_machine_exec(
-                    ".", args.machine, args.run_command, args.no_tty, args.return_code, args.environment)
+                    ".", args.machine, args.run_command, args.no_tty, args.return_code, environment_name)
 
             elif args.machine_cmd == "shell":
                 lifecycle_handler.lifecycle_machine_shell(
-                    ".", args.machine, args.shell, args.environment, args.create)
+                    ".", args.machine, args.shell, environment_name, args.create)
 
             elif args.machine_cmd == "restart":
                 with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_restart(
-                        ".", args.machine, args.force, args.environment)
+                        ".", args.machine, args.force, environment_name)
 
             elif args.machine_cmd == "stop":
                 with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_stop(
-                        ".", args.machine, args.environment)
+                        ".", args.machine, environment_name)
 
             elif args.machine_cmd == "start":
                 with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_start(
-                        ".", args.machine, args.environment)
+                        ".", args.machine, environment_name)
 
             elif args.machine_cmd == "push":
                 lifecycle_handler.lifecycle_machine_push(
-                    ".", args.machine, args.host_path, args.container_path, args.environment)
+                    ".", args.machine, args.host_path, args.container_path, environment_name)
 
             elif args.machine_cmd == "pull":
                 lifecycle_handler.lifecycle_machine_pull(
-                    ".", args.machine, args.container_path, args.host_path, args.environment)
+                    ".", args.machine, args.container_path, args.host_path, environment_name)
 
             elif args.machine_cmd == "logs":
                 lifecycle_handler.lifecycle_machine_logs(
-                    ".", args.machine, tail=args.tail, follow=args.follow, environment_name=args.environment)
+                    ".", args.machine, tail=args.tail, follow=args.follow, environment_name=environment_name)
 
             elif args.machine_cmd == "freeze":
                 dockerfile_packer(".", args.machine)
