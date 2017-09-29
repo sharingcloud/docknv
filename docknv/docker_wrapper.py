@@ -3,6 +3,8 @@
 import os
 import subprocess
 
+import six
+
 from docknv.logger import Logger, Fore
 
 
@@ -23,6 +25,9 @@ def get_docker_container(project_path, machine):
         cmd = "docker-compose -f {0} ps -q {1}".format(user_file, machine)
         proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE, shell=True)
         (out, _) = proc.communicate()
+
+        if six.PY3:
+            out = out.decode('utf-8')
 
         if out == "":
             return None
@@ -88,6 +93,10 @@ def exec_compose_pretty(project_path, args):
         proc = subprocess.Popen(cmd, cwd=project_path,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
+
+        if six.PY3:
+            out = out.decode('utf-8')
+            err = err.decode('utf-8')
 
         lines = []
         if out != "":
