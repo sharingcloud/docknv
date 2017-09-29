@@ -217,6 +217,9 @@ def _pretty_handler_ps(line):
     elif state == "Restarting":
         color = Fore.YELLOW
         small_state = "restarting"
+    else:
+        color = Fore.YELLOW
+        small_state = "???"
 
     Logger.raw("{0}[{1}]{2} {3} - {4}{5}{2} - {6}{7}{2}".format(
         color, small_state, Fore.RESET, name, Fore.YELLOW, cmd, Fore.CYAN, port))
