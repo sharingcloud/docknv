@@ -148,8 +148,17 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
             print("Nothing done.")
             return
 
+    # Loading source env
+    source_content = []
+    with codecs.open(env_path_source, encoding='utf-8', mode='r') as handle:
+        source_content = handle.readlines()
+
     with codecs.open(env_path_dest, encoding='utf-8', mode="wt+") as handle:
-        handle.write('# -*- import: {0} -*-'.format(env_name_source))
+        handle.write('# -*- import: {0} -*-\n\n'.format(env_name_source))
+        for line in source_content:
+            if not line.startswith('#') and not line.startswith('"""') and line != '\n':
+                handle.write('# ')
+            handle.write(line)
 
     Logger.info("Environment file `{0}` copied to `{1}`".format(
         env_name_source, env_name_dest))
