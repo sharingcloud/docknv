@@ -1,7 +1,6 @@
 """Jinja template renderer."""
 
 import os
-import codecs
 import copy
 
 from jinja2 import Template
@@ -9,6 +8,7 @@ from jinja2 import Template
 from docknv.logger import Logger
 
 from docknv.utils.serialization import yaml_ordered_dump, yaml_ordered_load
+from docknv.utils.ioutils import io_open
 
 
 def renderer_render_compose_template(compose_content, environment_data=None):
@@ -91,14 +91,14 @@ def renderer_render_template(project_path, template_path, config_name, environme
             os.makedirs(path)
 
     # Loading template
-    with codecs.open(real_template_path, encoding="utf-8", mode="r") as handle:
+    with io_open(real_template_path, encoding="utf-8", mode="r") as handle:
         template = Template(handle.read())
 
     # Rendering template
     file_output = os.path.join(
         destination_path, os.path.basename(template_path)[:-3])
     rendered_template = template.render(**environment_data)
-    with codecs.open(file_output, encoding="utf-8", mode="w") as handle:
+    with io_open(file_output, encoding="utf-8", mode="w") as handle:
         handle.write(rendered_template)
 
     Logger.info("Template `{0}` rendered to `{1}`.".format(

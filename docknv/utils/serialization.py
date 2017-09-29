@@ -65,7 +65,7 @@ def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
             data.items())
 
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
-    return yaml.dump(data, stream, OrderedDumper, **kwds)
+    return unicode(yaml.dump(data, stream, OrderedDumper, **kwds))
 
 
 # PRIVATE ##########

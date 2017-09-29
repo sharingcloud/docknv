@@ -1,10 +1,14 @@
+## 3.7.3
+
+- Python 3 support on its way!
+
 ## 3.7.0
 
-- Context sensitive commands !
+- Context sensitive commands!
   - Commands are configurable using the main `config.yml` file in the `commands` key.
 
 ## 3.6.0
 
-- Environment import system !
+- Environment import system!
     - You can now import environments using the following snippet.
     - Example for **base-default**: `# -*- import: base-default -*-`

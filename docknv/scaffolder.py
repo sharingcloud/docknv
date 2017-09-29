@@ -3,10 +3,10 @@
 from __future__ import print_function
 
 import os
-import codecs
 
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.prompt import prompt_yes_no
+from docknv.utils.ioutils import io_open
 
 from docknv.logger import Logger
 
@@ -74,7 +74,7 @@ def scaffold_config(project_path, project_name=None):
     )
 
     joined_path = os.path.join(project_path, "config.yml")
-    with codecs.open(joined_path, encoding="utf-8", mode="wt") as handle:
+    with io_open(joined_path, encoding="utf-8", mode="wt") as handle:
         handle.write(config_content)
 
     Logger.info("Configuration file created.")
@@ -105,7 +105,7 @@ def scaffold_environment(project_path, env_name, env_content=None):
             return
 
     # Create file
-    with codecs.open(env_path, encoding="utf-8", mode="wt+") as handle:
+    with io_open(env_path, encoding="utf-8", mode="wt+") as handle:
         handle.write("")
 
     # Write env to file
@@ -150,10 +150,10 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
 
     # Loading source env
     source_content = []
-    with codecs.open(env_path_source, encoding='utf-8', mode='r') as handle:
+    with io_open(env_path_source, encoding='utf-8', mode='r') as handle:
         source_content = handle.readlines()
 
-    with codecs.open(env_path_dest, encoding='utf-8', mode="wt+") as handle:
+    with io_open(env_path_dest, encoding='utf-8', mode="wt+") as handle:
         handle.write('# -*- import: {0} -*-\n\n'.format(env_name_source))
         for line in source_content:
             if not line.startswith('#') and not line.startswith('"""') and line != '\n':
@@ -184,7 +184,7 @@ def scaffold_link_composefile(project_path, compose_file_name, unlink=False):
         Logger.error(
             "Compose file `{0}` does not exist.".format(compose_file))
 
-    with codecs.open(config_file, encoding="utf-8", mode="rt") as handle:
+    with io_open(config_file, encoding="utf-8", mode="rt") as handle:
         content = yaml_ordered_load(handle.read())
 
     if "composefiles" not in content:
@@ -212,7 +212,7 @@ def scaffold_link_composefile(project_path, compose_file_name, unlink=False):
 
     content["composefiles"] = composefiles
 
-    with codecs.open(config_file, encoding="utf-8", mode="wt") as handle:
+    with io_open(config_file, encoding="utf-8", mode="wt") as handle:
         handle.write(yaml_ordered_dump(content))
 
 
@@ -240,7 +240,7 @@ def scaffold_ignore(project_path, force=False):
         Logger.error(
             "Project path `{0}` does not exist.".format(project_path))
 
-    with codecs.open(ignore_file, encoding="utf-8", mode="wt") as handle:
+    with io_open(ignore_file, encoding="utf-8", mode="wt") as handle:
         handle.write(file_content)
 
     Logger.info("Ignore file created.")
@@ -279,7 +279,7 @@ def scaffold_image(project_path, image_name, image_url, image_tag="latest"):
 
     generated_dockerfile = "FROM {0}:{1}\n".format(image_url, image_tag)
 
-    with codecs.open(dockerfile_path, encoding="utf-8", mode="wt") as handle:
+    with io_open(dockerfile_path, encoding="utf-8", mode="wt") as handle:
         handle.write(generated_dockerfile)
 
     Logger.info("Dockerfile generated for image `{0}`, using `{1}:{2}`".format(

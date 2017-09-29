@@ -3,12 +3,13 @@
 import copy
 import os
 import shutil
-import codecs
+
 from collections import OrderedDict
 
 from docknv.logger import Logger
 from docknv.utils.paths import create_path_or_replace, create_path_tree
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
+from docknv.utils.ioutils import io_open
 
 
 def composefile_read(project_path, compose_file_path):
@@ -26,7 +27,7 @@ def composefile_read(project_path, compose_file_path):
         Logger.error(
             "Compose file `{0}` does not exist.".format(compose_file_path))
 
-    with codecs.open(real_path, encoding="utf-8", mode="r") as handle:
+    with io_open(real_path, encoding="utf-8", mode="r") as handle:
         content = yaml_ordered_load(handle.read())
 
     return content
@@ -52,7 +53,7 @@ def composefile_write(compose_content, output_path):
     :param compose_content  Compose content (dict)
     :param output_path      Output path (str)
     """
-    with codecs.open(output_path, encoding="utf-8", mode="w") as handle:
+    with io_open(output_path, encoding="utf-8", mode="w") as handle:
         handle.write(yaml_ordered_dump(compose_content))
 
     Logger.info("Compose content written to file `{0}`".format(output_path))

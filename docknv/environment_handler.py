@@ -2,12 +2,12 @@
 
 import os
 import imp
-import codecs
 import re
 
 from collections import OrderedDict
 
 from docknv.logger import Logger, Fore
+from docknv.utils.ioutils import io_open
 
 IMPORT_DETECTION_RGX = re.compile(r'-\*-\s*import:\s*([a-zA-Z0-9_-]*)\s*-\*-')
 
@@ -109,7 +109,7 @@ def env_write_to_file(env, path):
     """
     Logger.info("Writing environment to file {0}...".format(path))
 
-    with codecs.open(path, encoding="utf-8", mode="wt+") as handle:
+    with io_open(path, encoding="utf-8", mode="wt+") as handle:
         for value in env:
             handle.write("{0}={1}\n".format(value, env[value]))
 
@@ -150,5 +150,5 @@ def _env_read_file_content(env_path):
     :param env_path     Environment file path (str)
     :return Environment file content
     """
-    with codecs.open(env_path, mode='r', encoding='utf-8') as handle:
+    with io_open(env_path, mode='r', encoding='utf-8') as handle:
         return handle.read()

@@ -1,7 +1,6 @@
 """Project handler."""
 
 import os
-import codecs
 
 from contextlib import contextmanager
 
@@ -9,6 +8,7 @@ from docknv.logger import Logger
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yaml_merge
 from docknv.utils.words import generate_config_name
 from docknv.utils.paths import create_path_tree
+from docknv.utils.ioutils import io_open
 
 CONFIG_FILE_NAME = "config.yml"
 
@@ -53,7 +53,7 @@ def project_read(project_path):
     project_file_path = os.path.join(project_path, CONFIG_FILE_NAME)
 
     if os.path.isfile(project_file_path):
-        with codecs.open(project_file_path, encoding="utf-8", mode="r") as handle:
+        with io_open(project_file_path, encoding="utf-8", mode="r") as handle:
             config_data = yaml_ordered_load(handle.read())
     else:
         Logger.error("Config file `{0}` does not exist.".format(project_file_path))
@@ -79,7 +79,7 @@ def project_set_active_configuration(project_path, config_name, quiet=False):
     config_path = user_get_project_config_file_path(config.project_name)
 
     config = {"current": config_name}
-    with open(config_path, mode="wt") as handle:
+    with io_open(config_path, mode="wt") as handle:
         handle.write(yaml_ordered_dump(config))
 
     if not quiet:
@@ -101,7 +101,7 @@ def project_get_active_configuration(project_path):
     content = None
 
     if os.path.exists(config_path):
-        with open(config_path, mode="rt") as handle:
+        with io_open(config_path, mode="rt") as handle:
             content = yaml_ordered_load(handle.read())
 
     return content["current"] if content else None
