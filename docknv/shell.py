@@ -464,7 +464,7 @@ class Shell(object):
 
         elif command == "machine":
             context = command_get_context(".")
-            environment_name = context.environment_name
+            environment_name = context.namespace_name
 
             if args.machine_cmd == "build":
                 lifecycle_handler.lifecycle_machine_build(

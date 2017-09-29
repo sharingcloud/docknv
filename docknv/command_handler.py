@@ -78,7 +78,7 @@ def command_get_context(project_path):
     env_data = env_load_in_memory(project_path, environment_name)
 
     context.config_name = config_name
-    context.namespace_name = namespace_name
+    context.namespace_name = None if namespace_name == "default" else namespace_name
     context.schema_name = schema_name
     context.environment_name = environment_name
     context.schema_data = schema_data['config']
