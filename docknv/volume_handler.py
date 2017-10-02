@@ -1,6 +1,9 @@
 """Volume handler."""
 
 
+import platform
+
+
 class VolumeObject(object):
     """Volume object entry."""
 
@@ -75,10 +78,16 @@ def volume_extract_from_line(line):
     :param line     Line string (str)
     :return Volume object data (VolumeObject)
     """
+    system_name = platform.version()
+    drive = ""
+    if system_name == "Windows" and line[1] == ":":
+        drive, line = line[:2], line[2:]
+
     split_line = line.split(":")
     len_split_line = len(split_line)
 
     if len_split_line == 3 or len_split_line == 2:
+        split_line[0] = drive + split_line[0]
         return VolumeObject(*split_line)
     else:
         raise RuntimeError("Bad volume format: {0}".format(line))
