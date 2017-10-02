@@ -98,7 +98,13 @@ def renderer_render_template(project_path, template_path, config_name, environme
     file_output = os.path.join(
         destination_path, os.path.basename(template_path)[:-3])
     rendered_template = template.render(**environment_data)
-    with io_open(file_output, encoding="utf-8", mode="w") as handle:
+
+    # Newline handle
+    newline = None
+    if template_path.endswith(".sh.j2"):
+        newline = "\n"
+
+    with io_open(file_output, encoding="utf-8", mode="w", newline=newline) as handle:
         handle.write(rendered_template)
 
     Logger.info("Template `{0}` rendered to `{1}`.".format(
