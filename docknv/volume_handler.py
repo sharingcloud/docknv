@@ -78,7 +78,7 @@ def volume_extract_from_line(line):
     :param line     Line string (str)
     :return Volume object data (VolumeObject)
     """
-    system_name = platform.version()
+    system_name = platform.system()
     drive = ""
     if system_name == "Windows" and line[1] == ":":
         drive, line = line[:2], line[2:]
