@@ -14,9 +14,13 @@ from docknv.environment_handler import env_list, env_show
 from docknv.schema_handler import schema_list
 from docknv.session_handler import session_show_configuration_list, session_remove_configuration, \
                                    session_update_environment
-from docknv.project_handler import project_generate_compose, project_use_configuration, \
-                                   project_update_configuration_schema, project_generate_compose_from_configuration, \
-                                   project_get_active_configuration, project_clean_user_config_path
+
+from docknv.project_handler import (
+    project_generate_compose, project_use_configuration, project_update_configuration_schema,
+    project_generate_compose_from_configuration, project_get_active_configuration,
+    project_clean_user_config_path, project_unset_configuration
+)
+
 from docknv.user_handler import user_try_lock, user_disable_lock
 from docknv.dockerfile_packer import dockerfile_packer
 from docknv.command_handler import command_get_config, command_get_context
@@ -265,6 +269,7 @@ class Shell(object):
         use_cmd = subs.add_parser("use", help="use configuration")
         use_cmd.add_argument("name", help="configuration name")
 
+        subs.add_parser("unset", help="unset configuration")
         subs.add_parser("status", help="show current configuration")
         subs.add_parser("ls", help="list known configurations")
 
@@ -551,6 +556,9 @@ class Shell(object):
             elif args.config_cmd == "use":
                 project_use_configuration(
                     ".", args.name)
+
+            elif args.config_cmd == "unset":
+                project_unset_configuration(".")
 
             elif args.config_cmd == "change-schema":
                 project_update_configuration_schema(

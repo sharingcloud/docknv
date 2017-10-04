@@ -169,6 +169,23 @@ def project_use_configuration(project_path, config_name, quiet=False):
         project_path, config_name, quiet)
 
 
+def project_unset_configuration(project_path):
+    """
+    Unset the configuration.
+
+    :param project_path     Project path (str)
+    """
+    from docknv.user_handler import user_get_project_config_file_path
+
+    config = project_read(project_path)
+    config_path = user_get_project_config_file_path(config.project_name)
+
+    if os.path.exists(config_path):
+        os.remove(config_path)
+
+    Logger.info("User project configuration has been unset.")
+
+
 @contextmanager
 def project_use_temporary_configuration(project_path, config_name):
     """
