@@ -8,12 +8,17 @@ import imp
 from docknv.version import __version__
 from docknv.logger import Logger
 
-from docknv.scaffolder import scaffold_environment, scaffold_environment_copy, scaffold_image, \
-                              scaffold_link_composefile, scaffold_project
+from docknv.scaffolder import (
+    scaffold_environment, scaffold_environment_copy, scaffold_image,
+    scaffold_link_composefile, scaffold_project
+)
+
 from docknv.environment_handler import env_list, env_show
 from docknv.schema_handler import schema_list
-from docknv.session_handler import session_show_configuration_list, session_remove_configuration, \
-                                   session_update_environment
+from docknv.session_handler import (
+    session_show_configuration_list, session_remove_configuration,
+    session_update_environment
+)
 
 from docknv.project_handler import (
     project_generate_compose, project_use_configuration, project_update_configuration_schema,
@@ -469,53 +474,53 @@ class Shell(object):
 
         elif command == "machine":
             context = command_get_context(".")
-            environment_name = context.namespace_name
+            namespace_name = context.namespace_name
 
             if args.machine_cmd == "build":
                 lifecycle_handler.lifecycle_machine_build(
-                    ".", args.machine, args.no_cache, not args.do_not_push, environment_name)
+                    ".", args.machine, args.no_cache, not args.do_not_push, namespace_name)
 
             elif args.machine_cmd == "daemon":
-                lifecycle_handler.lifecycle_machine_daemon(".", args.machine, args.run_command, environment_name)
+                lifecycle_handler.lifecycle_machine_daemon(".", args.machine, args.run_command, namespace_name)
 
             elif args.machine_cmd == "run":
                 lifecycle_handler.lifecycle_machine_run(
-                    ".", args.machine, args.run_command, environment_name)
+                    ".", args.machine, args.run_command, namespace_name)
 
             elif args.machine_cmd == "exec":
                 lifecycle_handler.lifecycle_machine_exec(
-                    ".", args.machine, args.run_command, args.no_tty, args.return_code, environment_name)
+                    ".", args.machine, args.run_command, args.no_tty, args.return_code, namespace_name)
 
             elif args.machine_cmd == "shell":
                 lifecycle_handler.lifecycle_machine_shell(
-                    ".", args.machine, args.shell, environment_name, args.create)
+                    ".", args.machine, args.shell, namespace_name, args.create)
 
             elif args.machine_cmd == "restart":
                 with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_restart(
-                        ".", args.machine, args.force, environment_name)
+                        ".", args.machine, args.force, namespace_name)
 
             elif args.machine_cmd == "stop":
                 with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_stop(
-                        ".", args.machine, environment_name)
+                        ".", args.machine, namespace_name)
 
             elif args.machine_cmd == "start":
                 with user_try_lock("."):
                     lifecycle_handler.lifecycle_machine_start(
-                        ".", args.machine, environment_name)
+                        ".", args.machine, namespace_name)
 
             elif args.machine_cmd == "push":
                 lifecycle_handler.lifecycle_machine_push(
-                    ".", args.machine, args.host_path, args.container_path, environment_name)
+                    ".", args.machine, args.host_path, args.container_path, namespace_name)
 
             elif args.machine_cmd == "pull":
                 lifecycle_handler.lifecycle_machine_pull(
-                    ".", args.machine, args.container_path, args.host_path, environment_name)
+                    ".", args.machine, args.container_path, args.host_path, namespace_name)
 
             elif args.machine_cmd == "logs":
                 lifecycle_handler.lifecycle_machine_logs(
-                    ".", args.machine, tail=args.tail, follow=args.follow, environment_name=environment_name)
+                    ".", args.machine, tail=args.tail, follow=args.follow, namespace_name=namespace_name)
 
             elif args.machine_cmd == "freeze":
                 dockerfile_packer(".", args.machine)

@@ -67,7 +67,7 @@ def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
     out = yaml.dump(data, stream, OrderedDumper, **kwds)
     if six.PY2:
-        out = unicode(out)
+        out = unicode(out)  # noqa
     return out
 
 

@@ -8,15 +8,15 @@ from docknv.logger import Logger
 from docknv.docker_wrapper import exec_compose, exec_compose_pretty, get_docker_container
 
 
-def lifecycle_get_machine_name(machine_name, environment_name=None):
+def lifecycle_get_machine_name(machine_name, namespace_name=None):
     """
     Get docker container name.
 
     :param machine_name     Machine name (str)
-    :param environment_name Environment name (str?) (default: None)
+    :param namespace_name   Namespace name (str?) (default: None)
     :return Machine name (str)
     """
-    return "{0}_{1}".format(environment_name, machine_name) if environment_name else machine_name
+    return "{0}_{1}".format(namespace_name, machine_name) if namespace_name else machine_name
 
 # SCHEMA FUNCTIONS ###############
 
@@ -34,25 +34,20 @@ def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
     from docknv.project_handler import project_get_active_configuration, project_read
 
     current_config = project_get_active_configuration(project_path)
-    current_config_data = session_get_configuration(
-        project_path, current_config)
+    current_config_data = session_get_configuration(project_path, current_config)
 
     config_data = project_read(project_path)
-    schema_config = schema_get_configuration(
-        config_data, current_config_data["schema"])
+    schema_config = schema_get_configuration(config_data, current_config_data["schema"])
 
     namespace = current_config_data["namespace"]
     for service in schema_config["config"]["services"]:
-        service_name = "{0}_{1}".format(
-            namespace, service) if namespace != "default" else service
+        service_name = "{0}_{1}".format(namespace, service) if namespace != "default" else service
 
         no_cache_cmd = "--no-cache" if no_cache else ""
-        exec_compose(
-            project_path, ["build", service_name, no_cache_cmd])
+        exec_compose(project_path, ["build", service_name, no_cache_cmd])
 
         if push_to_registry:
-            exec_compose(
-                project_path, ["push", service_name])
+            exec_compose(project_path, ["push", service_name])
 
 
 def lifecycle_schema_start(project_path, foreground=False):
@@ -187,7 +182,7 @@ def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_r
 # MACHINE FUNCTIONS #############
 
 
-def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_registry=True, environment_name=None):
+def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_registry=True, namespace_name=None):
     """
     Build a machine.
 
@@ -195,10 +190,9 @@ def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_
     :param machine_name         Machine name (str)
     :param no_cache             Do not use cache (bool) (default: False)
     :param push_to_registry     Push to registry (bool) (default: True)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
     if no_cache:
         args = ["build", "--no-cache", machine_name]
@@ -208,109 +202,100 @@ def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_
     exec_compose(project_path, args)
 
     if push_to_registry:
-        exec_compose(
-            project_path, ["push", machine_name])
+        exec_compose(project_path, ["push", machine_name])
 
 
-def lifecycle_machine_stop(project_path, machine_name, environment_name=None):
+def lifecycle_machine_stop(project_path, machine_name, namespace_name=None):
     """
     Stop a machine.
 
     :param project_path         Project path (str)
     :param machine_name         Machine name (str)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
     exec_compose_pretty(project_path, ["stop", machine_name])
 
 
-def lifecycle_machine_start(project_path, machine_name, environment_name=None):
+def lifecycle_machine_start(project_path, machine_name, namespace_name=None):
     """
     Start a machine.
 
     :param project_path         Project path (str)
     :param machine_name         Machine name (str)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
     exec_compose_pretty(project_path, ["start", machine_name])
 
 
-def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", environment_name=None, create=False):
+def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", namespace_name=None, create=False):
     """
     Execute a shell on a machine.
 
     :param project_path         Project path (str)
     :param machine_name         Machine name (str)
     :param shell_path           Shell path (str) (default: /bin/bash)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     :param create               Create the container (bool) (default: False)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
     if create:
-        lifecycle_machine_run(
-            project_path, machine_name, shell_path, environment_name)
+        lifecycle_machine_run(project_path, machine_name, shell_path, namespace_name)
     else:
-        lifecycle_machine_exec(
-            project_path, machine_name, shell_path, False, False)
+        lifecycle_machine_exec(project_path, machine_name, shell_path, False, False)
 
 
-def lifecycle_machine_daemon(project_path, machine_name, command=None, environment_name=None):
+def lifecycle_machine_daemon(project_path, machine_name, command=None, namespace_name=None):
     """
     Execute a process in background for a machine.
 
     :param project_path         Project path (str)
     :param machine_name         Machine name (str)
     :param command              Command (str)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
-    exec_compose_pretty(
-        project_path, ["run", "--service-ports", "-d", machine_name, command])
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
+
+    exec_compose_pretty(project_path, ["run", "--service-ports", "-d", machine_name, command])
 
 
-def lifecycle_machine_restart(project_path, machine_name, force=False, environment_name=None):
+def lifecycle_machine_restart(project_path, machine_name, force=False, namespace_name=None):
     """
     Restart a machine.
 
     :param project_path         Project path (str)
     :param machine_name         Machine name (str)
     :param force                Force restart (bool) (default: False)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
+
     if force:
         lifecycle_machine_stop(project_path, machine_name)
         lifecycle_machine_start(project_path, machine_name)
     else:
-        exec_compose_pretty(
-            project_path, ["restart", machine_name])
+        exec_compose_pretty(project_path, ["restart", machine_name])
 
 
-def lifecycle_machine_run(project_path, machine_name, command=None, environment_name=None):
+def lifecycle_machine_run(project_path, machine_name, command=None, namespace_name=None):
     """
     Run a machine.
 
     :param project_path         Project path (str)
     :param machine_name         Machine name (str)
     :param command              Command (str?) (default: None)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
-    exec_compose(
-        project_path, ["run", "--service-ports", machine_name, command])
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
+
+    exec_compose(project_path, ["run", "--service-ports", machine_name, command])
 
 
-def lifecycle_machine_push(project_path, machine_name, host_path, container_path, environment_name=None):
+def lifecycle_machine_push(project_path, machine_name, host_path, container_path, namespace_name=None):
     """
     Push a file to a machine.
 
@@ -318,22 +303,19 @@ def lifecycle_machine_push(project_path, machine_name, host_path, container_path
     :param machine_name         Machine name (str)
     :param host_path            Host path (str)
     :param container_path       Container path (str)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
     container = get_docker_container(project_path, machine_name)
+
     if not container:
-        Logger.error("Machine `{0}` is not running.".format(
-            machine_name), crash=False)
+        Logger.error("Machine `{0}` is not running.".format(machine_name), crash=False)
     else:
-        Logger.info("Copying file from host to `{0}`: `{1}` => `{2}".format(
-            machine_name, host_path, container_path))
-        os.system("docker cp {0} {1}:{2}".format(
-            host_path, container, container_path))
+        Logger.info("Copying file from host to `{0}`: `{1}` => `{2}".format(machine_name, host_path, container_path))
+        os.system("docker cp {0} {1}:{2}".format(host_path, container, container_path))
 
 
-def lifecycle_machine_pull(project_path, machine_name, container_path, host_path, environment_name=None):
+def lifecycle_machine_pull(project_path, machine_name, container_path, host_path, namespace_name=None):
     """
     Pull a file from a machine.
 
@@ -341,23 +323,20 @@ def lifecycle_machine_pull(project_path, machine_name, container_path, host_path
     :param machine_name         Machine name (str)
     :param container_path       Container path (str)
     :param host_path            Host path (str)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
     container = get_docker_container(project_path, machine_name)
+
     if not container:
-        Logger.error("Machine `{0}` is not running.".format(
-            machine_name), crash=False)
+        Logger.error("Machine `{0}` is not running.".format(machine_name), crash=False)
     else:
-        Logger.info("Copying file from `{0}`: `{1}` => `{2}".format(
-            machine_name, container_path, host_path))
-        os.system("docker cp {0}:{1} {2}".format(
-            container, container_path, host_path))
+        Logger.info("Copying file from `{0}`: `{1}` => `{2}".format(machine_name, container_path, host_path))
+        os.system("docker cp {0}:{1} {2}".format(container, container_path, host_path))
 
 
 def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=False, return_code=False,
-                           environment_name=None):
+                           namespace_name=None):
     """
     Execute a machine.
 
@@ -366,10 +345,11 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
     :param command              Command (str?) (default: None)
     :param no_tty               Do not use TTY (bool) (default: False)
     :param return_code          Handle return code (bool) (default: False)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
     container = get_docker_container(project_path, machine_name)
+
     if not container:
         Logger.error("Machine `{0}` is not running.".format(machine_name), crash=False)
     else:
@@ -379,7 +359,7 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
 
 
 def lifecycle_machine_exec_multiple(project_path, machine_name, commands=None, no_tty=False, return_code=False,
-                                    environment_name=None):
+                                    namespace_name=None):
     """
     Execute multiple commands on a machine.
 
@@ -388,11 +368,12 @@ def lifecycle_machine_exec_multiple(project_path, machine_name, commands=None, n
     :param commands             Commands (iterable) (default: None)
     :param no_tty               Do not use TTY (bool) (default: False)
     :param return_code          Handle return code (bool) (default: False)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
     commands = commands if commands else [""]
-    machine_name = lifecycle_get_machine_name(machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
     container = get_docker_container(project_path, machine_name)
+
     if not container:
         Logger.error("Machine `{0}` is not running.".format(machine_name), crash=False)
     else:
@@ -403,7 +384,7 @@ def lifecycle_machine_exec_multiple(project_path, machine_name, commands=None, n
             sys.exit(os.WEXITSTATUS(code))
 
 
-def lifecycle_machine_logs(project_path, machine_name, tail=0, follow=False, environment_name=None):
+def lifecycle_machine_logs(project_path, machine_name, tail=0, follow=False, namespace_name=None):
     """
     Get logs from a machine.
 
@@ -411,14 +392,13 @@ def lifecycle_machine_logs(project_path, machine_name, tail=0, follow=False, env
     :param machine_name         Machine name (str)
     :param tail                 Tail lines (int) (default: 0)
     :param follow               Follow logs (bool) (default: False)
-    :param environment_name     Environment name (str?) (default: None)
+    :param namespace_name       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(
-        machine_name, environment_name)
+    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
     container = get_docker_container(project_path, machine_name)
+
     if not container:
-        Logger.error("Machine `{0}` is not running.".format(
-            machine_name), crash=False)
+        Logger.error("Machine `{0}` is not running.".format(machine_name), crash=False)
     else:
         cmd = "docker logs {0}".format(container)
         if follow:

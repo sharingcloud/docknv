@@ -89,10 +89,8 @@ def session_update_environment(project_path, config_name, environment_name):
 
         if session_check_configuration(docknv_config, config_name):
             docknv_config["values"][config_name]["environment"] = environment_name
-            session_write_configuration(
-                project_path, docknv_config)
-            Logger.info("Configuration `{0}` updated with environment `{1}`".format(
-                config_name, environment_name))
+            session_write_configuration(project_path, docknv_config)
+            Logger.info("Configuration `{0}` updated with environment `{1}`".format(config_name, environment_name))
 
 
 def session_remove_configuration(project_path, config_name):
@@ -113,23 +111,19 @@ def session_remove_configuration(project_path, config_name):
 
     config_to_remove = config["values"][config_name]
     if config_to_remove["user"] != uid:
-        Logger.error(
-            "You can not remove configuration `{0}`. Access denied.".format(config_name))
+        Logger.error("You can not remove configuration `{0}`. Access denied.".format(config_name))
 
-    choice = prompt_yes_no(
-        "/!\\ Are you sure you want to remove configuration `{0}` ?".format(config_name))
+    choice = prompt_yes_no("/!\\ Are you sure you want to remove configuration `{0}` ?".format(config_name))
 
     if choice:
         # Remove configuration and docker-compose file.
-        path = project_get_composefile(
-            project_path, config_name)
+        path = project_get_composefile(project_path, config_name)
         if os.path.exists(path):
             os.remove(path)
 
         del config["values"][config_name]
 
-        session_write_configuration(
-            project_path, config)
+        session_write_configuration(project_path, config)
         Logger.info("Configuration `{0}` removed.".format(config_name))
 
 
@@ -145,15 +139,12 @@ def session_update_schema(project_path, project_config, config_name, schema_name
     from docknv.schema_handler import schema_check
 
     if schema_check(project_config, schema_name):
-        docknv_config = session_read_configuration(
-            project_path)
+        docknv_config = session_read_configuration(project_path)
 
         if session_check_configuration(docknv_config, config_name):
             docknv_config["values"][config_name]["schema"] = schema_name
-            session_write_configuration(
-                project_path, docknv_config)
-            Logger.info("Configuration `{0}` updated with schema `{1}`".format(
-                config_name, schema_name))
+            session_write_configuration(project_path, docknv_config)
+            Logger.info("Configuration `{0}` updated with schema `{1}`".format(config_name, schema_name))
 
 
 def session_get_configuration(project_path, name):
@@ -165,15 +156,13 @@ def session_get_configuration(project_path, name):
     :return Configuration data (dict)
     """
     if name is None:
-        Logger.error(
-            "No configuration set. Please set an active configuration.")
+        Logger.error("No configuration set. Please set an active configuration.")
 
     config = session_read_configuration(project_path)
     if name in config["values"]:
         return config["values"][name]
     else:
-        Logger.error(
-            "Missing configuration `{0}` in known configuration.".format(name))
+        Logger.error("Missing configuration `{0}` in known configuration.".format(name))
 
 
 def session_list_configurations(project_path):

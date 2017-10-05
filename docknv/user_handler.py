@@ -99,8 +99,7 @@ def user_ensure_config_path_exists(project_name):
     :param project_name     Project name (str)
     """
     user_config_path = user_get_config_path()
-    user_project_config_path = user_get_project_config_path(
-        project_name)
+    user_project_config_path = user_get_project_config_path(project_name)
 
     if not os.path.exists(user_config_path):
         os.makedirs(user_config_path)
@@ -180,8 +179,7 @@ def user_try_lock(project_path):
     :coroutine
     """
     if not user_enable_lock(project_path):
-        Logger.error(
-            "docknv is already running with your account. wait until completion.")
+        Logger.error("docknv is already running with your account. wait until completion.")
     else:
         try:
             yield
@@ -201,11 +199,9 @@ def user_temporary_copy_file(project_name, path_to_file):
     :param path_to_file     Path to file (str)
     :coroutine
     """
-    path = user_get_project_file_path(
-        project_name, path_to_file)
+    path = user_get_project_file_path(project_name, path_to_file)
 
-    generated_file_name = ".{0}.{1}".format(
-        user_current_get_id(), os.path.basename(path))
+    generated_file_name = ".{0}.{1}".format(user_current_get_id(), os.path.basename(path))
     shutil.copyfile(path, generated_file_name)
 
     yield generated_file_name
@@ -224,8 +220,7 @@ def user_clean_config_path(project_name, config_name=None):
     from docknv.utils.prompt import prompt_yes_no
 
     if config_name:
-        folder_path = user_get_project_config_name_path(
-            project_name, config_name)
+        folder_path = user_get_project_config_name_path(project_name, config_name)
     else:
         folder_path = user_get_project_config_path(project_name)
 

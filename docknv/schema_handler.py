@@ -21,8 +21,7 @@ def schema_list(project_path):
         Logger.warn("No schema found.")
     else:
         for name in config_data.schemas:
-            schema = schema_get_configuration(
-                config_data, name)
+            schema = schema_get_configuration(config_data, name)
             Logger.raw("Schema: " + name, color=Fore.GREEN)
             if "volumes" in schema["config"]:
                 Logger.raw("  Volumes: ", color=Fore.BLUE)

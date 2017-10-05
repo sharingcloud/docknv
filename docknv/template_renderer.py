@@ -22,8 +22,7 @@ def renderer_render_compose_template(compose_content, environment_data=None):
     Logger.info("Resolving compose content...")
     output_content = copy.deepcopy(compose_content)
 
-    template_result = renderer_render_template_inplace(
-        output_content, environment_data)
+    template_result = renderer_render_template_inplace(output_content, environment_data)
 
     return yaml_ordered_load(template_result)
 
@@ -64,27 +63,23 @@ def renderer_render_template(project_path, template_path, config_name, environme
     from docknv.user_handler import user_get_project_config_name_path
 
     project_name = project_get_name(project_path)
-    user_config_name = user_get_project_config_name_path(
-        project_name, config_name)
+    user_config_name = user_get_project_config_name_path(project_name, config_name)
     environment_data = environment_data if environment_data else {}
     templates_path = os.path.join(project_path, "data", "files")
 
     real_template_path = os.path.join(templates_path, template_path)
 
     if not os.path.exists(real_template_path):
-        Logger.error(
-            "Template `{0}` does not exist.".format(template_path))
+        Logger.error("Template `{0}` does not exist.".format(template_path))
     if not template_path.endswith(".j2"):
-        Logger.error(
-            "Bad Jinja template file: `{0}`. It should end with '.j2'.".format(template_path))
+        Logger.error("Bad Jinja template file: `{0}`. It should end with '.j2'.".format(template_path))
 
     Logger.debug("Rendering template `{0}`...".format(template_path))
 
     # Creating tree
     local_path = os.path.join(user_config_name, "data")
     tpl_output_path = os.path.join(local_path, "templates")
-    destination_path = os.path.join(
-        tpl_output_path, os.path.dirname(template_path))
+    destination_path = os.path.join(tpl_output_path, os.path.dirname(template_path))
 
     for path in (local_path, tpl_output_path, destination_path):
         if not os.path.exists(path):
@@ -95,8 +90,7 @@ def renderer_render_template(project_path, template_path, config_name, environme
         template = Template(handle.read())
 
     # Rendering template
-    file_output = os.path.join(
-        destination_path, os.path.basename(template_path)[:-3])
+    file_output = os.path.join(destination_path, os.path.basename(template_path)[:-3])
     rendered_template = template.render(**environment_data)
 
     # Newline handle

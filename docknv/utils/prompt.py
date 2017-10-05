@@ -12,7 +12,7 @@ def get_input():
     :return str
     """
     if six.PY2:
-        return raw_input()
+        return raw_input()  # noqa
     else:
         return input()
 

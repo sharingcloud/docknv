@@ -83,8 +83,7 @@ def project_set_active_configuration(project_path, config_name, quiet=False):
         handle.write(yaml_ordered_dump(config))
 
     if not quiet:
-        Logger.info(
-            "Configuration `{0}` set as current configuration.".format(config_name))
+        Logger.info("Configuration `{0}` set as current configuration.".format(config_name))
 
 
 def project_get_active_configuration(project_path):
@@ -118,8 +117,7 @@ def project_update_configuration_schema(project_path, config_name, schema_name):
     from docknv.session_handler import session_update_schema
 
     project_config = project_read(project_path)
-    session_update_schema(
-        project_path, project_config, config_name, schema_name)
+    session_update_schema(project_path, project_config, config_name, schema_name)
 
 
 def project_get_name(project_path):
@@ -146,27 +144,20 @@ def project_use_configuration(project_path, config_name, quiet=False):
     from docknv.user_handler import user_current_get_id, user_copy_file_to_config_path
 
     config_content = project_read(project_path)
-
-    config = session_get_configuration(
-        project_path, config_name)
+    config = session_get_configuration(project_path, config_name)
 
     current_id = user_current_get_id()
     if config["user"] != current_id:
-        Logger.error(
-            "Can not access to `{0}` configuration. Access denied.".format(config_name))
+        Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
 
     path = project_get_composefile(
         project_path, config_name)
 
     if not os.path.exists(path):
-        Logger.error(
-            "Missing composefile for configuration `{0}`".format(config_name))
+        Logger.error("Missing composefile for configuration `{0}`".format(config_name))
 
-    user_copy_file_to_config_path(
-        config_content.project_name, path)
-
-    project_set_active_configuration(
-        project_path, config_name, quiet)
+    user_copy_file_to_config_path(config_content.project_name, path)
+    project_set_active_configuration(project_path, config_name, quiet)
 
 
 def project_unset_configuration(project_path):
@@ -197,8 +188,7 @@ def project_use_temporary_configuration(project_path, config_name):
     """
     old_config = project_get_active_configuration(project_path)
     if old_config is None:
-        Logger.error(
-            "You should already use one config before using this tool")
+        Logger.error("You should already use one config before using this tool")
 
     project_use_configuration(project_path, config_name, quiet=True)
     yield
@@ -229,10 +219,8 @@ def project_generate_compose_from_configuration(project_path, config_name):
     """
     from docknv.session_handler import session_get_configuration
 
-    config = session_get_configuration(
-        project_path, config_name)
-    project_generate_compose(
-        ".", config["schema"], config["namespace"], config["environment"], config_name)
+    config = session_get_configuration(project_path, config_name)
+    project_generate_compose(".", config["schema"], config["namespace"], config["environment"], config_name)
 
 
 def project_generate_compose(project_path, schema_name="all", namespace="default", environment="default",
@@ -366,16 +354,10 @@ def project_validate(project_file_path, config_data):
     :param config_data          Config data (dict)
     """
     if "composefiles" not in config_data:
-        Logger.error(
-            "Missing `composefiles` key in config file `{0}`"
-            .format(project_file_path)
-        )
+        Logger.error("Missing `composefiles` key in config file `{0}`".format(project_file_path))
 
     if "schemas" not in config_data:
-        Logger.error(
-            "Missing `schemas` key in config file `{0}`"
-            .format(project_file_path)
-        )
+        Logger.error("Missing `schemas` key in config file `{0}`".format(project_file_path))
 
 
 def project_clean_user_config_path(project_path, config_name=None):
@@ -389,8 +371,7 @@ def project_clean_user_config_path(project_path, config_name=None):
 
     project_name = project_get_name(project_path)
     if not config_name:
-        Logger.info(
-            "Attempting to clean user configuration for project `{0}`".format(project_name))
+        Logger.info("Attempting to clean user configuration for project `{0}`".format(project_name))
     else:
         Logger.info("Attempting to clean user configuration for project `{0}` and config `{1}`".format(
             project_name, config_name))

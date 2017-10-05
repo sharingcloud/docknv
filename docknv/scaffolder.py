@@ -25,9 +25,7 @@ def scaffold_project(project_path, project_name=None):
 
     if os.path.exists(project_path):
         choice = prompt_yes_no(
-            "/!\\ WARNING: The project path `{0}` already exists. Overwrite all ?".format(
-                project_path
-            )
+            "/!\\ WARNING: The project path `{0}` already exists. Overwrite all ?".format(project_path)
         )
 
         if not choice:
@@ -58,8 +56,7 @@ def scaffold_project(project_path, project_name=None):
     # Create default env
     scaffold_environment(project_path, "default")
 
-    Logger.info("New project `{0}` initialized in `{1}`".format(
-        project_name, project_path))
+    Logger.info("New project `{0}` initialized in `{1}`".format(project_name, project_path))
 
 
 def scaffold_config(project_path, project_name=None):
@@ -69,9 +66,7 @@ def scaffold_config(project_path, project_name=None):
     :param project_path     Project path (str)
     :param project_name     Project name (str?) (default: None)
     """
-    config_content = "project_name: {0}\n\nschemas:\ncomposefiles:".format(
-        project_name
-    )
+    config_content = "project_name: {0}\n\nschemas:\ncomposefiles:".format(project_name)
 
     joined_path = os.path.join(project_path, "config.yml")
     with io_open(joined_path, encoding="utf-8", mode="wt") as handle:
@@ -95,9 +90,7 @@ def scaffold_environment(project_path, env_name, env_content=None):
                             "".join((env_name, ".env.py")))
     if os.path.exists(env_path):
         choice = prompt_yes_no(
-            "/!\\ WARNING: The environment file `{0}` already exists. Overwrite ?".format(
-                env_name
-            )
+            "/!\\ WARNING: The environment file `{0}` already exists. Overwrite ?".format(env_name)
         )
 
         if not choice:
@@ -113,8 +106,7 @@ def scaffold_environment(project_path, env_name, env_content=None):
     if env_content_len > 0:
         env_write_to_file(env_content, env_path)
     else:
-        Logger.info(
-            "Empty environment file `{0}` created.".format(env_name))
+        Logger.info("Empty environment file `{0}` created.".format(env_name))
 
 
 def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
@@ -128,20 +120,15 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
     if env_name_source == env_name_dest:
         Logger.error('Source environment name and destination environment name cannot be the same.')
 
-    env_path_source = os.path.join(
-        project_path, "envs", "".join((env_name_source, ".env.py")))
-    env_path_dest = os.path.join(
-        project_path, "envs", "".join((env_name_dest, ".env.py")))
+    env_path_source = os.path.join(project_path, "envs", "".join((env_name_source, ".env.py")))
+    env_path_dest = os.path.join(project_path, "envs", "".join((env_name_dest, ".env.py")))
 
     if not os.path.exists(env_path_source):
-        Logger.error(
-            "Missing environment file `{0}`.".format(env_name_source))
+        Logger.error("Missing environment file `{0}`.".format(env_name_source))
 
     if os.path.exists(env_path_dest):
         choice = prompt_yes_no(
-            "/!\\ WARNING: The environment file `{0}` already exists. Overwrite ?".format(
-                env_name_dest
-            )
+            "/!\\ WARNING: The environment file `{0}` already exists. Overwrite ?".format(env_name_dest)
         )
 
         if not choice:
@@ -160,8 +147,7 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
                 handle.write('# ')
             handle.write(line)
 
-    Logger.info("Environment file `{0}` copied to `{1}`".format(
-        env_name_source, env_name_dest))
+    Logger.info("Environment file `{0}` copied to `{1}`".format(env_name_source, env_name_dest))
 
 
 def scaffold_link_composefile(project_path, compose_file_name, unlink=False):
@@ -173,16 +159,13 @@ def scaffold_link_composefile(project_path, compose_file_name, unlink=False):
     :param unlink               Unlink if true, else link (bool) (default: False)
     """
     config_file = os.path.join(project_path, "config.yml")
-    compose_file = os.path.join(
-        project_path, "composefiles", compose_file_name)
+    compose_file = os.path.join(project_path, "composefiles", compose_file_name)
 
     if not os.path.exists(config_file):
-        Logger.error(
-            "Config file `{0}` does not exist.".format(config_file))
+        Logger.error("Config file `{0}` does not exist.".format(config_file))
 
     if not os.path.exists(compose_file):
-        Logger.error(
-            "Compose file `{0}` does not exist.".format(compose_file))
+        Logger.error("Compose file `{0}` does not exist.".format(compose_file))
 
     with io_open(config_file, encoding="utf-8", mode="rt") as handle:
         content = yaml_ordered_load(handle.read())
@@ -196,19 +179,15 @@ def scaffold_link_composefile(project_path, compose_file_name, unlink=False):
     if unlink:
         if compose_file_path in composefiles:
             composefiles.remove(compose_file_path)
-            Logger.info("Compose file `{0}` unlinked from config.yml".format(
-                compose_file_name))
+            Logger.info("Compose file `{0}` unlinked from config.yml".format(compose_file_name))
         else:
-            Logger.warn("Missing compose file entry `{0}` in config.yml".format(
-                compose_file_path))
+            Logger.warn("Missing compose file entry `{0}` in config.yml".format(compose_file_path))
     else:
         if compose_file_path in composefiles:
-            Logger.warn("Compose file entry `{0}` already present in config.yml. Ignoring.".format(
-                compose_file_path))
+            Logger.warn("Compose file entry `{0}` already present in config.yml. Ignoring.".format(compose_file_path))
         else:
             composefiles.append(compose_file_path)
-            Logger.info("Compose file `{0}` linked in config.yml".format(
-                compose_file_name))
+            Logger.info("Compose file `{0}` linked in config.yml".format(compose_file_name))
 
     content["composefiles"] = composefiles
 
@@ -227,18 +206,14 @@ def scaffold_ignore(project_path, force=False):
     ignore_file = os.path.join(project_path, ".gitignore")
 
     if os.path.exists(ignore_file):
-        choice = prompt_yes_no(
-            "/!\\ WARNING: The .gitignore file already exists. Overwrite ?",
-            force
-        )
+        choice = prompt_yes_no("/!\\ WARNING: The .gitignore file already exists. Overwrite ?", force)
 
         if not choice:
             print("Nothing done.")
             return
 
     if not os.path.exists(project_path):
-        Logger.error(
-            "Project path `{0}` does not exist.".format(project_path))
+        Logger.error("Project path `{0}` does not exist.".format(project_path))
 
     with io_open(ignore_file, encoding="utf-8", mode="wt") as handle:
         handle.write(file_content)
@@ -268,9 +243,7 @@ def scaffold_image(project_path, image_name, image_url, image_tag="latest"):
     dockerfile_path = os.path.join(local_image_path, "Dockerfile")
     if os.path.exists(dockerfile_path):
         choice = prompt_yes_no(
-            "/!\\ WARNING: The Dockerfile `{0}` already exists. Overwrite ?".format(
-                dockerfile_path
-            )
+            "/!\\ WARNING: The Dockerfile `{0}` already exists. Overwrite ?".format(dockerfile_path)
         )
 
         if not choice:

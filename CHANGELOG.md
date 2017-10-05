@@ -1,3 +1,8 @@
+## 3.7.4
+
+- Python 3 and Windows support OK.
+- Commands arguments cleanup.
+
 ## 3.7.3
 
 - Python 3 support on its way!
