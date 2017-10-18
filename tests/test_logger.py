@@ -12,36 +12,30 @@ def test_log():
     with using_temp_stdout() as stdout:
         # Info
         Logger.info("Pouet")
-        assert "[INFO]" in stdout.getvalue()
-        print("Should be an info message")
+        assert "[INFO]" in stdout.getvalue(), "Should be an info message"
 
     with using_temp_stdout() as stdout:
         # Warn
         Logger.warn("Pouet")
-        assert "[WARN]" in stdout.getvalue()
-        print("Should be a warn message")
+        assert "[WARN]" in stdout.getvalue(), "Should be a warn message"
 
     with using_temp_stdout() as stdout:
         # Debug
         Logger.debug("Pouet")
-        assert "[DEBUG]" in stdout.getvalue()
-        print("Should be a debug message")
+        assert "[DEBUG]" in stdout.getvalue(), "Should be a debug message"
 
     with using_temp_stdout() as stdout:
         # Raw
         Logger.raw("Pouet pouet")
-        assert stdout.getvalue().endswith("\n")
-        print("Should end with a newline")
+        assert stdout.getvalue().endswith("\n"), "Should end with a newline"
 
     with using_temp_stdout() as stdout:
         Logger.raw("Pouet", color=Fore.BLUE)
-        assert stdout.getvalue().startswith("\x1b[34m")
-        print("Should start with blue color")
+        assert stdout.getvalue().startswith("\x1b[34m"), "Should start with blue color"
 
     with using_temp_stdout() as stdout:
         Logger.raw("Pouet pouet", linebreak=False)
-        assert not stdout.getvalue().endswith("\n")
-        print("Should not end with a newline")
+        assert not stdout.getvalue().endswith("\n"), "Should not end with a newline"
 
     with using_temp_stdout() as stdout:
         # Error

@@ -15,16 +15,16 @@ Here are the features:
    configuration files, to easily set and use values.
 -  **Templating system**: you can insert your defined environment values
    in templates all over your volumes files, using the powerful Jinja2
-   template engine!
+   template engine.
 -  **Mixing Compose files**: you can easily merge classic Docker Compose
-   templates together!
+   templates together.
 -  **Use schemas and namespaces to isolate**: you can isolate portions
    of infrastructure to build and run services independently.
 -  **Concurrent executions**: on a single host, and from the same entry
    point, you can deploy multiple schemas in different namespaces.
 -  **Custom commands**: you can extend the docknv command system to
    include your own custom commands and execute any action within
-   docknv!
+   docknv.
 
 Installation
 ------------
@@ -47,8 +47,7 @@ Project structure
 To use **Docknv**, you need to respect the following structure, all
 contained in a root folder:
 
--  **commands**: The location of your custom docknv commands.
-   *(optional)*
+-  **commands**: The location of your custom docknv commands. *(optional)*
 -  **composefiles**: The location of your Docker Compose files.
 -  **data**: Your project data, organized in three different folders:
 
