@@ -1,51 +1,51 @@
-"""
-Volume handler tests
-"""
+"""Volume handler tests."""
 
-import unittest
+import pytest
 
 from docknv.volume_handler import volume_extract_from_line
 
 
-class TestVolumeHandler(unittest.TestCase):
-    """
-    Volume handler tests
-    """
+def test_extract_bad_format():
+    """Should raise an exception when extracting volume from bad string."""
+    with pytest.raises(RuntimeError):
+        volume_extract_from_line("pouet")
 
-    def test_extract_bad_format(self):
-        """
-        Should raise an exception when extracting volume from bad string.
-        """
-        with self.assertRaises(RuntimeError):
-            volume_extract_from_line("pouet")
 
-    def test_extract_correct(self):
-        """
-        Should work on this extraction examples.
-        """
-        obj = volume_extract_from_line("./local:/local")
+def test_extract_correct():
+    """Should work on this extraction examples."""
+    obj = volume_extract_from_line("./local:/local")
 
-        self.assertTrue(obj.is_relative, "Should be relative")
-        self.assertFalse(obj.is_absolute, "Should not be absolute")
-        self.assertFalse(obj.is_named, "Should not be named")
-        self.assertEqual(obj.host_path, "./local")
-        self.assertEqual(obj.container_path, "/local")
-        self.assertEqual(obj.mode, "rw", "Should set default volume to 'rw'")
+    assert obj.is_relative
+    print("Should be relative")
+    assert not obj.is_absolute
+    print("Should not be absolute")
+    assert not obj.is_named
+    print("Should not be named")
+    assert obj.host_path == "./local"
+    assert obj.container_path == "/local"
+    assert obj.mode == "rw"
+    print("Should set default volume to 'rw'")
 
-        obj = volume_extract_from_line("/abs:/abs:ro")
+    obj = volume_extract_from_line("/abs:/abs:ro")
 
-        self.assertFalse(obj.is_relative, "Should not be relative")
-        self.assertTrue(obj.is_absolute, "Should be absolute")
-        self.assertFalse(obj.is_named, "Should not be named")
-        self.assertEqual(obj.host_path, "/abs")
-        self.assertEqual(obj.container_path, "/abs")
-        self.assertEqual(obj.mode, "ro")
+    assert not obj.is_relative
+    print("Should not be relative")
+    assert obj.is_absolute
+    print("Should be absolute")
+    assert not obj.is_named
+    print("Should not be named")
+    assert obj.host_path == "/abs"
+    assert obj.container_path == "/abs"
+    assert obj.mode == "ro"
 
-        obj = volume_extract_from_line("pouet:/pouet:rw")
+    obj = volume_extract_from_line("pouet:/pouet:rw")
 
-        self.assertFalse(obj.is_relative, "Should not be relative")
-        self.assertFalse(obj.is_absolute, "Should not be absolute")
-        self.assertTrue(obj.is_named, "Should be named")
-        self.assertEqual(obj.host_path, "pouet")
-        self.assertEqual(obj.container_path, "/pouet")
-        self.assertEqual(obj.mode, "rw")
+    assert not obj.is_relative
+    print("Should not be relative")
+    assert not obj.is_absolute
+    print("Should not be absolute")
+    assert obj.is_named
+    print("Should be named")
+    assert obj.host_path == "pouet"
+    assert obj.container_path == "/pouet"
+    assert obj.mode == "rw"

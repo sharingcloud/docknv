@@ -17,8 +17,8 @@ def session_read_configuration(project_path):
 
     Contains available namespaces.
 
-    :param project_path     Project path (str)
-    :return Session configuration (dict)
+    :param project_path:     Project path (str)
+    :rtype: Session configuration (dict)
     """
     project_file_path = os.path.join(project_path, SESSION_FILE_NAME)
 
@@ -34,8 +34,8 @@ def session_write_configuration(project_path, content):
     """
     Write a temporary config file.
 
-    :param project_path     Project path (str)
-    :param content          Content (dict)
+    :param project_path:     Project path (str)
+    :param content:          Content (dict)
     """
     project_file_path = os.path.join(project_path, SESSION_FILE_NAME)
 
@@ -47,9 +47,9 @@ def session_check_configuration(config_data, config_name):
     """
     Check configuration.
 
-    :param config_data      Config data (dict)
-    :param config_name      Config name (str)
-    :return bool
+    :param config_data:      Config data (dict)
+    :param config_name:      Config name (str)
+    :rtype: bool
     """
     if config_name not in config_data["values"]:
         Logger.error("Missing configuration `{0}`.".format(config_name))
@@ -61,9 +61,9 @@ def session_check_bundle_configurations(project_path, config_names):
     """
     Check multiple configurations.
 
-    :param project_path     Project path (str)
-    :param config_names     Config names (iterable)
-    :return bool
+    :param project_path:     Project path (str)
+    :param config_names:     Config names (iterable)
+    :rtype: bool
     """
     config_data = session_read_configuration(project_path)
 
@@ -77,9 +77,9 @@ def session_update_environment(project_path, config_name, environment_name):
     """
     Change a configuration environment.
 
-    :param project_path         Project path (str)
-    :param config_name          Config name (str)
-    :param environment_name     Environment name (str)
+    :param project_path:         Project path (str)
+    :param config_name:          Config name (str)
+    :param environment_name:     Environment name (str)
     """
     from docknv.environment_handler import env_check_file
 
@@ -97,8 +97,8 @@ def session_remove_configuration(project_path, config_name):
     """
     Remove a configuration.
 
-    :param project_path     Project path (str)
-    :param config_name      Config name (str)
+    :param project_path:     Project path (str)
+    :param config_name:      Config name (str)
     """
     from docknv.project_handler import project_get_composefile
     from docknv.user_handler import user_current_get_id
@@ -131,10 +131,10 @@ def session_update_schema(project_path, project_config, config_name, schema_name
     """
     Change a configuration schema.
 
-    :param project_path     Project path (str)
-    :param project_config   Project config (dict)
-    :param config_name      Config name (str)
-    :param schema_name      Schema name (str)
+    :param project_path:     Project path (str)
+    :param project_config:   Project config (dict)
+    :param config_name:      Config name (str)
+    :param schema_name:      Schema name (str)
     """
     from docknv.schema_handler import schema_check
 
@@ -151,9 +151,9 @@ def session_get_configuration(project_path, name):
     """
     Get a known configuration by name.
 
-    :param project_path     Project path (str)
-    :param name             Config name (str)
-    :return Configuration data (dict)
+    :param project_path:     Project path (str)
+    :param name:             Config name (str)
+    :rtype: Configuration data (dict)
     """
     if name is None:
         Logger.error("No configuration set. Please set an active configuration.")
@@ -169,8 +169,8 @@ def session_list_configurations(project_path):
     """
     Get configuration list.
 
-    :param project_path     Project path (str):
-    :return Configuration data dict (dict)
+    :param project_path:     Project path (str):
+    :rtype: Configuration data dict (dict)
     """
     config = session_read_configuration(project_path)
     return config["values"]

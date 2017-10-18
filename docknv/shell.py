@@ -50,9 +50,9 @@ class Shell(object):
         """
         Register a new parser function.
 
-        :param fct  Parser function (fn)
-        :param cfg  Configuration (dict)
-        :param ctx  Context (dict)
+        :param fct:  Parser function (fn)
+        :param cfg:  Configuration (dict)
+        :param ctx:  Context (dict)
         """
         self.post_parsers.append((fct, cfg, ctx))
 

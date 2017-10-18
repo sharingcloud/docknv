@@ -1,76 +1,50 @@
-"""
-Logger tests
-"""
+"""Logger tests."""
 
-import sys
-import unittest
+import pytest
 
-from StringIO import StringIO
-from contextlib import contextmanager
+from docknv.tests.mocking import using_temp_stdout
 
 from docknv.logger import Logger, Fore
 
 
-class TestLogger(unittest.TestCase):
-    """
-    Logger tests
-    """
+def test_log():
+    """Simple logger tests."""
+    with using_temp_stdout() as stdout:
+        # Info
+        Logger.info("Pouet")
+        assert "[INFO]" in stdout.getvalue()
+        print("Should be an info message")
 
-    @staticmethod
-    @contextmanager
-    def using_temp_stdout():
-        """
-        Temporary change the stdout
-        """
+    with using_temp_stdout() as stdout:
+        # Warn
+        Logger.warn("Pouet")
+        assert "[WARN]" in stdout.getvalue()
+        print("Should be a warn message")
 
-        old_stdout = sys.stdout
-        logger = StringIO()
+    with using_temp_stdout() as stdout:
+        # Debug
+        Logger.debug("Pouet")
+        assert "[DEBUG]" in stdout.getvalue()
+        print("Should be a debug message")
 
-        sys.stdout = logger
-        yield logger
-        sys.stdout = old_stdout
+    with using_temp_stdout() as stdout:
+        # Raw
+        Logger.raw("Pouet pouet")
+        assert stdout.getvalue().endswith("\n")
+        print("Should end with a newline")
 
-    def test_log(self):
-        """
-        Simple logger tests
-        """
+    with using_temp_stdout() as stdout:
+        Logger.raw("Pouet", color=Fore.BLUE)
+        assert stdout.getvalue().startswith("\x1b[34m")
+        print("Should start with blue color")
 
-        with TestLogger.using_temp_stdout() as stdout:
-            # Info
-            Logger.info("Pouet")
-            self.assertTrue("[INFO]" in stdout.getvalue(),
-                            "Should be an info message")
+    with using_temp_stdout() as stdout:
+        Logger.raw("Pouet pouet", linebreak=False)
+        assert not stdout.getvalue().endswith("\n")
+        print("Should not end with a newline")
 
-        with TestLogger.using_temp_stdout() as stdout:
-            # Warn
-            Logger.warn("Pouet")
-            self.assertTrue("[WARN]" in stdout.getvalue(),
-                            "Should be a warn message")
-
-        with TestLogger.using_temp_stdout() as stdout:
-            # Debug
-            Logger.debug("Pouet")
-            self.assertTrue("[DEBUG]" in stdout.getvalue(),
-                            "Should be a debug message")
-
-        with TestLogger.using_temp_stdout() as stdout:
-            # Raw
-            Logger.raw("Pouet pouet")
-            self.assertTrue(stdout.getvalue().endswith(
-                "\n"), "Should end with a newline")
-
-        with TestLogger.using_temp_stdout() as stdout:
-            Logger.raw("Pouet", color=Fore.BLUE)
-            self.assertTrue(stdout.getvalue().startswith(
-                "\x1b[34m"), "Should start with blue color")
-
-        with TestLogger.using_temp_stdout() as stdout:
-            Logger.raw("Pouet pouet", linebreak=False)
-            self.assertTrue(not stdout.getvalue().endswith(
-                "\n"), "Should not end with a newline")
-
-        with TestLogger.using_temp_stdout() as stdout:
-            # Error
-            Logger.error("Pouet", crash=False)
-            with self.assertRaises(RuntimeError):
-                Logger.error("Pouet", crash=True)
+    with using_temp_stdout() as stdout:
+        # Error
+        Logger.error("Pouet", crash=False)
+        with pytest.raises(RuntimeError):
+            Logger.error("Pouet", crash=True)

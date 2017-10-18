@@ -12,7 +12,7 @@ def user_current_is_root():
     """
     Check if the user is root.
 
-    :return bool
+    :rtype: bool
     """
     return os.geteuid() == 0
 
@@ -21,7 +21,7 @@ def user_current_get_id():
     """
     Return the user ID.
 
-    :return User ID (int/str)
+    :rtype: User ID (int/str)
     """
     try:
         return os.geteuid()
@@ -34,7 +34,7 @@ def user_get_config_path():
     """
     Get the docknv user config path.
 
-    :return Config path (str)
+    :rtype: Config path (str)
     """
     return os.path.expanduser("~/.docknv")
 
@@ -43,8 +43,8 @@ def user_get_project_config_path(project_name):
     """
     Get the docknv user config path for a project.
 
-    :param project_name     Project name (str)
-    :return Config path (str)
+    :param project_name:     Project name (str)
+    :rtype: Config path (str)
     """
     return os.path.join(user_get_config_path(), project_name)
 
@@ -53,9 +53,9 @@ def user_get_project_config_name_path(project_name, config_name):
     """
     Get the docknv user config path for a project and a config.
 
-    :param project_name     Project name (str)
-    :param config_name      Config name (str)
-    :return Config path (str)
+    :param project_name:     Project name (str)
+    :param config_name:      Config name (str)
+    :rtype: Config path (str)
     """
     return os.path.join(user_get_config_path(), project_name, config_name)
 
@@ -64,8 +64,8 @@ def user_get_project_config_file_path(project_name):
     """
     Get project config file from user path.
 
-    :param project_name     Project name (str)
-    :return Config path (str)
+    :param project_name:     Project name (str)
+    :rtype: Config path (str)
     """
     config_path = os.path.join(user_get_project_config_path(project_name), "docknv.yml")
     user_ensure_config_path_exists(project_name)
@@ -76,9 +76,9 @@ def user_get_project_file_path(project_name, path_to_file):
     """
     Get project file from config path.
 
-    :param project_name     Project name (str)
-    :param path_to_file     Path to file (str)
-    :return File path (str)
+    :param project_name:     Project name (str)
+    :param path_to_file:     Path to file (str)
+    :rtype: File path (str)
     """
     return os.path.join(user_get_project_config_path(project_name), path_to_file)
 
@@ -87,7 +87,7 @@ def user_create_project_config_path(project_name):
     """
     Create a docknv config path for a project.
 
-    :param project_name     Project name (str)
+    :param project_name:     Project name (str)
     """
     user_ensure_config_path_exists(project_name)
 
@@ -96,7 +96,7 @@ def user_ensure_config_path_exists(project_name):
     """
     Ensure the config path existence.
 
-    :param project_name     Project name (str)
+    :param project_name:     Project name (str)
     """
     user_config_path = user_get_config_path()
     user_project_config_path = user_get_project_config_path(project_name)
@@ -111,8 +111,8 @@ def user_copy_file_to_config_path(project_name, path_to_file):
     """
     Copy file to the user config path.
 
-    :param project_name     Project name (str)
-    :param path_to_file     Path to file (str)
+    :param project_name:     Project name (str)
+    :param path_to_file:     Path to file (str)
     """
     user_ensure_config_path_exists(project_name)
 
@@ -126,8 +126,8 @@ def user_get_lock_file(project_path):
     """
     Get the user lock file.
 
-    :param project_path     Project path (str)
-    :return Lock file path (str)
+    :param project_path:     Project path (str)
+    :rtype: Lock file path (str)
     """
     return "{0}/.{1}.lock".format(project_path, user_current_get_id())
 
@@ -136,8 +136,8 @@ def user_check_lock(project_path):
     """
     Check the user lock file.
 
-    :param project_path     Project path (str)
-    :return bool
+    :param project_path:     Project path (str)
+    :rtype: bool
     """
     return os.path.exists(user_get_lock_file(project_path))
 
@@ -146,8 +146,8 @@ def user_enable_lock(project_path):
     """
     Enable user lock file.
 
-    :param project_path     Project path (str)
-    :return Success ? (bool)
+    :param project_path:     Project path (str)
+    :rtype: Success ? (bool)
     """
     lockfile = user_get_lock_file(project_path)
     if user_check_lock(project_path):
@@ -163,7 +163,7 @@ def user_disable_lock(project_path):
     """
     Disable user lock file.
 
-    :param project_path     Project path (str)
+    :param project_path:     Project path (str)
     """
     lockfile = user_get_lock_file(project_path)
     if user_check_lock(project_path):
@@ -175,8 +175,9 @@ def user_try_lock(project_path):
     """
     Try to set the user lock.
 
-    :param project_path     Project path (str)
-    :coroutine
+    :param project_path:     Project path (str)
+
+    **Coroutine**
     """
     if not user_enable_lock(project_path):
         Logger.error("docknv is already running with your account. wait until completion.")
@@ -195,9 +196,10 @@ def user_temporary_copy_file(project_name, path_to_file):
     """
     Make a temporary copy of a user config file.
 
-    :param project_name     Project name (str)
-    :param path_to_file     Path to file (str)
-    :coroutine
+    :param project_name:     Project name (str)
+    :param path_to_file:     Path to file (str)
+
+    **Coroutine**
     """
     path = user_get_project_file_path(project_name, path_to_file)
 
@@ -214,8 +216,8 @@ def user_clean_config_path(project_name, config_name=None):
     """
     Clean a user config path, with an optional config name.
 
-    :param project_name     Project name (str)
-    :param config_name      Config name (str?) (default: None)
+    :param project_name:     Project name (str)
+    :param config_name:      Config name (str?) (default: None)
     """
     from docknv.utils.prompt import prompt_yes_no
 

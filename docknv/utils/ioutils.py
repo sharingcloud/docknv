@@ -11,10 +11,11 @@ def io_open(filename, mode="r", encoding="utf-8", newline=None):
     """
     Universal open function for Python 2/3.
 
-    :param filename Filename (str)
-    :param mode     Mode (str) (default: 'r')
-    :param encoding Encoding (str) (default: utf-8)
-    :coroutine
+    :param filename: Filename (str)
+    :param mode:     Mode (str) (default: 'r')
+    :param encoding: Encoding (str) (default: utf-8)
+
+    **Coroutine**
     """
     if six.PY2:
         with io.open(filename, mode, encoding=encoding, newline=newline) as handle:

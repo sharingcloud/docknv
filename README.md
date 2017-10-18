@@ -1,6 +1,5 @@
-# docknv 3.7.4
-
-**DOCUMENTATION IN WIP**
+# docknv
+> One entry-point, multiple deployments
 
 ## Installation
 

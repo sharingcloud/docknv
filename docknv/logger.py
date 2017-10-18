@@ -22,9 +22,9 @@ class Logger(object):
         """
         Standard log.
 
-        :param msg_type     Message type (str)
-        :param message      Message content (str)
-        :param color        Message color (color)
+        :param msg_type:     Message type (str)
+        :param message:      Message content (str)
+        :param color:        Message color (color)
         """
         current_time = time.time() - INIT_TIME
         print(color + "[{0}] [{1}] {2}".format(Logger._round_time(current_time), msg_type, message) + Style.RESET_ALL)
@@ -34,8 +34,8 @@ class Logger(object):
         """
         Info log.
 
-        :param message      Message content (str)
-        :param color        Message color (color) (default: GREEN)
+        :param message:      Message content (str)
+        :param color:        Message color (color) (default: GREEN)
         """
         Logger.log("INFO", message, color)
 
@@ -46,9 +46,9 @@ class Logger(object):
 
         If 'crash', exit program.
 
-        :param message      Message content (str)
-        :param color        Message color (color) (default: RED)
-        :param crash        Crash the program (bool) (default: True)
+        :param message:      Message content (str)
+        :param color:        Message color (color) (default: RED)
+        :param crash:        Crash the program (bool) (default: True)
         """
         Logger.log("ERROR", message, color)
         if crash:
@@ -59,8 +59,8 @@ class Logger(object):
         """
         Debug log.
 
-        :param message      Message content (str)
-        :param color        Message color (color) (default: CYAN)
+        :param message:      Message content (str)
+        :param color:        Message color (color) (default: CYAN)
         """
         Logger.log("DEBUG", message, color)
 
@@ -69,8 +69,8 @@ class Logger(object):
         """
         Warn log.
 
-        :param message      Message content (str)
-        :param color        Message color (color) (default: YELLOW)
+        :param message:      Message content (str)
+        :param color:        Message color (color) (default: YELLOW)
         """
         Logger.log("WARN", message, color)
 
@@ -79,9 +79,9 @@ class Logger(object):
         """
         Raw log. No line break.
 
-        :param message      Message content (str)
-        :param color        Message color (color?) (default: None)
-        :param linebreak    Insert linebreak (bool) (default: True)
+        :param message:      Message content (str)
+        :param color:        Message color (color?) (default: None)
+        :param linebreak:    Insert linebreak (bool) (default: True)
         """
         if color:
             message = "{0}{1}{2}".format(color, message, Style.RESET_ALL)

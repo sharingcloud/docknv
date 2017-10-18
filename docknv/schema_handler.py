@@ -11,7 +11,7 @@ def schema_list(project_path):
     """
     List available schemas for the project.
 
-    :param project_path     Project path (str)
+    :param project_path:     Project path (str)
     """
     from docknv.project_handler import project_read
 
@@ -41,9 +41,9 @@ def schema_get_configuration(config_data, schema_name):
     """
     Get schema configuration.
 
-    :param config_data  Config data (dict)
-    :param schema_name  Schema name (str)
-    :return Schema configuration (dict)
+    :param config_data:  Config data (dict)
+    :param schema_name:  Schema name (str)
+    :rtype: Schema configuration (dict)
     """
     if schema_name not in config_data.schemas:
         Logger.error("Schema `{0}` does not exist.".format(schema_name))
@@ -69,9 +69,9 @@ def schema_check(config_data, schema_name):
     """
     Check if a schema exist.
 
-    :param config_data      Config data (dict)
-    :param schema_name      Schema name (str)
-    :return bool
+    :param config_data:      Config data (dict)
+    :param schema_name:      Schema name (str)
+    :rtype: bool
     """
     if schema_name not in config_data.schemas:
         Logger.error("Schema `{0}` does not exist.".format(schema_name))

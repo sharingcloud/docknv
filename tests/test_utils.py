@@ -1,50 +1,26 @@
-"""
-Utils tests
-"""
+"""Utils tests."""
 
-import unittest
 import mock
-import six
 
-from contextlib import contextmanager
+from docknv.tests.mocking import mock_input
 
 from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.paths import create_path_tree
 
 
-class TestUtils(unittest.TestCase):
-    """
-    Utils tests
-    """
+def test_prompt_yes_no():
+    """Test prompt_yes_no function."""
+    with mock_input("y"):
+        assert prompt_yes_no("Pouet", force=False)
+        assert prompt_yes_no("Pouet", force=True)
 
-    @staticmethod
-    @contextmanager
-    def mock_input(value):
-        if six.PY2:
-            with mock.patch("__builtin__.raw_input", return_value=value):
-                yield
-        else:
-            with mock.patch("builtins.input", return_value=value):
-                yield
+    with mock_input("n"):
+        assert not prompt_yes_no("Pouet", force=False)
+        assert prompt_yes_no("Pouet", force=True)
 
-    def test_prompt_yes_no(self):
-        """
-        Test prompt_yes_no function
-        """
 
-        with TestUtils.mock_input("y"):
-            self.assertTrue(prompt_yes_no("Pouet", force=False))
-            self.assertTrue(prompt_yes_no("Pouet", force=True))
-
-        with TestUtils.mock_input("n"):
-            self.assertFalse(prompt_yes_no("Pouet", force=False))
-            self.assertTrue(prompt_yes_no("Pouet", force=True))
-
-    def test_create_path_tree(self):
-        """
-        Test create_path_tree function
-        """
-
-        with mock.patch("os.path.exists", return_value=False):
-            with mock.patch("os.makedirs"):
-                create_path_tree("./pouet")
+def test_create_path_tree():
+    """Test create_path_tree function."""
+    with mock.patch("os.path.exists", return_value=False):
+        with mock.patch("os.makedirs"):
+            create_path_tree("./pouet")

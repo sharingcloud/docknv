@@ -15,8 +15,8 @@ def scaffold_project(project_path, project_name=None):
     """
     Scaffold a Docknv project.
 
-    :param project_path     Project path (str)
-    :param project_name     Project name (str?) (default: None)
+    :param project_path:     Project path (str)
+    :param project_name:     Project name (str?) (default: None)
     """
     project_name = project_name if project_name else os.path.basename(
         project_path)
@@ -63,8 +63,8 @@ def scaffold_config(project_path, project_name=None):
     """
     Scaffold a basic config file.
 
-    :param project_path     Project path (str)
-    :param project_name     Project name (str?) (default: None)
+    :param project_path:     Project path (str)
+    :param project_name:     Project name (str?) (default: None)
     """
     config_content = "project_name: {0}\n\nschemas:\ncomposefiles:".format(project_name)
 
@@ -79,9 +79,9 @@ def scaffold_environment(project_path, env_name, env_content=None):
     """
     Scaffold an environment.
 
-    :param project_path     Project path (str)
-    :param env_name         Environment name (str)
-    :param env_content      Environment content (str?) (default: None)
+    :param project_path:     Project path (str)
+    :param env_name:         Environment name (str)
+    :param env_content:      Environment content (str?) (default: None)
     """
     from docknv.environment_handler import env_write_to_file
 
@@ -113,9 +113,9 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
     """
     Copy an environment.
 
-    :param project_path     Project path (str)
-    :param env_name_source  Source environment name (str)
-    :param env_name_dest    Destination environment name (str)
+    :param project_path:     Project path (str)
+    :param env_name_source:  Source environment name (str)
+    :param env_name_dest:    Destination environment name (str)
     """
     if env_name_source == env_name_dest:
         Logger.error('Source environment name and destination environment name cannot be the same.')
@@ -154,9 +154,9 @@ def scaffold_link_composefile(project_path, compose_file_name, unlink=False):
     """
     Link/Unlink a compose file in a project.
 
-    :param project_path         Project path (str)
-    :param compose_file_name    Compose file name (str)
-    :param unlink               Unlink if true, else link (bool) (default: False)
+    :param compose_file_name:    Compose file name (str)
+    :param project_path:         Project path (str)
+    :param unlink:               Unlink if true, else link (bool) (default: False)
     """
     config_file = os.path.join(project_path, "config.yml")
     compose_file = os.path.join(project_path, "composefiles", compose_file_name)
@@ -199,8 +199,8 @@ def scaffold_ignore(project_path, force=False):
     """
     Scaffold an ignore file.
 
-    :param project_path     Project path (str)
-    :param force            No prompt user (bool) (default: False)
+    :param project_path:     Project path (str)
+    :param force:            No prompt user (bool) (default: False)
     """
     file_content = "rendered/\n__pyc__/\n*.pyc\n*.docknv*"
     ignore_file = os.path.join(project_path, ".gitignore")
@@ -225,10 +225,10 @@ def scaffold_image(project_path, image_name, image_url, image_tag="latest"):
     """
     Scaffold an image Dockerfile.
 
-    :param project_path     Project path (str)
-    :param image_name       Image name (str)
-    :param image_url        Image URL (str)
-    :param image_tag        Image tag (str) (default: latest)
+    :param project_path:     Project path (str)
+    :param image_name:       Image name (str)
+    :param image_url:        Image URL (str)
+    :param image_tag:        Image tag (str) (default: latest)
     """
     image_url = image_url if image_url else image_name
     image_path = os.path.join(project_path, "images")

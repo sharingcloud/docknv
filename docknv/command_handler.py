@@ -30,9 +30,9 @@ def command_get_config(project_path, command):
     """
     Get command configuration from config.yml.
 
-    :param project_path     Project path (str)
-    :param command          Command name (str)
-    :return Command configuration (dict)
+    :param project_path:     Project path (str)
+    :param command:          Command name (str)
+    :rtype: Command configuration (dict)
     """
     from docknv.project_handler import project_read
 
@@ -54,7 +54,8 @@ def command_get_context(project_path):
     """
     Get current context from active configuration.
 
-    :param Project path
+    :param project_path: Project path (str)
+    :rtype: Context data (dict)
     """
     from docknv.project_handler import project_read, project_get_active_configuration
     from docknv.session_handler import session_get_configuration

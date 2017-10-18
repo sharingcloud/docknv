@@ -15,9 +15,9 @@ def renderer_render_compose_template(compose_content, environment_data=None):
     """
     Resolve compose content.
 
-    :param compose_content      Compose content (dict)
-    :param environment_data     Environment data (dict?) (default: None)
-    :return Template data (dict)
+    :param compose_content:      Compose content (dict)
+    :param environment_data:     Environment data (dict?) (default: None)
+    :rtype: Template data (dict)
     """
     Logger.info("Resolving compose content...")
     output_content = copy.deepcopy(compose_content)
@@ -31,9 +31,9 @@ def renderer_render_template_inplace(content, environment_data=None):
     """
     Render a Jinja template in-place, using environment data.
 
-    :param content              Template content (dict)
-    :param environment_data     Environment data (dict?) (default: None)
-    :param Template data (str)
+    :param content:              Template content (dict)
+    :param environment_data:     Environment data (dict?) (default: None)
+    :rtype: Template data (str)
     """
     environment_data = environment_data if environment_data else {}
 
@@ -53,11 +53,11 @@ def renderer_render_template(project_path, template_path, config_name, environme
     """
     Render a Jinja template, using a namespace and environment.
 
-    :param project_path         Project path (str)
-    :param template_path        Template path (str)
-    :param config_name          Config name (str)
-    :param environment_data     Environment data (dict?) (default: None)
-    :return File output name (str)
+    :param project_path:         Project path (str)
+    :param template_path:        Template path (str)
+    :param config_name:          Config name (str)
+    :param environment_data:     Environment data (dict?) (default: None)
+    :rtype: File output name (str)
     """
     from docknv.project_handler import project_get_name
     from docknv.user_handler import user_get_project_config_name_path

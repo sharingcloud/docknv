@@ -9,8 +9,8 @@ def dockerfile_packer(project_path, service_name):
 
     Freeze template, static and shared content inside of a Dockerfile.
 
-    :param project_path     Project path (str)
-    :param service_name     Service name (str)
+    :param project_path:     Project path (str)
+    :param service_name:     Service name (str)
     """
     from docknv.project_handler import project_get_active_configuration, project_read
 

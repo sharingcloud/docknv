@@ -11,9 +11,9 @@ class VolumeObject(object):
         """
         The VolumeObject constructor.
 
-        :param host_path        Host path (str)
-        :param container_path   Container path (str)
-        :param mode             Mode (str) (default: rw)
+        :param host_path:        Host path (str)
+        :param container_path:   Container path (str)
+        :param mode:             Mode (str) (default: rw)
         """
         self.host_path = host_path
         self.container_path = container_path
@@ -37,12 +37,12 @@ class VolumeObject(object):
         """
         Generate a namespaced volume path.
 
-        :param file_type        Type of file (str) (static/shared)
-        :param path             File path (str)
-        :param project_name     Project name (str)
-        :param config_name      Config name (str)
+        :param file_type:        Type of file (str) (static/shared)
+        :param path:             File path (str)
+        :param project_name:     Project name (str)
+        :param config_name:      Config name (str)
 
-        :return Volume path (str)
+        :rtype: Volume path (str)
         """
         return "{0}/{1}".format(volume_generate_namespaced_path(file_type, project_name, config_name), path)
 
@@ -55,11 +55,11 @@ def volume_generate_namespaced_path(file_type, project_name, config_name):
     """
     Generate a namespaced volume path.
 
-    :param file_type        Type of file (str) (static/shared)
-    :param project_name     Project name (str)
-    :param config_name      Config name (str)
+    :param file_type:        Type of file (str) (static/shared)
+    :param project_name:     Project name (str)
+    :param config_name:      Config name (str)
 
-    :return Volume path (str)
+    :rtype: Volume path (str)
     """
     from docknv.user_handler import user_get_project_config_name_path
 
@@ -75,8 +75,8 @@ def volume_extract_from_line(line):
     """
     Extract a VolumeObject from a line string.
 
-    :param line     Line string (str)
-    :return Volume object data (VolumeObject)
+    :param line:     Line string (str)
+    :rtype: Volume object data (VolumeObject)
     """
     system_name = platform.system()
     drive = ""

@@ -12,9 +12,9 @@ def get_docker_container(project_path, machine):
     """
     Return a Docker container ID.
 
-    :param project_path     Project path (str)
-    :param machine          Machine name (str)
-    :return Container name (str)
+    :param project_path:     Project path (str)
+    :param machine:          Machine name (str)
+    :rtype: Container name (str)
     """
     from docknv.project_handler import project_read
     from docknv.user_handler import user_temporary_copy_file
@@ -39,8 +39,8 @@ def exec_docker(project_path, args):
     """
     Execute a Docker command.
 
-    :param project_path     Project path (str)
-    :param args             Arguments (...)
+    :param project_path:     Project path (str)
+    :param args:             Arguments (...)
     """
     if os.name == 'nt':
         commands = "cd {0} & docker {1}".format(project_path, " ".join(args))
@@ -55,8 +55,8 @@ def exec_compose(project_path, args):
     """
     Execute a Docker Compose command.
 
-    :param project_path     Project path (str)
-    :param args             Arguments (...)
+    :param project_path:     Project path (str)
+    :param args:             Arguments (...)
     """
     from docknv.project_handler import project_read
     from docknv.user_handler import user_temporary_copy_file
@@ -78,8 +78,8 @@ def exec_compose_pretty(project_path, args):
     """
     Execute a Docker Compose command, properly filtered.
 
-    :param project_path     Project path (str)
-    :param args             Arguments (...)
+    :param project_path:     Project path (str)
+    :param args:             Arguments (...)
     """
     from docknv.project_handler import project_read
     from docknv.user_handler import user_temporary_copy_file

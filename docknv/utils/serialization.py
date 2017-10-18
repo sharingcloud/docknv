@@ -11,8 +11,8 @@ def yaml_merge(contents):
     """
     Merge two YAML dict together.
 
-    :param contents     Content (dict)
-    :return YAML merge (dict)
+    :param contents:     Content (dict)
+    :rtype: YAML merge (dict)
     """
     len_contents = len(contents)
     if len_contents == 1:
@@ -30,9 +30,9 @@ def yaml_ordered_load(stream, loader_class=yaml.Loader, object_pairs_hook=Ordere
     """
     Load ordered YAML content.
 
-    :param stream               Stream (stream)
-    :param loader_class         Loader class (Loader) (default: yaml.Loader)
-    :param object_pairs_hook    Hook type (any) (default: OrderedDict)
+    :param stream:               Stream (stream)
+    :param loader_class:         Loader class (Loader) (default: yaml.Loader)
+    :param object_pairs_hook:    Hook type (any) (default: OrderedDict)
     """
     class OrderedLoader(loader_class):
         """Ordered loader."""
@@ -52,9 +52,9 @@ def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
     """
     Dump ordered YAML content.
 
-    :param stream           Stream (stream)
-    :param dumper_class     Dumper class (Dumper) (default: yaml.Dumper)
-    :param kwds             Keywords arguments
+    :param stream:           Stream (stream)
+    :param dumper_class:     Dumper class (Dumper) (default: yaml.Dumper)
+    :param kwds:             Keywords arguments
     """
     class OrderedDumper(dumper_class):
         """Ordered dumper."""

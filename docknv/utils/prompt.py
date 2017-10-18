@@ -9,7 +9,7 @@ def get_input():
     """
     Return the user input.
 
-    :return str
+    :rtype: str
     """
     if six.PY2:
         return raw_input()  # noqa
@@ -21,9 +21,9 @@ def prompt_yes_no(message, force=False):
     """
     Prompt the user for a yes/no answer.
 
-    :param message  Message to display (str)
-    :param force    Force choice to True (bool) (default: False)
-    :return Choice (bool)
+    :param message:  Message to display (str)
+    :param force:    Force choice to True (bool) (default: False)
+    :rtype: Choice (bool)
     """
     if force:
         return True

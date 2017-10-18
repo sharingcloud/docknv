@@ -16,10 +16,10 @@ def composefile_read(project_path, compose_file_path):
     """
     Read a compose file.
 
-    :param project_path         Project path (str)
-    :param compose_file_path    Compose file path (str)
+    :param project_path:         Project path (str)
+    :param compose_file_path:    Compose file path (str)
 
-    :return File content (dict)
+    :rtype: File content (dict)
     """
     real_path = os.path.join(project_path, compose_file_path)
 
@@ -37,10 +37,10 @@ def composefile_multiple_read(project_path, compose_file_paths):
     """
     Read multiple compose files.
 
-    :param project_path         Project path (str)
-    :param compose_file_paths   Compose file paths (str)
+    :param project_path:         Project path (str)
+    :param compose_file_paths:   Compose file paths (str)
 
-    :return List of file contents (iterable)
+    :rtype: List of file contents (iterable)
     """
     return [composefile_read(project_path, path)
             for path in compose_file_paths if path]
@@ -50,8 +50,8 @@ def composefile_write(compose_content, output_path):
     """
     Write compose content to a file.
 
-    :param compose_content  Compose content (dict)
-    :param output_path      Output path (str)
+    :param compose_content:  Compose content (dict)
+    :param output_path:      Output path (str)
     """
     with io_open(output_path, encoding="utf-8", mode="w") as handle:
         handle.write(yaml_ordered_dump(compose_content))
@@ -63,9 +63,9 @@ def composefile_filter(merged_content, schema_configuration):
     """
     Filter composefile content using a schema configuration.
 
-    :param merged_content           Compose file content (dict)
-    :param schema_configuration     Schema configuration (str)
-    :return Filtered content (dict)
+    :param merged_content:           Compose file content (dict)
+    :param schema_configuration:     Schema configuration (str)
+    :rtype: Filtered content (dict)
     """
     all_schema = schema_configuration["name"] == "all"
 
@@ -135,10 +135,10 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
     """
     Apply namespace to compose content.
 
-    :param compose_content  Compose content (dict)
-    :param namespace        Namespace name (str) (default: default)
-    :param environment      Environment file name (str) (default: default)
-    :return dict
+    :param compose_content:  Compose content (dict)
+    :param namespace:        Namespace name (str) (default: default)
+    :param environment:      Environment file name (str) (default: default)
+    :rtype: dict
     """
     output_content = copy.deepcopy(compose_content)
 
@@ -223,13 +223,13 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     """
     Resolve volumes and Jinja templates path using namespacing.
 
-    :param project_path     Project path (str)
-    :param compose_content  Compose content (dict)
-    :param project_name     Project name (str)
-    :param namespace        Namespace name (str) (default: default)
-    :param environment      Environment file name (str) (default: default)
-    :param environment_data Environment data (str?) (default: None)
-    :return dict
+    :param project_path:     Project path (str)
+    :param compose_content:  Compose content (dict)
+    :param project_name:     Project name (str)
+    :param namespace:        Namespace name (str) (default: default)
+    :param environment:      Environment file name (str) (default: default)
+    :param environment_data: Environment data (str?) (default: None)
+    :rtype: dict
     """
     from docknv.project_handler import project_get_name
     from docknv.volume_handler import volume_generate_namespaced_path

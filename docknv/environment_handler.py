@@ -16,7 +16,7 @@ def env_list(project_path):
     """
     List environment configurations.
 
-    :param project_path     Project path (str)
+    :param project_path:     Project path (str)
     """
     env_path = os.path.join(project_path, "envs")
 
@@ -40,8 +40,8 @@ def env_show(project_path, name):
     """
     Print an environment file.
 
-    :param project_path     Project path (str)
-    :param name             Environment file name (str)
+    :param project_path:     Project path (str)
+    :param name:             Environment file name (str)
     """
     loaded_env = env_load_in_memory(project_path, name)
 
@@ -56,9 +56,9 @@ def env_check_file(project_path, name):
     """
     Check if an environment file exist.
 
-    :param project_path     Project path (str)
-    :param name             Environment file name (str)
-    :return bool
+    :param project_path:     Project path (str)
+    :param name:             Environment file name (str)
+    :rtype: bool
     """
     env_path = os.path.join(project_path, "envs",
                             "".join((name, ".env.py")))
@@ -69,9 +69,9 @@ def env_load_in_memory(project_path, name):
     """
     Load environment file in memory.
 
-    :param project_path     Project path (str)
-    :param name             Environment file name (str)
-    :return Environment data (dict)
+    :param project_path:     Project path (str)
+    :param name:             Environment file name (str)
+    :rtype: Environment data (dict)
     """
     env_path = _env_get_path(project_path, name)
 
@@ -104,8 +104,8 @@ def env_write_to_file(env, path):
     """
     Write environment to a file.
 
-    :param env      Environment configuration data (dict)
-    :param path     Output file (str)
+    :param env:      Environment configuration data (dict)
+    :param path:     Output file (str)
     """
     Logger.info("Writing environment to file {0}...".format(path))
 
@@ -122,9 +122,9 @@ def _env_get_path(project_path, name):
     """
     Return environment path from project path and environment name.
 
-    :param project_path     Project path (str)
-    :param name             Environment name (str)
-    :return Environment file path (str)
+    :param project_path:     Project path (str)
+    :param name:             Environment name (str)
+    :rtype: Environment file path (str)
     """
     return os.path.join(project_path, "envs", "".join((name, ".env.py")))
 
@@ -133,8 +133,8 @@ def _env_detect_imports(env_content):
     """
     Detect imports in an environment file.
 
-    :param env_content  Environment file content (str)
-    :return Detected imports
+    :param env_content:  Environment file content (str)
+    :rtype: Detected imports (iterable)
     """
     detected_imports = []
     for match in IMPORT_DETECTION_RGX.finditer(env_content):
@@ -147,8 +147,8 @@ def _env_read_file_content(env_path):
     """
     Open and read environment file content.
 
-    :param env_path     Environment file path (str)
-    :return Environment file content
+    :param env_path:     Environment file path (str)
+    :rtype: Environment file content (str)
     """
     with io_open(env_path, mode='r', encoding='utf-8') as handle:
         return handle.read()

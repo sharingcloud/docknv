@@ -9,8 +9,8 @@ def generate_config_name(config_list):
     """
     Generate a unique config name.
 
-    :param config_list  Config list (iterable)
-    :return Config name (str)
+    :param config_list:  Config list (iterable)
+    :rtype: Config name (str)
     """
     if os.path.isfile("/usr/share/dict/words"):
         success = False
@@ -33,7 +33,7 @@ def get_random_word_from_dictionary():
     """
     Get a random word from a dictionary.
 
-    :return Random word (str)
+    :rtype: Random word (str)
     """
     with codecs.open("/usr/share/dict/words", encoding="utf-8", mode="rt") as handle:
         words = handle.readlines()
