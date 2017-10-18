@@ -113,7 +113,7 @@ def env_write_to_file(env, path):
 
     with io_open(path, encoding="utf-8", mode="wt+") as handle:
         for value in env:
-            handle.write("{0}={1}\n".format(value, env[value]))
+            handle.write("{0} = {1}\n".format(value, env[value]))
 
 
 ##############

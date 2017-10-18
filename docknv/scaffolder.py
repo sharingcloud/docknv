@@ -19,10 +19,9 @@ def scaffold_project(project_path, project_name=None):
     :param project_path:     Project path (str)
     :param project_name:     Project name (str?) (default: None)
     """
-    project_name = project_name if project_name else os.path.basename(
-        project_path)
+    project_name = project_name if project_name else os.path.basename(project_path)
     paths = ["envs", "data", "composefiles", "images"]
-    data_paths = ["files", "templates"]
+    data_paths = ["files"]
 
     if os.path.exists(project_path):
         choice = prompt_yes_no(

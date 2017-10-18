@@ -29,8 +29,7 @@ class VolumeObject(object):
         """Update filter values from host path, container path and mode."""
         # Filters
         self.is_absolute = self.host_path.startswith("/")
-        self.is_relative = not self.is_absolute and any(
-            character in self.host_path for character in "/\\")
+        self.is_relative = not self.is_absolute and any(character in self.host_path for character in "/\\")
         self.is_named = not self.is_absolute and not self.is_relative
 
     def generate_namespaced_volume_path(self, file_type, path, project_name, config_name):
