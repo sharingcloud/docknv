@@ -7,7 +7,6 @@ Welcome to docknv's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   install
    intro
    modules
 

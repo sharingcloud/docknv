@@ -1,5 +1,1 @@
-=================
-Introduction
-=================
-
-Coucou, coucou
+.. include:: ../README.rst
