@@ -1,5 +1,7 @@
 """Handle docknv environment files."""
 
+from __future__ import unicode_literals
+
 import os
 import imp
 import re
