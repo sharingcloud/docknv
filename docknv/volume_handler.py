@@ -60,9 +60,9 @@ def volume_generate_namespaced_path(file_type, project_name, config_name):
 
     :rtype: Volume path (str)
     """
-    from docknv.user_handler import user_get_project_config_name_path
+    from docknv.user_handler import user_get_project_path
 
-    user_config_path = user_get_project_config_name_path(project_name, config_name)
+    user_config_path = user_get_project_path(project_name, config_name)
 
     if file_type == "static":
         return "{0}/data/static".format(user_config_path)

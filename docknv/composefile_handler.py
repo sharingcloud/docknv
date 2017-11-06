@@ -6,7 +6,7 @@ import shutil
 
 from collections import OrderedDict
 
-from docknv.logger import Logger
+from docknv.logger import Logger, Fore
 from docknv.utils.paths import create_path_or_replace, create_path_tree
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.ioutils import io_open
@@ -280,6 +280,15 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
 
 def _composefile_resolve_static_volumes(project_path, project_name, config_name, volumes_data, final_volumes):
     from docknv.volume_handler import volume_extract_from_line
+    from docknv.session_handler import session_read_timestamps, session_save_timestamps
+    from docknv.utils.diff_system import (
+        diff_modification_time, get_files_last_modification_time, save_last_modification_time,
+        read_last_modification_time, concat_diffs
+    )
+
+    # Diff system
+    original_timestamps = session_read_timestamps(project_name, config_name)
+    new_timestamps = {}
 
     if "static" in volumes_data:
         for static_def in volumes_data["static"]:
@@ -291,22 +300,49 @@ def _composefile_resolve_static_volumes(project_path, project_name, config_name,
 
             data_path = os.path.join(project_path, "data", "files", volume_object.host_path)
 
-            Logger.debug("Copying static content from `{0}` to `{1}`...".format(data_path, output_path))
+            # Get files to copy
+            files_to_copy = []
+            if os.path.isfile(data_path):
+                files_to_copy.append((data_path, output_path))
+            else:
+                base_root = data_path
+                for root, folders, filenames in os.walk(data_path):
+                    sub_part = root.replace(base_root, "")
+                    for filename in filenames:
+                        full_path = os.path.join(root, filename)
+                        full_output_path = os.path.join(output_path, sub_part, filename)
+                        files_to_copy.append((full_path, full_output_path))
+                        new_timestamps.update(get_files_last_modification_time(full_path))
+
+            # timestamp_diff = diff_modification_time(original_timestamps, new_timestamps)
 
             # Copy !
-            if os.path.isfile(data_path):
-                create_path_tree(os.path.dirname(output_path))
-                shutil.copy(data_path, output_path)
-            else:
-                try:
-                    shutil.copytree(data_path, output_path)
-                except OSError:
-                    pass
+            for file_to_copy, output_path_to_copy in files_to_copy:
+                # if file_to_copy not in timestamp_diff:
+                    # print("NOT IN TIMESTAMP")
+                # if file_to_copy not in timestamp_diff and os.path.isfile(output_path_to_copy):
+                    # Logger.debug(
+                        # "Static path `{0}` did not change. Nothing done.".format(file_to_copy))
+                # else:
+                Logger.debug(
+                    "Copying static content from `{0}` to `{1}`...".format(file_to_copy, output_path_to_copy))
+                create_path_tree(os.path.dirname(output_path_to_copy))
+
+                if os.path.isdir(file_to_copy):
+                    try:
+                        os.mkdir(file_to_copy)
+                    except Exception:
+                        pass
+                else:
+                    shutil.copy2(file_to_copy, output_path_to_copy)
 
             volume_object.host_path = output_path
             final_volumes.append(str(volume_object))
 
         del volumes_data["static"]
+
+    # Save diff
+    session_save_timestamps(project_name, config_name, concat_diffs(original_timestamps, new_timestamps))
 
     return final_volumes
 

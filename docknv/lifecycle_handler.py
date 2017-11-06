@@ -3,8 +3,9 @@
 import os
 import sys
 
-from docknv.logger import Logger
+import docker
 
+from docknv.logger import Logger
 from docknv.docker_wrapper import exec_compose, exec_compose_pretty, get_docker_container
 
 
@@ -79,7 +80,16 @@ def lifecycle_schema_ps(project_path):
 
     :param project_path:     Project path (str)
     """
+    # from docknv.docker_api_wrapper import docker_ps, using_docker_client, text_ellipse
     exec_compose_pretty(project_path, ["ps"])
+    # with using_docker_client() as client:
+    #     ps = docker_ps(client)
+    #     for line in ps:
+    #         print("{status:10} {name:20} {ports:10}".format(
+    #             status=line["status"],
+    #             name=text_ellipse(line["name"], 18),
+    #             ports=line["ports"]
+    #         ))
 
 
 def lifecycle_schema_restart(project_path, force=False):

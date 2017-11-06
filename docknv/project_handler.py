@@ -73,10 +73,10 @@ def project_set_active_configuration(project_path, config_name, quiet=False):
     :param config_name:      Config name (str)
     :param quiet:            Be quiet (bool) (default: False)
     """
-    from docknv.user_handler import user_get_project_config_file_path
+    from docknv.user_handler import user_get_docknv_config_file
 
     config = project_read(project_path)
-    config_path = user_get_project_config_file_path(config.project_name)
+    config_path = user_get_docknv_config_file(config.project_name)
 
     config = {"current": config_name}
     with io_open(config_path, mode="wt") as handle:
@@ -93,10 +93,10 @@ def project_get_active_configuration(project_path):
     :param project_path:     Project path (str)
     :rtype: Active configuration (str?)
     """
-    from docknv.user_handler import user_get_project_config_file_path
+    from docknv.user_handler import user_get_docknv_config_file
 
     config = project_read(project_path)
-    config_path = user_get_project_config_file_path(config.project_name)
+    config_path = user_get_docknv_config_file(config.project_name)
     content = None
 
     if os.path.exists(config_path):
@@ -141,12 +141,12 @@ def project_use_configuration(project_path, config_name, quiet=False):
     :param quiet:            Be quiet (bool) (default: False)
     """
     from docknv.session_handler import session_get_configuration
-    from docknv.user_handler import user_current_get_id, user_copy_file_to_config_path
+    from docknv.user_handler import user_get_id, user_copy_file_to_config
 
     config_content = project_read(project_path)
     config = session_get_configuration(project_path, config_name)
 
-    current_id = user_current_get_id()
+    current_id = user_get_id()
     if config["user"] != current_id:
         Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
 
@@ -156,7 +156,7 @@ def project_use_configuration(project_path, config_name, quiet=False):
     if not os.path.exists(path):
         Logger.error("Missing composefile for configuration `{0}`".format(config_name))
 
-    user_copy_file_to_config_path(config_content.project_name, path)
+    user_copy_file_to_config(config_content.project_name, path)
     project_set_active_configuration(project_path, config_name, quiet)
 
 
@@ -166,10 +166,10 @@ def project_unset_configuration(project_path):
 
     :param project_path:     Project path (str)
     """
-    from docknv.user_handler import user_get_project_config_file_path
+    from docknv.user_handler import user_get_docknv_config_file
 
     config = project_read(project_path)
-    config_path = user_get_project_config_file_path(config.project_name)
+    config_path = user_get_docknv_config_file(config.project_name)
 
     if os.path.exists(config_path):
         os.remove(config_path)
@@ -203,10 +203,10 @@ def project_get_composefile(project_path, config_name):
     :param project_path:     Project path (str)
     :param config_name:      Config name (str)
     """
-    from docknv.user_handler import user_get_project_config_name_path
+    from docknv.user_handler import user_get_project_path
 
     project_name = project_get_name(project_path)
-    config_path = user_get_project_config_name_path(project_name, config_name)
+    config_path = user_get_project_path(project_name, config_name)
 
     return os.path.join(config_path, "docker-compose.yml")
 

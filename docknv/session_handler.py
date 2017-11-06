@@ -101,13 +101,13 @@ def session_remove_configuration(project_path, config_name):
     :param config_name:      Config name (str)
     """
     from docknv.project_handler import project_get_composefile
-    from docknv.user_handler import user_current_get_id
+    from docknv.user_handler import user_get_id
 
     config = session_read_configuration(project_path)
     if config_name not in config["values"]:
         Logger.error("Missing configuration `{0}`.".format(config_name))
 
-    uid = user_current_get_id()
+    uid = user_get_id()
 
     config_to_remove = config["values"][config_name]
     if config_to_remove["user"] != uid:
@@ -196,3 +196,39 @@ def session_show_configuration_list(project_path):
 
             Logger.raw("  - {0} [namespace: {1}, environment: {2}, schema: {3}, user id: {4}]".format(
                 key, namespace, environment, schema, user), color=Fore.BLUE)
+
+
+def session_read_timestamps(project_name, config_name):
+    """
+    Read timestamps for a project name and a config name.
+
+    :param project_name:    Project name (str)
+    :param config_name:     Config name (str)
+    :rtype: Timestamp data (dict)
+    """
+    from docknv.user_handler import user_get_file_from_project
+    from docknv.utils.diff_system import read_last_modification_time
+
+    timestamps_path = user_get_file_from_project(project_name, "timestamps.json", config_name)
+    original_timestamps = {}
+    if os.path.exists(timestamps_path):
+        with io_open(timestamps_path, mode="r") as stream:
+            original_timestamps = read_last_modification_time(stream)
+
+    return original_timestamps
+
+
+def session_save_timestamps(project_name, config_name, timestamps):
+    """
+    Save timestamps for a project name and a config name.
+
+    :param project_name:    Project name (str)
+    :param config_name:     Config name (str)
+    :param timestamps:      Timestamp data (dict)
+    """
+    from docknv.user_handler import user_get_file_from_project
+    from docknv.utils.diff_system import save_last_modification_time
+
+    timestamps_path = user_get_file_from_project(project_name, "timestamps.json", config_name)
+    with io_open(timestamps_path, mode="w") as stream:
+        save_last_modification_time(stream, timestamps)
