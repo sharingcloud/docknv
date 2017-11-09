@@ -6,6 +6,7 @@ class CommandContext(object):
 
     def __init__(self):
         """Init."""
+        self.project_name = None
         self.config_name = None
         self.schema_name = None
         self.namespace_name = None
@@ -17,6 +18,7 @@ class CommandContext(object):
         """Repr."""
         import pprint
         return pprint.pformat({
+            "project_name": self.project_name,
             "config_name": self.config_name,
             "schema_name": self.schema_name,
             "namespace_name": self.namespace_name,
@@ -67,6 +69,7 @@ def command_get_context_from(project_data, config_name, session_data, schema_dat
     schema_name = session_data['schema']
     namespace_name = session_data['namespace']
 
+    context.project_name = project_data.project_name
     context.config_name = config_name
     context.namespace_name = None if namespace_name == "default" else namespace_name
     context.schema_name = schema_name

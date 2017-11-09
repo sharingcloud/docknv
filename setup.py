@@ -21,7 +21,7 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'docknv = docknv.shell:docknv_entry_point',
+            'docknv = docknv.shell.main:docknv_entry_point',
         ]
     },
 )
