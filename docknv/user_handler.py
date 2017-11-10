@@ -152,7 +152,7 @@ def user_try_lock(project_path):
 
     :param project_path:     Project path (str)
 
-    **Coroutine**
+    **Context manager**
     """
     if not user_enable_lock(project_path):
         Logger.error("docknv is already running with your account. wait until completion.")
@@ -174,7 +174,7 @@ def user_temporary_copy_file(project_name, path_to_file):
     :param project_name:     Project name (str)
     :param path_to_file:     Path to file (str)
 
-    **Coroutine**
+    **Context manager**
     """
     path = user_get_file_from_project(project_name, path_to_file)
 

@@ -5,21 +5,33 @@ from __future__ import unicode_literals
 
 import os
 
-from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.ioutils import io_open
 
 from docknv.logger import Logger
 
+IGNORE_FILE_CONTENT = """
+__pyc__/
+*.pyc
+/*.docker-compose.yml
+/.docknv.yml
+.DS_Store
+"""
 
-def scaffold_project(project_path, project_name=None):
+CONFIG_FILE_CONTENT = """
+composefiles:
+commands:
+schemas:
+"""
+
+
+def scaffold_project(project_path):
     """
     Scaffold a Docknv project.
 
     :param project_path:     Project path (str)
-    :param project_name:     Project name (str?) (default: None)
     """
-    project_name = project_name if project_name else os.path.basename(project_path)
+    project_name = os.path.basename(project_path)
     paths = ["envs", "data", "composefiles", "images"]
     data_paths = ["files"]
 
@@ -51,7 +63,7 @@ def scaffold_project(project_path, project_name=None):
             os.makedirs(joined_path)
 
     # Create config file
-    scaffold_config(project_path, project_name)
+    scaffold_config(project_path)
 
     # Create default env
     scaffold_environment(project_path, "default")
@@ -59,18 +71,15 @@ def scaffold_project(project_path, project_name=None):
     Logger.info("New project `{0}` initialized in `{1}`".format(project_name, project_path))
 
 
-def scaffold_config(project_path, project_name=None):
+def scaffold_config(project_path):
     """
     Scaffold a basic config file.
 
     :param project_path:     Project path (str)
-    :param project_name:     Project name (str?) (default: None)
     """
-    config_content = "project_name: {0}\n\nschemas:\ncomposefiles:".format(project_name)
-
     joined_path = os.path.join(project_path, "config.yml")
     with io_open(joined_path, encoding="utf-8", mode="wt") as handle:
-        handle.write(config_content)
+        handle.write(CONFIG_FILE_CONTENT)
 
     Logger.info("Configuration file created.")
 
@@ -83,11 +92,13 @@ def scaffold_environment(project_path, env_name, env_content=None):
     :param env_name:         Environment name (str)
     :param env_content:      Environment content (str?) (default: None)
     """
-    from docknv.environment_handler import env_write_to_file
+    from docknv.environment_handler import (
+        env_yaml_write_to_file,
+        env_get_yaml_path
+    )
 
     env_content = env_content if env_content else {}
-    env_path = os.path.join(project_path, "envs",
-                            "".join((env_name, ".env.py")))
+    env_path = env_get_yaml_path(project_path, env_name)
     if os.path.exists(env_path):
         choice = prompt_yes_no(
             "/!\\ WARNING: The environment file `{0}` already exists. Overwrite ?".format(env_name)
@@ -98,13 +109,12 @@ def scaffold_environment(project_path, env_name, env_content=None):
             return
 
     # Create file
-    with io_open(env_path, encoding="utf-8", mode="wt+") as handle:
-        handle.write("")
+    env_yaml_write_to_file({"environent": {}}, env_path)
 
     # Write env to file
     env_content_len = len(env_content)
     if env_content_len > 0:
-        env_write_to_file(env_content, env_path)
+        env_yaml_write_to_file({"environment": env_content}, env_path)
     else:
         Logger.info("Empty environment file `{0}` created.".format(env_name))
 
@@ -117,11 +127,16 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
     :param env_name_source:  Source environment name (str)
     :param env_name_dest:    Destination environment name (str)
     """
+    from docknv.environment_handler import (
+        env_yaml_inherits, env_yaml_load_in_memory, env_get_yaml_path,
+        env_yaml_write_to_file
+    )
+
     if env_name_source == env_name_dest:
         Logger.error('Source environment name and destination environment name cannot be the same.')
 
-    env_path_source = os.path.join(project_path, "envs", "".join((env_name_source, ".env.py")))
-    env_path_dest = os.path.join(project_path, "envs", "".join((env_name_dest, ".env.py")))
+    env_path_source = env_get_yaml_path(project_path, env_name_source)
+    env_path_dest = env_get_yaml_path(project_path, env_name_dest)
 
     if not os.path.exists(env_path_source):
         Logger.error("Missing environment file `{0}`.".format(env_name_source))
@@ -136,63 +151,13 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
             return
 
     # Loading source env
-    source_content = []
-    with io_open(env_path_source, encoding='utf-8', mode='r') as handle:
-        source_content = handle.readlines()
+    source_content = env_yaml_load_in_memory(project_path, env_name_source)
 
-    with io_open(env_path_dest, encoding='utf-8', mode="wt+") as handle:
-        handle.write('# -*- import: {0} -*-\n\n'.format(env_name_source))
-        for line in source_content:
-            if not line.startswith('#') and not line.startswith('"""') and line != '\n':
-                handle.write('# ')
-            handle.write(line)
+    # Inherit
+    dest_data = env_yaml_inherits(source_content, env_name_source)
+    env_yaml_write_to_file(dest_data, env_path_dest)
 
     Logger.info("Environment file `{0}` copied to `{1}`".format(env_name_source, env_name_dest))
-
-
-def scaffold_link_composefile(project_path, compose_file_name, unlink=False):
-    """
-    Link/Unlink a compose file in a project.
-
-    :param compose_file_name:    Compose file name (str)
-    :param project_path:         Project path (str)
-    :param unlink:               Unlink if true, else link (bool) (default: False)
-    """
-    config_file = os.path.join(project_path, "config.yml")
-    compose_file = os.path.join(project_path, "composefiles", compose_file_name)
-
-    if not os.path.exists(config_file):
-        Logger.error("Config file `{0}` does not exist.".format(config_file))
-
-    if not os.path.exists(compose_file):
-        Logger.error("Compose file `{0}` does not exist.".format(compose_file))
-
-    with io_open(config_file, encoding="utf-8", mode="rt") as handle:
-        content = yaml_ordered_load(handle.read())
-
-    if "composefiles" not in content:
-        Logger.error("Missing `composefiles` section in config.yml.")
-
-    composefiles = content["composefiles"] if content["composefiles"] else []
-    compose_file_path = "./composefiles/" + compose_file_name
-
-    if unlink:
-        if compose_file_path in composefiles:
-            composefiles.remove(compose_file_path)
-            Logger.info("Compose file `{0}` unlinked from config.yml".format(compose_file_name))
-        else:
-            Logger.warn("Missing compose file entry `{0}` in config.yml".format(compose_file_path))
-    else:
-        if compose_file_path in composefiles:
-            Logger.warn("Compose file entry `{0}` already present in config.yml. Ignoring.".format(compose_file_path))
-        else:
-            composefiles.append(compose_file_path)
-            Logger.info("Compose file `{0}` linked in config.yml".format(compose_file_name))
-
-    content["composefiles"] = composefiles
-
-    with io_open(config_file, encoding="utf-8", mode="wt") as handle:
-        handle.write(yaml_ordered_dump(content))
 
 
 def scaffold_ignore(project_path, force=False):
@@ -202,7 +167,6 @@ def scaffold_ignore(project_path, force=False):
     :param project_path:     Project path (str)
     :param force:            No prompt user (bool) (default: False)
     """
-    file_content = "rendered/\n__pyc__/\n*.pyc\n*.docknv*"
     ignore_file = os.path.join(project_path, ".gitignore")
 
     if os.path.exists(ignore_file):
@@ -216,7 +180,7 @@ def scaffold_ignore(project_path, force=False):
         Logger.error("Project path `{0}` does not exist.".format(project_path))
 
     with io_open(ignore_file, encoding="utf-8", mode="wt") as handle:
-        handle.write(file_content)
+        handle.write(IGNORE_FILE_CONTENT)
 
     Logger.info("Ignore file created.")
 

@@ -6,7 +6,7 @@ import shutil
 
 from collections import OrderedDict
 
-from docknv.logger import Logger, Fore
+from docknv.logger import Logger
 from docknv.utils.paths import create_path_or_replace, create_path_tree
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.ioutils import io_open

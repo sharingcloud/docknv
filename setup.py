@@ -7,9 +7,9 @@ setup(
     name='docknv',
     version=__version__,
     description='Docker with environments',
-    url='',
-    author='SharingCloud',
-    author_email='',
+    url='https://bitbucket.org/sharingcloud/docknv',
+    author='Denis BOURGE',
+    author_email='denis.bourge@sharingcloud.com',
     license='MIT',
     packages=['docknv'],
     install_requires=[

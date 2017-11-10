@@ -12,6 +12,14 @@ docknv\.tests\.mocking module
     :undoc-members:
     :show-inheritance:
 
+docknv\.tests\.utils module
+---------------------------
+
+.. automodule:: docknv.tests.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

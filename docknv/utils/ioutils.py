@@ -15,7 +15,7 @@ def io_open(filename, mode="r", encoding="utf-8", newline=None):
     :param mode:     Mode (str) (default: 'r')
     :param encoding: Encoding (str) (default: utf-8)
 
-    **Coroutine**
+    **Context manager**
     """
     if six.PY2:
         with io.open(filename, mode, encoding=encoding, newline=newline) as handle:

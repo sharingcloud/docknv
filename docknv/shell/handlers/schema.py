@@ -11,6 +11,26 @@ from docknv.logger import Logger
 from docknv.shell.common import exec_handler
 
 
+def _init(subparsers):
+    cmd = subparsers.add_parser("schema", help="manage groups of machines at once (schema mode)")
+    subs = cmd.add_subparsers(dest="schema_cmd", metavar="")
+
+    subs.add_parser("ls", help="list schemas")
+    subs.add_parser("ps", help="list schema processes")
+    subs.add_parser("stop", help="shutdown machines from schema")
+    subs.add_parser("status", help="get current config name")
+
+    start_cmd = subs.add_parser("start", help="boot machines from schema")
+    start_cmd.add_argument("--foreground", action="store_true", help="start in foreground")
+
+    restart_cmd = subs.add_parser("restart", help="restart machines from schema")
+    restart_cmd.add_argument("-f", "--force", action="store_true", help="force restart")
+
+    build_cmd = subs.add_parser("build", help="build machines from schema")
+    build_cmd.add_argument("--no-cache", help="no cache", action="store_true")
+    build_cmd.add_argument("--do-not-push", help="do not push to registry", action="store_true")
+
+
 def _handle(args):
     return exec_handler("schema", args, globals())
 

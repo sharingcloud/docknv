@@ -4,6 +4,14 @@ docknv\.utils package
 Submodules
 ----------
 
+docknv\.utils\.diff\_system module
+----------------------------------
+
+.. automodule:: docknv.utils.diff_system
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 docknv\.utils\.ioutils module
 -----------------------------
 

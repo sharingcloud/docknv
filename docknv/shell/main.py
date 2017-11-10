@@ -8,11 +8,10 @@ import argparse
 import importlib
 
 from docknv.version import __version__
-from docknv.shell.parsers import init_parsers
 
 STANDARD_COMMANDS = (
-    "bundle", "config", "env", "machine", "registry",
-    "scaffold", "schema", "user", "volume"
+    "bundle", "schema", "machine", "config", "env",
+    "scaffold", "volume", "user", "registry"
 )
 
 
@@ -27,7 +26,7 @@ class Shell(object):
         self.subparsers = self.parser.add_subparsers(dest="command", metavar="")
         self.post_parsers = []
 
-        init_parsers(self.subparsers)
+        self.init_parsers()
 
     def register_post_parser(self, fct, cfg, ctx):
         """
@@ -43,7 +42,7 @@ class Shell(object):
         """
         Start and read command-line arguments.
 
-        :param args Arguments
+        :param args: Arguments
         """
         args_count = len(args)
         if args_count == 0:
@@ -55,6 +54,12 @@ class Shell(object):
             sys.exit(1)
 
         self.parse_args(self.parser.parse_args(args))
+
+    def init_parsers(self):
+        """Initialize each parsers."""
+        for cmd in STANDARD_COMMANDS:
+            module = importlib.import_module("docknv.shell.handlers." + cmd)
+            getattr(module, "_init")(self.subparsers)
 
     def parse_args(self, args):
         """
@@ -88,6 +93,7 @@ def docknv_entry_point():
     shell = Shell()
 
     if os.path.exists(commands_dir):
+        command_context = command_handler.command_get_context(current_dir)
         for root, _, files in os.walk(commands_dir):
             for filename in files:
                 if filename.endswith(".py"):
@@ -108,7 +114,6 @@ def docknv_entry_point():
                         post_parse = getattr(src, "post_parse")
 
                         command_config = command_handler.command_get_config(current_dir, base_filename)
-                        command_context = command_handler.command_get_context(current_dir)
 
                         try:
                             pre_parse(shell, command_config, command_context)

@@ -22,7 +22,7 @@ def using_docker_client():
     """
     Open a Docker client.
 
-    :coroutine:
+    **Context manager**
     """
     yield docker.from_env()
 

@@ -17,17 +17,40 @@ colorama.init()
 class Logger(object):
     """Simple logger."""
 
+    LOGGER_LEVELS = ["DEBUG", "INFO", "WARN", "ERROR", "NONE"]
+    current_level = "DEBUG"
+
+    @staticmethod
+    def set_log_level(value):
+        """
+        Set the current log level.
+
+        :param value:   Value (str)
+        """
+        Logger.current_level = value
+
+    @staticmethod
+    def get_log_level():
+        """
+        Get the current log level.
+
+        :rtype: Current log level (str)
+        """
+        return Logger.current_level
+
     @staticmethod
     def log(msg_type, message, color):
         """
-        Standard log.
+        Write a standard log entry.
 
         :param msg_type:     Message type (str)
         :param message:      Message content (str)
         :param color:        Message color (color)
         """
-        current_time = time.time() - INIT_TIME
-        print(color + "[{0}] [{1}] {2}".format(Logger._round_time(current_time), msg_type, message) + Style.RESET_ALL)
+        if Logger._is_active(msg_type):
+            current_time = time.time() - INIT_TIME
+            print(color + "[{0}] [{1}] {2}".format(
+                Logger._round_time(current_time), msg_type, message) + Style.RESET_ALL)
 
     @staticmethod
     def info(message, color=Fore.GREEN):
@@ -103,3 +126,12 @@ class Logger(object):
             next_part = next_part[:length]
 
         return ".".join([prev_part, next_part])
+
+    @staticmethod
+    def _is_active(level):
+        if level not in Logger.LOGGER_LEVELS:
+            raise RuntimeError("Bad log level value: {0}".format(level))
+
+        idx = Logger.LOGGER_LEVELS.index(level)
+        curr_idx = Logger.LOGGER_LEVELS.index(Logger.current_level)
+        return idx >= curr_idx

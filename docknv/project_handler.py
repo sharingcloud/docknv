@@ -185,7 +185,7 @@ def project_use_temporary_configuration(project_path, config_name):
     :param project_path:     Project path (str)
     :param config_name:      Config name (str)
 
-    ** Coroutine**
+    **Context manager**
     """
     old_config = project_get_active_configuration(project_path)
     if old_config is None:
@@ -237,7 +237,7 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     """
     from docknv.schema_handler import schema_get_configuration
     from docknv.template_renderer import renderer_render_compose_template
-    from docknv.environment_handler import env_check_file, env_load_in_memory
+    from docknv.environment_handler import env_yaml_check_file, env_yaml_load_in_memory
     from docknv.session_handler import session_read_configuration, session_write_configuration
     from docknv.composefile_handler import (
         composefile_multiple_read, composefile_filter, composefile_resolve_volumes,
@@ -314,10 +314,10 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     config_data = project_read(project_path)
 
     # Load environment
-    if not env_check_file(project_path, environment):
+    if not env_yaml_check_file(project_path, environment):
         Logger.error("Environment file `{0}` does not exist.".format(environment))
 
-    env_content = env_load_in_memory(project_path, environment)
+    env_content = env_yaml_load_in_memory(project_path, environment)
 
     # Get schema configuration
     schema_config = schema_get_configuration(config_data, schema_name)

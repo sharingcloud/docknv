@@ -1,4 +1,4 @@
-rendered/
 __pyc__/
 *.pyc
-*.docknv*
+/.docknv.yml*
+/*.docker-compose.yml*

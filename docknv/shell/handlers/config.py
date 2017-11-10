@@ -10,6 +10,42 @@ from docknv.logger import Logger
 from docknv.shell.common import exec_handler
 
 
+def _init(subparsers):
+    cmd = subparsers.add_parser("config", help="configuration management")
+    subs = cmd.add_subparsers(dest="config_cmd", metavar="")
+
+    use_cmd = subs.add_parser("use", help="use configuration")
+    use_cmd.add_argument("name", help="configuration name")
+
+    subs.add_parser("unset", help="unset configuration")
+    subs.add_parser("status", help="show current configuration")
+    subs.add_parser("ls", help="list known configurations")
+
+    generate_cmd = subs.add_parser("generate", help="generate docker compose file using configuration")
+    generate_cmd.add_argument("name", help="schema name")
+    generate_cmd.add_argument("-n", "--namespace", help="namespace name", nargs="?", default="default")
+    generate_cmd.add_argument("-e", "--environment", help="environment file name", nargs="?", default="default")
+    generate_cmd.add_argument("-c", "--config-name", help="configuration nickname", nargs="?", default=None)
+
+    update_cmd = subs.add_parser("update", help="update a known configuration")
+    update_cmd.add_argument("name", help="configuration name", nargs="?", default=None)
+    update_cmd.add_argument("-s", "--set-current", action="store_true", help="set this configuration as current")
+    update_cmd.add_argument("-r", "--restart", action="store_true", help="restart current schema")
+
+    change_schema_cmd = subs.add_parser("change-schema", help="change a configuration schema")
+    change_schema_cmd.add_argument("config_name", help="configuration name")
+    change_schema_cmd.add_argument("schema_name", help="schema name")
+    change_schema_cmd.add_argument("-u", "--update", action="store_true", help="auto-update configuration")
+
+    change_env_cmd = subs.add_parser("change-env", help="change a configuration environment file")
+    change_env_cmd.add_argument("config_name", help="configuration name")
+    change_env_cmd.add_argument("environment", help="environment name")
+    change_env_cmd.add_argument("-u", "--update", action="store_true", help="auto-update configuration")
+
+    remove_cmd = subs.add_parser("rm", help="remove a known configuration")
+    remove_cmd.add_argument("name", help="configuration name")
+
+
 def _handle(args):
     return exec_handler("config", args, globals())
 

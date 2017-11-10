@@ -81,11 +81,10 @@ def session_update_environment(project_path, config_name, environment_name):
     :param config_name:          Config name (str)
     :param environment_name:     Environment name (str)
     """
-    from docknv.environment_handler import env_check_file
+    from docknv.environment_handler import env_yaml_check_file
 
-    if env_check_file(project_path, environment_name):
-        docknv_config = session_read_configuration(
-            project_path)
+    if env_yaml_check_file(project_path, environment_name):
+        docknv_config = session_read_configuration(project_path)
 
         if session_check_configuration(docknv_config, config_name):
             docknv_config["values"][config_name]["environment"] = environment_name
