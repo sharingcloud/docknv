@@ -198,9 +198,12 @@ def user_clean_config_path(project_name, config_name=None):
 
     folder_path = user_get_project_path(project_name, config_name)
 
-    if prompt_yes_no("/!\\ Are you sure you want to remove the user folder {0} ?".format(folder_path)):
-        shutil.rmtree(folder_path)
-        Logger.info("User configuration folder `{0}` removed".format(folder_path))
+    if not os.path.exists(folder_path):
+        Logger.info("User configuration folder {0} does not exist.".format(folder_path))
+    else:
+        if prompt_yes_no("/!\\ Are you sure you want to remove the user folder {0} ?".format(folder_path)):
+            shutil.rmtree(folder_path)
+            Logger.info("User configuration folder `{0}` removed".format(folder_path))
 
 ##################
 

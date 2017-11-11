@@ -22,7 +22,7 @@ def _handle(args):
     return exec_handler("user", args, globals())
 
 
-def _handle_clean_config(args):
+def _handle_clean(args):
     return project_handler.project_clean_user_config_path(".", args.config)
 
 
