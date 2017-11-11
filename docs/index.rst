@@ -7,9 +7,9 @@ Welcome to docknv's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   pages/intro
-   pages/architecture
-   pages/environment
+   pages/01.intro
+   pages/02.architecture
+   pages/03.environment
    modules
 
 Indices and tables
