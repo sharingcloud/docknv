@@ -11,7 +11,7 @@ Here are the features:
 -  **Templating system**: you can insert your defined environment values
    in templates all over your volumes files, using the powerful Jinja2
    template engine.
--  **Mixing Compose files**: you can easily merge classic Docker Compose
+-  **Mix Compose files**: you can easily merge classic Docker Compose
    templates together.
 -  **Use schemas and namespaces to isolate**: you can isolate portions
    of infrastructure to build and run services independently.

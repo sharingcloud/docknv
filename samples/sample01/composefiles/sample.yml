@@ -5,7 +5,7 @@ services:
 
   # Portainer service: Docker web interface
   portainer:
-    # Path to image (always "images/image_name")
+    # Path to image (always "images/*")
     build: images/portainer/
     # Image tag
     image: localhost:5000/sample01_portainer
@@ -23,6 +23,13 @@ services:
       net:
 
     restart: on-failure
+
+  # Hello world
+  hello-world:
+    # Path to image
+    build: images/app/hello-world
+    # Image tag
+    image: localhost:5000/sample01_helloworld
 
 volumes:
   portainer:

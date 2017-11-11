@@ -1,5 +1,5 @@
-Environment files
-=================
+Environment
+===========
 
 What is it?
 ~~~~~~~~~~~~

@@ -7,10 +7,11 @@ import imp
 import argparse
 import importlib
 
+from docknv.logger import Logger
 from docknv.version import __version__
 
 STANDARD_COMMANDS = (
-    "bundle", "schema", "machine", "config", "env",
+    "bundle", "config", "machine", "env", "schema",
     "scaffold", "volume", "user", "registry"
 )
 
@@ -21,7 +22,8 @@ class Shell(object):
     def __init__(self):
         """Init."""
         self.parser = argparse.ArgumentParser(description="Docker w/ environments (docknv {0})".format(__version__))
-        self.parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+        self.parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
+        self.parser.add_argument('-v', '--verbose', action='store_true', help='verbose mode')
 
         self.subparsers = self.parser.add_subparsers(dest="command", metavar="")
         self.post_parsers = []
@@ -68,6 +70,12 @@ class Shell(object):
         :param args:    Arguments (iterable)
         """
         exit_code = 0
+
+        # Verbose mode activation
+        if args.verbose:
+            Logger.set_log_level("DEBUG")
+        else:
+            Logger.set_log_level("INFO")
 
         if args.command in STANDARD_COMMANDS:
             module = importlib.import_module("docknv.shell.handlers." + args.command)

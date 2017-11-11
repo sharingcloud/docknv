@@ -12,7 +12,6 @@ def _init(subparsers):
 
     show_cmd = subs.add_parser("show", help="show an environment file")
     show_cmd.add_argument("env_name", help="environment file name (debug, etc.)")
-    show_cmd.add_argument("--yaml", action="store_true", help="use YAML configuration")
 
     use_cmd = subs.add_parser("use", help="set env and render templates")
     use_cmd.add_argument("env_name", help="environment file name (debug, etc.)")
@@ -27,4 +26,4 @@ def _handle_ls(args):
 
 
 def _handle_show(args):
-    return environment_handler.env_yaml_show(".", args.env_name, args.yaml)
+    return environment_handler.env_yaml_show(".", args.env_name)

@@ -9,3 +9,7 @@ schemas:
       - portainer
     networks:
       - net
+
+  hello:
+    services:
+      - hello-world

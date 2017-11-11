@@ -19,4 +19,4 @@ Quick install:
 Documentation
 -------------
 
-You can read the documentation in the `docs/` folder.
+You can read the documentation in the ``docs/`` folder.

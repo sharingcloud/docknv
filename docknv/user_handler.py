@@ -198,9 +198,9 @@ def user_clean_config_path(project_name, config_name=None):
 
     folder_path = user_get_project_path(project_name, config_name)
 
-    if prompt_yes_no("Are you sure you want to remove the user folder {0} ?".format(folder_path)):
+    if prompt_yes_no("/!\\ Are you sure you want to remove the user folder {0} ?".format(folder_path)):
         shutil.rmtree(folder_path)
-        Logger.info("Folder `{0}` removed".format(folder_path))
+        Logger.info("User configuration folder `{0}` removed".format(folder_path))
 
 ##################
 

@@ -19,7 +19,7 @@ def renderer_render_compose_template(compose_content, environment_data=None):
     :param environment_data:     Environment data (dict?) (default: None)
     :rtype: Template data (dict)
     """
-    Logger.info("Resolving compose content...")
+    Logger.debug("Resolving compose content...")
     output_content = copy.deepcopy(compose_content)
 
     template_result = renderer_render_template_inplace(output_content, environment_data)
@@ -101,7 +101,7 @@ def renderer_render_template(project_path, template_path, config_name, environme
     with io_open(file_output, encoding="utf-8", mode="w", newline=newline) as handle:
         handle.write(rendered_template)
 
-    Logger.info("Template `{0}` rendered to `{1}`.".format(
+    Logger.debug("Template `{0}` rendered to `{1}`.".format(
         template_path, file_output))
 
     return file_output

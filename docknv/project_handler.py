@@ -18,7 +18,7 @@ class ProjectData(object):
 
     def __init__(self, project_path, config_data):
         """
-        The ProjectData constructor.
+        Project data constructor.
 
         :param project_path:     Project path (str)
         :param config_data:      Config data (dict)
@@ -221,11 +221,34 @@ def project_generate_compose_from_configuration(project_path, config_name):
     from docknv.session_handler import session_get_configuration
 
     config = session_get_configuration(project_path, config_name)
-    project_generate_compose(".", config["schema"], config["namespace"], config["environment"], config_name)
+    project_generate_compose(".", config["schema"], config["namespace"], config["environment"],
+                             config_name, update=True)
+
+
+def project_check_config_name(project_path, config_name):
+    """
+    Check config name, generate a new one if not valid.
+
+    :param project_path:    Project path (str)
+    :param config_name:     Config name (str)
+    :rtype: Valid config name (str)
+    """
+    from docknv.session_handler import session_read_configuration
+
+    config = session_read_configuration(project_path)
+    config_names = list(config["values"].keys())
+
+    if config_name not in config_names:
+        return config_name
+
+    if config_name is not None:
+        Logger.info(
+            "Already existing configuration name: {0}. Generating a new configuration name...".format(config_name))
+    return generate_config_name(config_names)
 
 
 def project_generate_compose(project_path, schema_name="all", namespace="default", environment="default",
-                             config_name=None):
+                             config_name=None, update=False):
     """
     Generate a valid Docker Compose file.
 
@@ -234,81 +257,34 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     :param namespace:        Namespace name (str) (default: default)
     :param environment:      Environment config (str) (default: default)
     :param config_name:      Config name (str?) (default: None)
+    :param update:           Update configuration (bool) (default: False)
     """
     from docknv.schema_handler import schema_get_configuration
     from docknv.template_renderer import renderer_render_compose_template
     from docknv.environment_handler import env_yaml_check_file, env_yaml_load_in_memory
-    from docknv.session_handler import session_read_configuration, session_write_configuration
+    from docknv.user_handler import user_get_id
+
+    from docknv.session_handler import (
+        session_read_configuration, session_write_configuration, session_insert_configuration
+    )
+
     from docknv.composefile_handler import (
         composefile_multiple_read, composefile_filter, composefile_resolve_volumes,
         composefile_apply_namespace, composefile_write
     )
 
-    user = None
-    try:
-        user = os.geteuid()
-    except Exception:
-        import getpass
-        user = getpass.getuser()
-
-    current_combination = {
-        "schema": schema_name,
-        "namespace": namespace,
-        "environment": environment,
-        "user": user
-    }
-
     ####################
     # Configuration name
 
-    # Get temporary config
-    config = session_read_configuration(project_path)
+    if not update:
+        session = session_read_configuration(project_path)
+        config_name = project_check_config_name(project_path, config_name)
+        Logger.info("Creating configuration: `{0}`".format(config_name))
 
-    # Insert combination into temporary config
-    new_combination = True
-    changing_key = None
-    for key in config["values"]:
-        other_config = {
-            "schema": config["values"][key]["schema"],
-            "environment": config["values"][key]["environment"],
-            "namespace": config["values"][key]["namespace"],
-            "user": config["values"][key]["user"]
-        }
-
-        if current_combination == other_config:
-            if config_name != key:
-                changing_key = key
-            new_combination = False
-
-    old_keys = config["values"].keys()
-
-    if new_combination:
-        if config_name and config_name in config["values"].keys():
-            new_name = generate_config_name(old_keys)
-            Logger.warn(
-                "Configuration name `{0}` already exist. New name generated: `{1}`".format(config_name, new_name))
-            config_name = new_name
-        elif config_name is None:
-            config_name = generate_config_name(old_keys)
-            Logger.info("Generated config name: `{0}`".format(config_name))
-        else:
-            Logger.info("Config name: `{0}`".format(config_name))
-
-        config["values"][config_name] = current_combination
-
-    elif changing_key:
-        if config_name is None:
-            config_name = generate_config_name(old_keys)
-
-        config["values"][config_name] = config["values"][changing_key]
-        del config["values"][changing_key]
-
-        Logger.info("Changing config name to `{0}`".format(config_name))
-
+        new_session = session_insert_configuration(session, config_name, schema_name,
+                                                   environment, namespace, user_get_id())
     else:
-        Logger.info("Config name: `{0}`".format(config_name))
-
-    ###############
+        Logger.info("Updating configuration: `{0}`".format(config_name))
 
     # Load config file
     config_data = project_read(project_path)
@@ -342,9 +318,14 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     output_compose_file = project_get_composefile(project_path, config_name)
     if not os.path.exists(output_compose_file):
         create_path_tree(os.path.dirname(output_compose_file))
-
     composefile_write(namespaced_content, output_compose_file)
-    session_write_configuration(project_path, config)
+
+    if not update:
+        # Write new session configuration
+        session_write_configuration(project_path, new_session)
+
+    # Set active configuration
+    project_set_active_configuration(project_path, config_name)
 
 
 def project_validate(project_file_path, config_data):

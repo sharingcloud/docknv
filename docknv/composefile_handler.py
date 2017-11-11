@@ -56,7 +56,7 @@ def composefile_write(compose_content, output_path):
     with io_open(output_path, encoding="utf-8", mode="w") as handle:
         handle.write(yaml_ordered_dump(compose_content))
 
-    Logger.info("Compose content written to file `{0}`".format(output_path))
+    Logger.debug("Compose content written to file `{0}`".format(output_path))
 
 
 def composefile_filter(merged_content, schema_configuration):
@@ -234,7 +234,7 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     from docknv.project_handler import project_get_name
     from docknv.volume_handler import volume_generate_namespaced_path
 
-    Logger.info("Resolving volumes...")
+    Logger.debug("Resolving volumes...")
     output_content = copy.deepcopy(compose_content)
 
     project_name = project_get_name(project_path)

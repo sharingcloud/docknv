@@ -1,0 +1,9 @@
+composefiles:
+  - composefiles/main.yml
+
+schemas:
+  standard:
+    services:
+      - ipython
+    networks:
+      - net

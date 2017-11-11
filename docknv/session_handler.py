@@ -99,10 +99,15 @@ def session_remove_configuration(project_path, config_name):
     :param project_path:     Project path (str)
     :param config_name:      Config name (str)
     """
-    from docknv.project_handler import project_get_composefile
-    from docknv.user_handler import user_get_id
+    from docknv.project_handler import (
+        project_get_composefile, project_get_name, project_get_active_configuration,
+        project_unset_configuration
+    )
+
+    from docknv.user_handler import user_get_id, user_clean_config_path
 
     config = session_read_configuration(project_path)
+    project_name = project_get_name(project_path)
     if config_name not in config["values"]:
         Logger.error("Missing configuration `{0}`.".format(config_name))
 
@@ -122,7 +127,14 @@ def session_remove_configuration(project_path, config_name):
 
         del config["values"][config_name]
 
+        # Check if config is active
+        active_configuration = project_get_active_configuration(project_path)
+        if active_configuration == config_name:
+            project_unset_configuration(project_path)
+
         session_write_configuration(project_path, config)
+        user_clean_config_path(project_name, config_name)
+
         Logger.info("Configuration `{0}` removed.".format(config_name))
 
 
@@ -195,6 +207,27 @@ def session_show_configuration_list(project_path):
 
             Logger.raw("  - {0} [namespace: {1}, environment: {2}, schema: {3}, user id: {4}]".format(
                 key, namespace, environment, schema, user), color=Fore.BLUE)
+
+
+def session_insert_configuration(session_data, config_name, schema_name, environment_name, namespace_name, user_id):
+    """
+    Insert a new configuration in the session data.
+
+    :param session_data:        Session data (dict)
+    :param config_name:         Configuration name (str)
+    :param schema_name:         Schema name (str)
+    :param environment_name:    Environment name (str)
+    :param namespace_name:      Namespace name (str)
+    :param user_id:             User ID (str/int)
+    """
+    session_data["values"][config_name] = {
+        "environment": environment_name,
+        "schema": schema_name,
+        "namespace": namespace_name,
+        "user": user_id
+    }
+
+    return session_data
 
 
 def session_read_timestamps(project_name, config_name):
