@@ -19,7 +19,8 @@ Environment files **inheritance**
 For example, you can make a **default** environment file for all your deployments and only override the required  variables.
 
 .. code-block:: yaml
-   :caption: default.env.yml
+
+    # default.env.yml
 
     environment:
       my_value: 1
@@ -30,7 +31,8 @@ For example, you can make a **default** environment file for all your deployment
     #   - my_second_value = Toto
 
 .. code-block:: yaml
-   :caption: inclusion.env.yml
+
+    # inclusion.env.yml
 
     imports:
       - default
@@ -53,7 +55,8 @@ But these variables **can be overriden** over the imported files, for easy reuse
 Here is an example:
 
 .. code-block:: yaml
-   :caption: default.env.yml
+
+    # default.env.yml
 
     environment:
       my_var: test
@@ -66,7 +69,8 @@ Here is an example:
     #   - my_var_double: test + test = testtest
 
 .. code-block:: yaml
-   :caption: inclusion.env.yml
+
+    # inclusion.env.yml
 
     imports:
       - default
