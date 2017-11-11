@@ -109,8 +109,9 @@ def _handle_rm(args):
 
 
 def _handle_create(args):
-    return project_handler.project_generate_compose(
-        ".", args.schema_name, args.namespace, args.environment_name, args.config_name)
+    config_name = project_handler.project_generate_compose(".", args.schema_name, args.namespace,
+                                                           args.environment_name, args.config_name)
+    project_handler.project_use_configuration(".", config_name)
 
 
 def _handle_use(args):

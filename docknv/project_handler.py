@@ -258,6 +258,7 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     :param environment:      Environment config (str) (default: default)
     :param config_name:      Config name (str?) (default: None)
     :param update:           Update configuration (bool) (default: False)
+    :rtype: Config name (str)
     """
     from docknv.schema_handler import schema_get_configuration
     from docknv.template_renderer import renderer_render_compose_template
@@ -324,8 +325,7 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
         # Write new session configuration
         session_write_configuration(project_path, new_session)
 
-    # Set active configuration
-    project_set_active_configuration(project_path, config_name)
+    return config_name
 
 
 def project_validate(project_file_path, config_data):

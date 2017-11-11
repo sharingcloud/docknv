@@ -12,7 +12,7 @@ from docknv.version import __version__
 
 STANDARD_COMMANDS = (
     "bundle", "config", "machine", "env", "schema",
-    "scaffold", "volume", "user", "registry"
+    "volume", "user", "scaffold", "registry"
 )
 
 
@@ -83,9 +83,9 @@ class Shell(object):
         else:
             for parser, cfg, ctx in self.post_parsers:
                 try:
-                    result, exit_code = parser(self, args, cfg, ctx)
+                    result = parser(self, args, cfg, ctx)
                 except TypeError:
-                    result, exit_code = parser(self, args)
+                    result = parser(self, args)
                 if result:
                     break
 
@@ -100,34 +100,37 @@ def docknv_entry_point():
     commands_dir = os.path.join(current_dir, "commands")
     shell = Shell()
 
-    if os.path.exists(commands_dir):
-        command_context = command_handler.command_get_context(current_dir)
-        for root, _, files in os.walk(commands_dir):
-            for filename in files:
-                if filename.endswith(".py"):
-                    # Ignore __init__.py
-                    if filename == "__init__.py":
-                        continue
+    try:
+        if os.path.exists(commands_dir):
+            command_context = command_handler.command_get_context(current_dir)
+            for root, _, files in os.walk(commands_dir):
+                for filename in files:
+                    if filename.endswith(".py"):
+                        # Ignore __init__.py
+                        if filename == "__init__.py":
+                            continue
 
-                    base_filename, ext = os.path.splitext(filename)
-                    abs_f = os.path.join(root, filename)
+                        base_filename, ext = os.path.splitext(filename)
+                        abs_f = os.path.join(root, filename)
 
-                    # Ignore __pycache__
-                    if "__pycache__" in abs_f:
-                        continue
+                        # Ignore __pycache__
+                        if "__pycache__" in abs_f:
+                            continue
 
-                    src = imp.load_source("commands", abs_f)
-                    if hasattr(src, "pre_parse") and hasattr(src, "post_parse"):
-                        pre_parse = getattr(src, "pre_parse")
-                        post_parse = getattr(src, "post_parse")
+                        src = imp.load_source("commands", abs_f)
+                        if hasattr(src, "pre_parse") and hasattr(src, "post_parse"):
+                            pre_parse = getattr(src, "pre_parse")
+                            post_parse = getattr(src, "post_parse")
 
-                        command_config = command_handler.command_get_config(current_dir, base_filename)
+                            command_config = command_handler.command_get_config(current_dir, base_filename)
 
-                        try:
-                            pre_parse(shell, command_config, command_context)
-                        except TypeError:
-                            pre_parse(shell)
+                            try:
+                                pre_parse(shell, command_config, command_context)
+                            except TypeError:
+                                pre_parse(shell)
 
-                        shell.register_post_parser(post_parse, command_config, command_context)
+                            shell.register_post_parser(post_parse, command_config, command_context)
+    except Exception as e:
+        Logger.error(e, crash=False)
 
     shell.run(sys.argv[1:])

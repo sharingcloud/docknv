@@ -84,6 +84,8 @@ def lifecycle_schema_ps(project_path):
 
     with using_docker_client() as client:
         ps = docker_ps(client, ctx.project_name, ctx.namespace_name)
+        if len(ps) == 0:
+            Logger.warn("Configuration is stopped. Run it with `docknv config start`.")
         for line in ps:
             print("{sc}{status:10}{ec} {name:40} {ports:10}".format(
                 status=line["status"],
@@ -306,7 +308,7 @@ def lifecycle_machine_run(project_path, machine_name, command=None, namespace_na
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
-    exec_compose(project_path, ["run", "--service-ports", machine_name, command])
+    exec_compose(project_path, ["run", "--rm", "--service-ports", machine_name, command])
 
 
 def lifecycle_machine_push(project_path, machine_name, host_path, container_path, namespace_name=None):

@@ -90,6 +90,8 @@ def session_update_environment(project_path, config_name, environment_name):
             docknv_config["values"][config_name]["environment"] = environment_name
             session_write_configuration(project_path, docknv_config)
             Logger.info("Configuration `{0}` updated with environment `{1}`".format(config_name, environment_name))
+    else:
+        Logger.error("Environment `{0}` does not exist.".format(environment_name))
 
 
 def session_remove_configuration(project_path, config_name):

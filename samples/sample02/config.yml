@@ -1,6 +1,10 @@
 composefiles:
   - composefiles/main.yml
 
+commands:
+  notebook:
+    machine: ipython
+
 schemas:
   standard:
     services:
