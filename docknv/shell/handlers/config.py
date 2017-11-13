@@ -25,9 +25,6 @@ def _init(subparsers):
     use_cmd = subs.add_parser("use", help="use configuration")
     use_cmd.add_argument("name", help="configuration name")
 
-    # Ps
-    subs.add_parser("ps", help="list schema processes")
-
     # Start
     start_cmd = subs.add_parser("start", help="boot machines from schema")
     start_cmd.add_argument("--foreground", action="store_true", help="start in foreground")
@@ -38,6 +35,9 @@ def _init(subparsers):
 
     # Stop
     subs.add_parser("stop", help="shutdown machines from schema")
+
+    # Ps
+    subs.add_parser("ps", help="list schema processes")
 
     # Unset
     subs.add_parser("unset", help="unset configuration")

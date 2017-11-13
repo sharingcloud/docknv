@@ -1,3 +1,8 @@
+## 4.0.0.alpha
+
+- YAML configuration files instead of Python files
+- Merging `schema` and `config` commands.
+
 ## 3.7.4
 
 - Python 3 and Windows support OK.

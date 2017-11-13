@@ -11,7 +11,7 @@ from docknv.logger import Logger
 from docknv.version import __version__
 
 STANDARD_COMMANDS = (
-    "bundle", "config", "machine", "env", "schema",
+    "machine", "config", "bundle", "env", "schema",
     "volume", "user", "scaffold", "registry"
 )
 

@@ -15,12 +15,12 @@ def _init(subparsers):
     start_cmd = subs.add_parser("start", help="boot machines from schemas")
     start_cmd.add_argument("configs", nargs="+")
 
-    stop_cmd = subs.add_parser("stop", help="shutdown machines from schemas")
-    stop_cmd.add_argument("configs", nargs="+")
-
     restart_cmd = subs.add_parser("restart", help="restart machines from schemas")
     restart_cmd.add_argument("-f", "--force", help="force restart")
     restart_cmd.add_argument("configs", nargs="+")
+
+    stop_cmd = subs.add_parser("stop", help="shutdown machines from schemas")
+    stop_cmd.add_argument("configs", nargs="+")
 
     ps_cmd = subs.add_parser("ps", help="list schemas processes")
     ps_cmd.add_argument("configs", nargs="+")

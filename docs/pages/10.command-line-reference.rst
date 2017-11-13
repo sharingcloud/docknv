@@ -1,0 +1,240 @@
+Command-line reference
+======================
+
+Here you can find the command-line reference.
+
+Each command is described with an example.
+
+**Subcommands**
+
+- *machine*: manage one machine at a time (machine mode)
+- *config*: manage groups of machines at once (config mode)
+- *bundle*: manage groups of configs at once (bundle mode)
+- *env*: manage environments
+- *schema*: manage schemas
+- *volume*: manage volumes
+- *user*: manage user config files
+- *scaffold*: scaffolding
+- *registry*: start and stop registry
+
+
+Machine commands
+----------------
+
+machine start
++++++++++++++
+
+Start a single machine, in foreground or in background (*-d/--daemon*).
+
+Examples:
+
+.. code-block:: bash
+
+    # Start the `test` machine in foreground
+    docknv machine start test
+    # Start the `test` machine in background
+    docknv machine start test -d # or --daemon
+
+
+machine stop
+++++++++++++
+
+Stop a single machine.
+
+Example:
+
+.. code-block:: bash
+
+    # Stop the `test` machine
+    docknv machine stop test
+
+
+machine restart
++++++++++++++++
+
+Restart a single machine. You can normally restart a machine, in foreground or in background (*-d/--daemon*), and you can force the restart (*-f/--force*).
+
+Force restart will cause a complete `stop` and a complete `start`.
+
+Examples:
+
+.. code-block:: bash
+
+    # Restart the `test` machine in foreground
+    docknv machine restart test
+    # Restart the `test` machine in background
+    docknv machine restart test -d # or --daemon
+    # Force restart the `test` machine in background
+    docknv machine restart test -f -d # or --force --daemon
+
+
+machine run
++++++++++++
+
+Run a custom command on a single machine by creating a new container. You can run this command in foreground or in background (*-d/--daemon*).
+
+Examples:
+
+.. code-block:: bash
+
+    # Run a Python HTTP server on machine `test`
+    docknv machine run test "python -m http.server"
+    # Execute a ping command in background on machine `test`
+    docknv machine run test -d "ping www.google.fr"
+
+
+machine exec
+++++++++++++
+
+Execute a custom command on a **running** container. You can disable the TTY (*--no-tty*) and fetch the return code (*-r/--return-code*).
+
+Examples:
+
+.. code-block:: bash
+
+    # List the root folder content on running machine `test`
+    docknv machine exec test "bash -c 'ls /'"
+
+    # Sum numbers on machine `test`, and get the return code
+    docknv machine exec test --return-code "python -c '5+5'"
+
+    # Execute a ping command on machine `test` and disable TTY
+    docknv machine exec test --no-tty "ping www.google.fr"
+
+machine shell
++++++++++++++
+
+machine logs
+++++++++++++
+
+machine push
+++++++++++++
+
+machine pull
+++++++++++++
+
+machine build
++++++++++++++
+
+machine freeze [EXPERIMENTAL]
++++++++++++++++++++++++++++++
+
+Configuration commands
+----------------------
+
+config status
++++++++++++++
+
+config ls
++++++++++
+
+config use
+++++++++++
+
+config start
+++++++++++++
+
+config restart
+++++++++++++++
+
+config stop
++++++++++++
+
+config ps
++++++++++
+
+config unset
+++++++++++++
+
+config build
+++++++++++++
+
+config create
++++++++++++++
+
+config update
++++++++++++++
+
+config set-schema
++++++++++++++++++
+
+config set-env
+++++++++++++++
+
+config rm
++++++++++
+
+Bundle commands
+---------------
+
+bundle start
+++++++++++++
+
+bundle restart
+++++++++++++++
+
+bundle stop
++++++++++++
+
+bundle ps
++++++++++
+
+bundle build
+++++++++++++
+
+Environment commands
+--------------------
+
+env ls
+++++++
+
+env show
+++++++++
+
+env use
++++++++
+
+Schema commands
+---------------
+
+schema ls
++++++++++
+
+Volume commands
+---------------
+
+volume ls
++++++++++
+
+volume rm
++++++++++
+
+User commands
+-------------
+
+user clean
+++++++++++
+
+user rm-lock
+++++++++++++
+
+Scaffold commands
+-----------------
+
+scaffold project
+++++++++++++++++
+
+scaffold image
+++++++++++++++
+
+scaffold env
+++++++++++++
+
+Registry commands
+-----------------
+
+registry start
+++++++++++++++
+
+registry stop
++++++++++++++

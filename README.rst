@@ -19,4 +19,6 @@ Quick install:
 Documentation
 -------------
 
-You can read the documentation in the ``docs/`` folder.
+.. _docknv: https://srynetix.github.io/docknv/
+
+You can build the documentation in the ``docs/`` folder, or read it online on my GitHub Pages: docknv_

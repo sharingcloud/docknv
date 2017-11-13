@@ -234,17 +234,20 @@ def lifecycle_machine_stop(project_path, machine_name, namespace_name=None):
     exec_compose_pretty(project_path, ["stop", machine_name])
 
 
-def lifecycle_machine_start(project_path, machine_name, namespace_name=None):
+def lifecycle_machine_start(project_path, machine_name, daemon=False, namespace_name=None):
     """
     Start a machine.
 
     :param project_path:         Project path (str)
     :param machine_name:         Machine name (str)
+    :param daemon:               Run in background? (bool) (default: False)
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
-    exec_compose_pretty(project_path, ["start", machine_name])
+    d_cmd = "-d" if daemon else ""
+
+    exec_compose_pretty(project_path, ["start", d_cmd, machine_name])
 
 
 def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", namespace_name=None, create=False):
@@ -262,24 +265,10 @@ def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", 
     if create:
         lifecycle_machine_run(project_path, machine_name, shell_path, namespace_name)
     else:
-        lifecycle_machine_exec(project_path, machine_name, shell_path, False, False)
+        lifecycle_machine_exec(project_path, machine_name, shell_path, False, False,  namespace_name=namespace_name)
 
 
-def lifecycle_machine_daemon(project_path, machine_name, command=None, namespace_name=None):
-    """
-    Execute a process in background for a machine.
-
-    :param project_path:         Project path (str)
-    :param machine_name:         Machine name (str)
-    :param command:              Command (str)
-    :param namespace_name:       Namespace name (str?) (default: None)
-    """
-    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-
-    exec_compose_pretty(project_path, ["run", "--service-ports", "-d", machine_name, command])
-
-
-def lifecycle_machine_restart(project_path, machine_name, force=False, namespace_name=None):
+def lifecycle_machine_restart(project_path, machine_name, force=False, daemon=False, namespace_name=None):
     """
     Restart a machine.
 
@@ -291,24 +280,28 @@ def lifecycle_machine_restart(project_path, machine_name, force=False, namespace
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
     if force:
-        lifecycle_machine_stop(project_path, machine_name)
-        lifecycle_machine_start(project_path, machine_name)
+        lifecycle_machine_stop(project_path, machine_name, namespace_name=namespace_name)
+        lifecycle_machine_start(project_path, machine_name, daemon=daemon, namespace_name=namespace_name)
     else:
-        exec_compose_pretty(project_path, ["restart", machine_name])
+        d_cmd = "-d" if daemon else ""
+        exec_compose_pretty(project_path, ["restart", d_cmd, machine_name])
 
 
-def lifecycle_machine_run(project_path, machine_name, command=None, namespace_name=None):
+def lifecycle_machine_run(project_path, machine_name, command, daemon=False, namespace_name=None):
     """
     Run a machine.
 
     :param project_path:         Project path (str)
     :param machine_name:         Machine name (str)
-    :param command:              Command (str?) (default: None)
+    :param command:              Command (str)
+    :param daemon:               Run in background? (bool) (default: False)
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
-    exec_compose(project_path, ["run", "--rm", "--service-ports", machine_name, command])
+    d_cmd = "-d" if daemon else ""
+
+    exec_compose(project_path, ["run", "--rm", "--service-ports", d_cmd, machine_name, command])
 
 
 def lifecycle_machine_push(project_path, machine_name, host_path, container_path, namespace_name=None):
@@ -374,8 +367,8 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
             sys.exit(os.WEXITSTATUS(code))
 
 
-def lifecycle_machine_exec_multiple(project_path, machine_name, commands=None, no_tty=False, return_code=False,
-                                    namespace_name=None):
+def lifecycle_machine_exec_multiple(project_path, machine_name, commands=None, no_tty=False,
+                                    return_code=False, namespace_name=None):
     """
     Execute multiple commands on a machine.
 
