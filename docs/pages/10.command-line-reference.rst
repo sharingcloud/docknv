@@ -32,6 +32,7 @@ Examples:
 
     # Start the `test` machine in foreground
     docknv machine start test
+
     # Start the `test` machine in background
     docknv machine start test -d # or --daemon
 
@@ -62,8 +63,10 @@ Examples:
 
     # Restart the `test` machine in foreground
     docknv machine restart test
+
     # Restart the `test` machine in background
     docknv machine restart test -d # or --daemon
+
     # Force restart the `test` machine in background
     docknv machine restart test -f -d # or --force --daemon
 
@@ -79,6 +82,7 @@ Examples:
 
     # Run a Python HTTP server on machine `test`
     docknv machine run test "python -m http.server"
+
     # Execute a ping command in background on machine `test`
     docknv machine run test -d "ping www.google.fr"
 
