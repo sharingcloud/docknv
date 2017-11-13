@@ -10,6 +10,7 @@ Welcome to docknv's documentation!
    pages/01.intro
    pages/02.architecture
    pages/03.environment
+   pages/10.command-line-reference
    modules
 
 Indices and tables

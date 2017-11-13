@@ -81,7 +81,7 @@ def _handle_run(args):
     context = command_handler.command_get_context(".")
     namespace_name = context.namespace_name
     return lifecycle_handler.lifecycle_machine_run(
-        ".", args.machine, args.run_command, daemon=args.daemon, namespace_name)
+        ".", args.machine, args.run_command, daemon=args.daemon, namespace_name=namespace_name)
 
 
 def _handle_exec(args):
