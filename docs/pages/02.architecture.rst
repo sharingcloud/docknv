@@ -71,7 +71,7 @@ To create a configuration, you have to execute the ``docknv config create`` comm
 From the command-line, with the ``config`` command, you can manipulate configurations: *start*, *stop*, *restart*, *view processes status*, *update*, *etc.*
 
 4. Bundle layer
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 The **bundle** layer is above of the **configuration** layer, a bundle manipulate multiple configurations.
 
@@ -87,7 +87,7 @@ To manipulate *bundles*, you use the ``bundle`` command, followed by the configu
 
 
 Project structure
-=================
+~~~~~~~~~~~~~~~~~
 
 To use **docknv**, you need to respect the following structure:
 

@@ -31,6 +31,7 @@ def _init(subparsers):
 
     # Restart
     restart_cmd = subs.add_parser("restart", help="restart machines from schema")
+    restart_cmd.add_argument("--foreground", action="store_true", help="restart in foreground")
     restart_cmd.add_argument("-f", "--force", action="store_true", help="force restart")
 
     # Stop
@@ -97,7 +98,7 @@ def _handle_stop(args):
 
 def _handle_restart(args):
     with user_handler.user_try_lock("."):
-        return lifecycle_handler.lifecycle_schema_restart(".", args.force)
+        return lifecycle_handler.lifecycle_schema_restart(".", args.foreground, args.force)
 
 
 def _handle_ps(args):

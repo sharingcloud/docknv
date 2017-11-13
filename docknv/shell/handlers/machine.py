@@ -59,8 +59,8 @@ def _init(subparsers):
 
     build_cmd = subs.add_parser("build", help="build a machine")
     build_cmd.add_argument("machine", help="machine name")
-    build_cmd.add_argument("-d", "--do-not-push", help="do not push to registry", action="store_true")
-    build_cmd.add_argument("-n", "--no-cache", help="build without cache", action="store_true")
+    build_cmd.add_argument("--do-not-push", help="do not push to registry", action="store_true")
+    build_cmd.add_argument("--no-cache", help="build without cache", action="store_true")
 
     freeze_cmd = subs.add_parser("freeze", help="freeze a machine")
     freeze_cmd.add_argument("machine", help="machine name")

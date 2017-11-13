@@ -108,20 +108,99 @@ Examples:
 machine shell
 +++++++++++++
 
+Run a shell on a **running** container. You can change the shell executable as a second parameter, and if needed you can *create* the container before running the shell (*-c/--create*).
+
+Examples:
+
+.. code-block:: bash
+
+    # Run a shell (/bin/bash as default) on running machine `test`
+    docknv machine shell test
+
+    # Run a custom shell (/bin/zsh) on running machine `test`
+    docknv machine shell test /bin/zsh
+
+    # Create the container and run a shell on machine `test`
+    docknv machine shell test -c # or --create
+
 machine logs
 ++++++++++++
+
+View the logs of a **running** container. You can show everything, or get the last lines (*--tail with count parameter*), or even follow the logs (*-f/--follow*).
+
+Examples:
+
+.. code-block:: bash
+
+    # Get complete logs from running machine `test`
+    docknv machine logs test
+
+    # Get 10 last lines of logs from running machine `test`
+    docknv machine logs test --tail 10
+
+    # Follow the logs from running machine `test`
+    docknv machine logs test -f # or --follow
 
 machine push
 ++++++++++++
 
+Push a file from the host to a **running** container. First, you specify the host path, then the container path.
+
+Example:
+
+.. code-block:: bash
+
+    # Push a sample.txt file to a running machine `test`
+    docknv machine push test ./sample.txt /tmp/sample.txt
+
+
 machine pull
 ++++++++++++
+
+Pull a file from a **running** container to the host. First, you specify the container path then the host path.
+
+Example:
+
+.. code-block:: bash
+
+    # Pull a sample.txt file from a running machine `test`
+    docknv machine pull test /tmp/sample.txt ./sample.txt
+
 
 machine build
 +++++++++++++
 
+Build a machine image. If you have edited the Dockerfile of your image, run this command to rebuild.
+
+The image will automatically be pushed to the local registry, but you can prevent this (*with -d/--do-not-push*). You can also ignore the cache and rebuild everything (*-n/--no-cache*).
+
+Examples:
+
+.. code-block:: bash
+
+    # Update the build of the `test` machine
+    docknv machine build test
+
+    # Update the build of the `test` machine without pushing it to the local registry
+    docknv machine build test --do-not-push
+
+    # Rebuild the `test` machine without cache
+    docknv machine build test --no-cache
+
+
 machine freeze [EXPERIMENTAL]
 +++++++++++++++++++++++++++++
+
+Freeze a machine, by packing linked static volumes inside of the Dockerfile.
+This allows for quick development cycle and ready-to-use Dockerfile for Swarm deployment (for example).
+
+Example:
+
+.. code-block:: bash
+
+    # Freeze the `test` machine
+    docknv machine freeze test
+
 
 Configuration commands
 ----------------------
@@ -129,29 +208,131 @@ Configuration commands
 config status
 +++++++++++++
 
+Show the current configuration for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # Show the current configuration name
+    docknv config status
+
+
 config ls
 +++++++++
+
+List the available configurations for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # List the available configurations
+    docknv config ls
+
 
 config use
 ++++++++++
 
+Set a configuration as active for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # Define the `standard` configuration as current
+    docknv config use standard
+
+
 config start
 ++++++++++++
+
+Start the machines from the active configuration. You can start these machines in the foreground if needed (*--foreground*).
+
+Examples:
+
+.. code-block:: bash
+
+    # Start the current configuration in background (default)
+    docknv config start
+
+    # Start the current configuration in foreground
+    docknv config start --foreground
+
 
 config restart
 ++++++++++++++
 
+Restart the machines from the active configuration. You can restart these machines in the foreground if needed (*--foreground*), and you can *force* the restart by stopping and starting (*-f/--force*).
+
+Examples:
+
+.. code-block:: bash
+
+    # Restart the current configuration
+    docknv config restart
+
+    # Force restart the current configuration and put in foreground
+    docknv config restart --foreground -f # or --force
+
+
 config stop
 +++++++++++
+
+Stop the machines from the active configuration.
+
+Example:
+
+.. code-block:: bash
+
+    # Stop the current configuration
+    docknv config stop
+
 
 config ps
 +++++++++
 
+Get the machine statuses from the active configuration.
+
+Example:
+
+.. code-block:: bash
+
+    # Get the machine statuses
+    docknv config ps
+
+
 config unset
 ++++++++++++
 
+Unset the current configuration.
+
+Example:
+
+.. code-block:: bash
+
+    # Unset the current configuration
+    docknv config unset
+
+
 config build
 ++++++++++++
+
+Build the machines from the active configuration. As for the `machine build`, you can build without pushing to the local registry (*--do-not-push*), and rebuild without cache (*--no-cache*).
+
+Examples:
+
+.. code-block:: bash
+
+    # Build the current configuration
+    docknv config build
+
+    # Build the current configuration without pushing to the local registry
+    docknv config build --do-not-push
+
+    # Rebuild the current configuration without cache
+    docknv config build --no-cache
+
 
 config create
 +++++++++++++

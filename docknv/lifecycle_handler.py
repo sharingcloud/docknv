@@ -95,20 +95,19 @@ def lifecycle_schema_ps(project_path):
                 ec=Style.RESET_ALL
             ))
 
-    # exec_compose_pretty(project_path, ["ps"])
 
-
-def lifecycle_schema_restart(project_path, force=False):
+def lifecycle_schema_restart(project_path, foreground=False, force=False):
     """
     Restart a schema.
 
     :param project_path:     Project path (str)
     """
     if not force:
-        exec_compose_pretty(project_path, ["restart"])
+        d_cmd = "-d" if not foreground else ""
+        exec_compose_pretty(project_path, ["restart", d_cmd])
     else:
         lifecycle_schema_stop(project_path)
-        lifecycle_schema_start(project_path)
+        lifecycle_schema_start(project_path, foreground)
 
 # BUNDLE FUNCTIONS ##############
 
