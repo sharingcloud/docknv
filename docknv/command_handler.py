@@ -1,5 +1,7 @@
 """Command handler."""
 
+import os
+
 
 class CommandContext(object):
     """Command context."""
@@ -87,12 +89,34 @@ def command_get_context(project_path):
     :param project_path: Project path (str)
     :rtype: Context data (dict)
     """
-    from docknv.project_handler import project_read, project_get_active_configuration
+    from docknv.project_handler import project_read, project_get_active_configuration, project_is_valid
     from docknv.session_handler import session_get_configuration
     from docknv.schema_handler import schema_get_configuration
     from docknv.environment_handler import env_yaml_load_in_memory
+    from docknv.user_handler import user_read_docknv_config, user_write_docknv_config
+    from docknv.utils.prompt import prompt_yes_no
+
+    if not project_is_valid(project_path):
+        return CommandContext()
 
     project_data = project_read(project_path)
+    project_name = project_data.project_name
+
+    # User project path
+    docknv_config = user_read_docknv_config(project_name)
+    user_project_path = docknv_config.get("project_path", None)
+    if user_project_path is None:
+        docknv_config["project_path"] = os.path.realpath(project_path)
+        user_write_docknv_config(project_name, docknv_config)
+    elif user_project_path != os.path.realpath(project_path):
+        print("Project named `{0}` already exist at location `{1}`.".format(project_name, user_project_path))
+        choice = prompt_yes_no("/!\\ Are you sure to overwrite the configuration ?")
+        if not choice:
+            raise RuntimeError("No configuration overwrite.")
+        else:
+            docknv_config["project_path"] = os.path.realpath(project_path)
+            user_write_docknv_config(project_name, docknv_config)
+
     config_name = project_get_active_configuration(project_path)
     if not config_name:
         return CommandContext()

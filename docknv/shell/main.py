@@ -100,9 +100,10 @@ def docknv_entry_point():
     commands_dir = os.path.join(current_dir, "commands")
     shell = Shell()
 
+    command_context = command_handler.command_get_context(current_dir)
+
     try:
         if os.path.exists(commands_dir):
-            command_context = command_handler.command_get_context(current_dir)
             for root, _, files in os.walk(commands_dir):
                 for filename in files:
                     if filename.endswith(".py"):

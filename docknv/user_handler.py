@@ -7,6 +7,8 @@ import shutil
 
 from contextlib import contextmanager
 
+from docknv.utils.ioutils import io_open
+from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.logger import Logger
 
 
@@ -76,6 +78,36 @@ def user_ensure_config_path_exists(project_name):
         os.makedirs(user_config_path)
     if not os.path.exists(user_project_config_path):
         os.makedirs(user_project_config_path)
+
+
+def user_read_docknv_config(project_name):
+    """
+    Read the docknv.yml config file for a project.
+
+    :param project_name:    Project name (str)
+    :rtype: YAML content (dict)
+    """
+    user_ensure_config_path_exists(project_name)
+    docknv_config_path = user_get_docknv_config_file(project_name)
+    if not os.path.exists(docknv_config_path):
+        return {}
+
+    else:
+        with io_open(docknv_config_path, mode="rt") as handle:
+            return yaml_ordered_load(handle.read())
+
+
+def user_write_docknv_config(project_name, docknv_config):
+    """
+    Write docknv.yml config content for a project.
+
+    :param project_name:    Project name (str)
+    :param docknv_config:   docknv config (dict)
+    """
+    user_ensure_config_path_exists(project_name)
+    docknv_config_path = user_get_docknv_config_file(project_name)
+    with io_open(docknv_config_path, mode="wt") as handle:
+        handle.write(yaml_ordered_dump(docknv_config))
 
 
 def user_copy_file_to_config(project_name, path_to_file):

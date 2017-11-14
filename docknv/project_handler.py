@@ -65,6 +65,16 @@ def project_read(project_path):
     return ProjectData(project_path, config_data)
 
 
+def project_is_valid(project_path):
+    """
+    Check if a project is valid.
+
+    :param project_path:    Project path
+    :rtype: True/False
+    """
+    return os.path.isfile(os.path.join(project_path, CONFIG_FILE_NAME))
+
+
 def project_set_active_configuration(project_path, config_name, quiet=False):
     """
     Set the active configuration.
@@ -73,14 +83,15 @@ def project_set_active_configuration(project_path, config_name, quiet=False):
     :param config_name:      Config name (str)
     :param quiet:            Be quiet (bool) (default: False)
     """
-    from docknv.user_handler import user_get_docknv_config_file
+    from docknv.user_handler import (
+        user_read_docknv_config, user_write_docknv_config
+    )
 
     config = project_read(project_path)
-    config_path = user_get_docknv_config_file(config.project_name)
+    docknv_config = user_read_docknv_config(config.project_name)
+    docknv_config["current"] = config_name
 
-    config = {"current": config_name}
-    with io_open(config_path, mode="wt") as handle:
-        handle.write(yaml_ordered_dump(config))
+    user_write_docknv_config(config.project_name, docknv_config)
 
     if not quiet:
         Logger.info("Configuration `{0}` set as current configuration.".format(config_name))
@@ -93,17 +104,12 @@ def project_get_active_configuration(project_path):
     :param project_path:     Project path (str)
     :rtype: Active configuration (str?)
     """
-    from docknv.user_handler import user_get_docknv_config_file
+    from docknv.user_handler import user_read_docknv_config
 
     config = project_read(project_path)
-    config_path = user_get_docknv_config_file(config.project_name)
-    content = None
+    content = user_read_docknv_config(config.project_name)
 
-    if os.path.exists(config_path):
-        with io_open(config_path, mode="rt") as handle:
-            content = yaml_ordered_load(handle.read())
-
-    return content["current"] if content else None
+    return content.get("current", None)
 
 
 def project_update_configuration_schema(project_path, config_name, schema_name):
@@ -284,6 +290,8 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 
         new_session = session_insert_configuration(session, config_name, schema_name,
                                                    environment, namespace, user_get_id())
+
+        # Set project path
     else:
         Logger.info("Updating configuration: `{0}`".format(config_name))
 

@@ -4,13 +4,13 @@ from __future__ import unicode_literals
 
 import os
 import re
-import yaml
 import copy
 
 from collections import OrderedDict
 
 from docknv.logger import Logger, Fore
 from docknv.utils.ioutils import io_open
+from docknv.utils.serialization import yaml_ordered_dump, yaml_ordered_load
 
 IMPORT_DETECTION_RGX = re.compile(r'-\*-\s*import:\s*([a-zA-Z0-9_-]*)\s*-\*-')
 VARIABLE_DETECTION_RGX = re.compile(r'\${([a-zA-Z0-9_-]+)}')
@@ -137,7 +137,7 @@ def env_yaml_write_to_file(env, path):
     Logger.info("Writing YAML environment to file {0}...".format(path))
 
     with io_open(path, encoding="utf-8", mode="wt+") as handle:
-        handle.write(yaml.dump(env))
+        handle.write(yaml_ordered_dump(env))
 
 
 def env_get_yaml_path(project_path, name):
@@ -165,7 +165,7 @@ def _env_yaml_detect_imports(env_content):
 
 def _env_yaml_read_file_content(env_path):
     with io_open(env_path, mode='r', encoding='utf-8') as handle:
-        return yaml.load(handle.read())
+        return yaml_ordered_load(handle.read())
 
 
 def _env_yaml_apply_substitution(keys, value, resolved_env):

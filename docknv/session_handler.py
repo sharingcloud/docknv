@@ -27,7 +27,7 @@ def session_read_configuration(project_path):
             config_data = yaml_ordered_load(handle.read())
         return config_data
 
-    return {"values": {}}
+    return {"values": {}, "project_path": None}
 
 
 def session_write_configuration(project_path, content):
