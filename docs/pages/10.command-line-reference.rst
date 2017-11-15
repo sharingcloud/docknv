@@ -172,7 +172,7 @@ machine build
 
 Build a machine image. If you have edited the Dockerfile of your image, run this command to rebuild.
 
-The image will automatically be pushed to the local registry, but you can prevent this ( ``-d/--do-not-push``). You can also ignore the cache and rebuild everything (``-n/--no-cache``).
+The image will automatically be pushed to the local registry, but you can prevent this ( ``--do-not-push``). You can also ignore the cache and rebuild everything (``--no-cache``).
 
 Examples:
 
@@ -201,6 +201,7 @@ Example:
     # Freeze the `test` machine
     docknv machine freeze test
 
+---------------------------------
 
 Configuration commands
 ----------------------
@@ -413,6 +414,8 @@ Example:
     docknv config rm test
 
 
+---------------------------------
+
 Bundle commands
 ---------------
 
@@ -505,6 +508,8 @@ Examples:
     docknv bundle build --no-cache test test2
 
 
+---------------------------------
+
 Environment commands
 --------------------
 
@@ -534,6 +539,8 @@ Example:
     docknv env show test_env
 
 
+---------------------------------
+
 Schema commands
 ---------------
 
@@ -549,6 +556,8 @@ Example:
     # List the available schemas
     docknv schema ls
 
+
+---------------------------------
 
 Volume commands
 ---------------
@@ -578,6 +587,8 @@ Example:
     # Remove the `test` named volume
     docknv volume rm test
 
+
+---------------------------------
 
 User commands
 -------------
@@ -615,6 +626,8 @@ Example:
     # Remove the user lockfile
     docknv user rm-lock
 
+
+---------------------------------
 
 Scaffold commands
 -----------------
@@ -664,6 +677,8 @@ Examples:
     # Create a `test_env2` environment by inheriting from the `default` environment
     docknv scaffold env test_env2 -i default
 
+
+---------------------------------
 
 Registry commands
 -----------------
