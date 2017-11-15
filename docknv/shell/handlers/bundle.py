@@ -27,8 +27,8 @@ def _init(subparsers):
 
     build_cmd = subs.add_parser("build", help="build machines from schemas")
     build_cmd.add_argument("configs", nargs="+")
-    build_cmd.add_argument("-n", "--no-cache", help="no cache", action="store_true")
-    build_cmd.add_argument("-d", "--do-not-push", help="do not push to registry", action="store_true")
+    build_cmd.add_argument("--no-cache", help="no cache", action="store_true")
+    build_cmd.add_argument("--do-not-push", help="do not push to registry", action="store_true")
 
 
 def _handle(args):

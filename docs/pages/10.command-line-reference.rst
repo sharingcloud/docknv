@@ -24,7 +24,7 @@ Machine commands
 machine start
 +++++++++++++
 
-Start a single machine, in foreground or in background (*-d/--daemon*).
+Start a single machine, in foreground or in background (``-d/--daemon``).
 
 Examples:
 
@@ -53,7 +53,7 @@ Example:
 machine restart
 +++++++++++++++
 
-Restart a single machine. You can normally restart a machine, in foreground or in background (*-d/--daemon*), and you can force the restart (*-f/--force*).
+Restart a single machine. You can normally restart a machine, in foreground or in background (``-d/--daemon``), and you can force the restart (``-f/--force``).
 
 Force restart will cause a complete `stop` and a complete `start`.
 
@@ -74,7 +74,7 @@ Examples:
 machine run
 +++++++++++
 
-Run a custom command on a single machine by creating a new container. You can run this command in foreground or in background (*-d/--daemon*).
+Run a custom command on a single machine by creating a new container. You can run this command in foreground or in background (``-d/--daemon``).
 
 Examples:
 
@@ -90,7 +90,7 @@ Examples:
 machine exec
 ++++++++++++
 
-Execute a custom command on a **running** container. You can disable the TTY (*--no-tty*) and fetch the return code (*-r/--return-code*).
+Execute a custom command on a **running** container. You can disable the TTY (``--no-tty``) and fetch the return code (``-r/--return-code``).
 
 Examples:
 
@@ -108,7 +108,7 @@ Examples:
 machine shell
 +++++++++++++
 
-Run a shell on a **running** container. You can change the shell executable as a second parameter, and if needed you can *create* the container before running the shell (*-c/--create*).
+Run a shell on a **running** container. You can change the shell executable as a second parameter, and if needed you can *create* the container before running the shell (``-c/--create``).
 
 Examples:
 
@@ -126,7 +126,7 @@ Examples:
 machine logs
 ++++++++++++
 
-View the logs of a **running** container. You can show everything, or get the last lines (*--tail with count parameter*), or even follow the logs (*-f/--follow*).
+View the logs of a **running** container. You can show everything, or get the last lines (``--tail``  with count parameter), or even follow the logs (``-f/--follow``).
 
 Examples:
 
@@ -172,7 +172,7 @@ machine build
 
 Build a machine image. If you have edited the Dockerfile of your image, run this command to rebuild.
 
-The image will automatically be pushed to the local registry, but you can prevent this (*with -d/--do-not-push*). You can also ignore the cache and rebuild everything (*-n/--no-cache*).
+The image will automatically be pushed to the local registry, but you can prevent this ( ``-d/--do-not-push``). You can also ignore the cache and rebuild everything (``-n/--no-cache``).
 
 Examples:
 
@@ -247,7 +247,7 @@ Example:
 config start
 ++++++++++++
 
-Start the machines from the active configuration. You can start these machines in the foreground if needed (*--foreground*).
+Start the machines from the active configuration. You can start these machines in the foreground if needed (``--foreground``).
 
 Examples:
 
@@ -263,7 +263,7 @@ Examples:
 config restart
 ++++++++++++++
 
-Restart the machines from the active configuration. You can restart these machines in the foreground if needed (*--foreground*), and you can *force* the restart by stopping and starting (*-f/--force*).
+Restart the machines from the active configuration. You can restart these machines in the foreground if needed (``--foreground``), and you can *force* the restart by stopping and starting (``-f/--force``).
 
 Examples:
 
@@ -318,7 +318,7 @@ Example:
 config build
 ++++++++++++
 
-Build the machines from the active configuration. As for the `machine build`, you can build without pushing to the local registry (*--do-not-push*), and rebuild without cache (*--no-cache*).
+Build the machines from the active configuration. As for the `machine build`, you can build without pushing to the local registry (``--do-not-push``), and rebuild without cache (``--no-cache``).
 
 Examples:
 
@@ -337,17 +337,81 @@ Examples:
 config create
 +++++++++++++
 
+Create a configuration from a *configuration name*, a *schema name*, an *environment name*, and if needed, a *namespace* (``-n/--namespace``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Build a `test` configuration with the `test_schema` schema and the `test_env` environment.
+    docknv config create test test_schema test_env
+
+    # Build a `test2` configuration with the `test_schema` schema, the `test_env` environment, and the `test` namespace
+    docknv config create test2 test_schema test_env -n test
+
+
 config update
 +++++++++++++
+
+Update a configuration by rerendering templates and re-copying static files. If you do not specify a configuration name, il will update the current configuration. If you do specify a configuration name, il will be updated and set as current.
+
+With the ``-r/--restart`` option, you can automatically stop the target configuration, update it, and restart it. It is more safe on Windows because it did not like updating mount points while the machines are on.
+
+Examples:
+
+.. code-block:: bash
+
+    # Update the current configuration
+    docknv config update
+
+    # Update the `test` configuration and set it as current
+    docknv config update test
+
+    # Update the current configuration by stopping, updating and starting
+    docknv config update -r
+
+    # Update the `test` configuration by stopping, updating and starting
+    docknv config update test -r
+
 
 config set-schema
 +++++++++++++++++
 
+Change the schema for a configuration name.
+
+Example:
+
+.. code-block:: bash
+
+    # Change the schema of a `test` configuration to set the `test_schema2` schema
+    docknv config set-schema test test_schema2
+
+
 config set-env
 ++++++++++++++
 
+Change the environment for a configuration name.
+
+Example:
+
+.. code-block:: bash
+
+    # Change the environment of a `test` configuration to set the `test_env2` environment
+    docknv config set-env test test_env2
+
+
 config rm
 +++++++++
+
+Delete a configuration. If you delete your current configuration, il will be unset.
+
+Example:
+
+.. code-block:: bash
+
+    # Remove the `test` configuration
+    docknv config rm test
+
 
 Bundle commands
 ---------------
@@ -355,17 +419,91 @@ Bundle commands
 bundle start
 ++++++++++++
 
+Start multiple configurations.
+
+Examples:
+
+.. code-block:: bash
+
+    # Start the `test` configuration
+    docknv bundle start test
+    # same as 'docknv config use test; docknv config start'
+
+    # Start the `test` and `test2` configuration
+    docknv bundle start test test2
+
+
 bundle restart
 ++++++++++++++
+
+Restart multiple configurations. You can force the restart (``-f/--force``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Restart the `test` configuration
+    docknv bundle restart test
+    # same as 'docknv config use test; docknv config restart'
+
+    # Restart the `test` configuration with force
+    docknv bundle restart -f test
+    # same as 'docknv config use test; docknv config restart -f'
+
+    # Restart the `test` and `test2` configuration
+    docknv bundle restart test test2
+
 
 bundle stop
 +++++++++++
 
+Stop multiple configurations.
+
+Examples:
+
+.. code-block:: bash
+
+    # Stop the `test` configuration
+    docknv bundle stop test
+    # same as 'docknv config use test; docknv config stop'
+
+    # Stop the `test` and `test2` configuration
+    docknv bundle stop test test2
+
+
 bundle ps
 +++++++++
 
+Check the processes of multiple configurations.
+
+Examples:
+
+.. code-block:: bash
+
+    # Check the processes of the `test` configuration
+    docknv bundle ps test
+    # same as 'docknv config use test; docknv config ps'
+
+    # Check the processes of the `test` and `test2` configurations
+    docknv bundle ps test test2
+
+
 bundle build
 ++++++++++++
+
+Build the machines of multiple configurations. As for the `config build` command, you can build without cache (``--no-cache``), and without pushing to the local registry (``--do-not-push``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Build the machines of the `test` configuration without pushing
+    docknv bundle build --do-not-push test
+    # same as 'docknv config use test; docknv config build --do-not-push'
+
+    # Build the machines of the `test` and `test2` configurations without cache
+    docknv bundle build --no-cache test test2
+
 
 Environment commands
 --------------------
@@ -373,11 +511,28 @@ Environment commands
 env ls
 ++++++
 
+List the available environments for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # List the available environments
+    docknv env ls
+
+
 env show
 ++++++++
 
-env use
-+++++++
+Show the contents of an environment file for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # Show the contents of the `test_env` environment file
+    docknv env show test_env
+
 
 Schema commands
 ---------------
@@ -385,14 +540,44 @@ Schema commands
 schema ls
 +++++++++
 
+List the available schemas for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # List the available schemas
+    docknv schema ls
+
+
 Volume commands
 ---------------
 
 volume ls
 +++++++++
 
+List the named volumes for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # List the named volumes
+    docknv volume ls
+
+
 volume rm
 +++++++++
+
+Remove a named volume.
+
+Example:
+
+.. code-block:: bash
+
+    # Remove the `test` named volume
+    docknv volume rm test
+
 
 User commands
 -------------
@@ -400,8 +585,36 @@ User commands
 user clean
 ++++++++++
 
+Clean the user project files or config for the current project.
+If you do not specify a config name, il will remove all of the current user project configuration.
+
+The user project configuration is located at ``$HOME/.docknv/$PROJECT_NAME``.
+
+Examples:
+
+.. code-block:: bash
+
+    # Remove the `test` user configuration
+    docknv user clean test
+
+    # Remove all of the user project configuration
+    docknv user clean
+
+
 user rm-lock
 ++++++++++++
+
+Remove the user lockfile. If something bad happened and the lockfile persisted, **if you are sure of hat you are doing**, you can safely remove it with this command.
+
+The lockfile is named ``.$UID.lock``.
+
+Example:
+
+.. code-block:: bash
+
+    # Remove the user lockfile
+    docknv user rm-lock
+
 
 Scaffold commands
 -----------------
@@ -409,11 +622,48 @@ Scaffold commands
 scaffold project
 ++++++++++++++++
 
+Create a whole docknv project from scratch, at a given path. The **project name is the path basename**.
+
+It will automatically generate the base folder structure, a ``.gitignore`` and a ``config.yml``.
+
+Example:
+
+.. code-block:: bash
+
+    # Generate an `example` project at /tmp/test/example.
+    docknv scaffold project /tmp/test/example
+
+
 scaffold image
 ++++++++++++++
 
+Create an image entry for the current project. You must specify the image name, the image URL (like ``portainer/portainer`` or ``ubuntu``), and an image tag (by default ``latest``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Create a "portainer" image entry with the "portainer/portainer" url and the "latest" tag
+    docknv scaffold image portainer portainer/portainer
+
+    # Create an "ubuntu" image entry with the "ubuntu" image and the "16.04" tag
+    docknv scaffold image ubuntu ubuntu 16.04
+
+
 scaffold env
 ++++++++++++
+
+Create an environment file from scratch, or inherits from an existing environment file (``-i/--inherit``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Create a `test_env` environment from scratch
+    docknv scaffold env test_env
+    # Create a `test_env2` environment by inheriting from the `default` environment
+    docknv scaffold env test_env2 -i default
+
 
 Registry commands
 -----------------
@@ -421,5 +671,24 @@ Registry commands
 registry start
 ++++++++++++++
 
+Start the local registry.
+
+Example:
+
+.. code-block:: bash
+
+    # Start the local registry
+    docknv registry start
+
+
 registry stop
 +++++++++++++
+
+Stop the local registry.
+
+Example:
+
+.. code-block:: bash
+
+    # Stop the local registry
+    docknv registry stop

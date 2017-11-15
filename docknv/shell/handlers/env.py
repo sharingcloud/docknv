@@ -13,9 +13,6 @@ def _init(subparsers):
     show_cmd = subs.add_parser("show", help="show an environment file")
     show_cmd.add_argument("env_name", help="environment file name (debug, etc.)")
 
-    use_cmd = subs.add_parser("use", help="set env and render templates")
-    use_cmd.add_argument("env_name", help="environment file name (debug, etc.)")
-
 
 def _handle(args):
     return exec_handler("env", args, globals())

@@ -58,6 +58,7 @@ def _init(subparsers):
     # Update
     update_cmd = subs.add_parser("update", help="update a known configuration")
     update_cmd.add_argument("name", help="configuration name", nargs="?", default=None)
+    update_cmd.add_argument("-r", "--restart", help="automatically stop, update, and start")
 
     # Set schema
     set_schema_cmd = subs.add_parser("set-schema", help="change a configuration schema")
@@ -136,17 +137,21 @@ def _handle_set_env(args):
 
 
 def _handle_update(args):
-    if args.name is None:
+    config_name = args.name
+    if config_name is None:
         config = project_handler.project_get_active_configuration(".")
         if not config:
             Logger.error(
                 "No configuration selected. Use 'docknv config use [configuration]' to select a configuration.",
-                crash=False)
-        else:
-            project_handler.project_generate_compose_from_configuration(".", config)
+                crash=True)
 
+    if args.restart:
+        with user_handler.user_try_lock("."):
+            lifecycle_handler.lifecycle_schema_stop(".")
+            project_handler.project_generate_compose_from_configuration(".", config_name)
+            lifecycle_handler.lifecycle_schema_start(".")
     else:
-        return project_handler.project_generate_compose_from_configuration(".", args.name)
+        return project_handler.project_generate_compose_from_configuration(".", config_name)
 
 
 def _handle_status(args):

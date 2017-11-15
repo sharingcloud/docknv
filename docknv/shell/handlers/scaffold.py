@@ -13,12 +13,10 @@ def _init(subparsers):
 
     image_cmd = subs.add_parser("image", help="scaffold an image Dockerfile")
     image_cmd.add_argument("image_name", help="image name")
+    image_cmd.add_argument("image_url",
+                           help="image url (Docker style path)")
     image_cmd.add_argument("image_tag",
-                           help="image tag (Docker style path)",
-                           nargs="?",
-                           default=None)
-    image_cmd.add_argument("image_version",
-                           help="image version (default: latest)",
+                           help="image tag (default: latest)",
                            nargs="?",
                            default="latest")
 
@@ -36,7 +34,7 @@ def _handle_project(args):
 
 
 def _handle_image(args):
-    return scaffolder.scaffold_image(".", args.image_name, args.image_tag, args.image_version)
+    return scaffolder.scaffold_image(".", args.image_name, args.image_url, args.image_tag)
 
 
 def _handle_env(args):
