@@ -268,7 +268,10 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     """
     from docknv.schema_handler import schema_get_configuration
     from docknv.template_renderer import renderer_render_compose_template
-    from docknv.environment_handler import env_yaml_check_file, env_yaml_load_in_memory
+    from docknv.environment_handler import (
+        env_yaml_check_file, env_yaml_load_in_memory,
+        env_yaml_resolve_variables
+    )
     from docknv.user_handler import user_get_id
 
     from docknv.session_handler import (
@@ -303,6 +306,7 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
         Logger.error("Environment file `{0}` does not exist.".format(environment))
 
     env_content = env_yaml_load_in_memory(project_path, environment)
+    env_content = env_yaml_resolve_variables(env_content)
 
     # Get schema configuration
     schema_config = schema_get_configuration(config_data, schema_name)
@@ -327,6 +331,7 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     output_compose_file = project_get_composefile(project_path, config_name)
     if not os.path.exists(output_compose_file):
         create_path_tree(os.path.dirname(output_compose_file))
+
     composefile_write(namespaced_content, output_compose_file)
 
     if not update:

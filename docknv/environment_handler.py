@@ -46,6 +46,7 @@ def env_yaml_show(project_path, name):
     :param name:             Environment file name (str)
     """
     loaded_env = env_yaml_load_in_memory(project_path, name)
+    loaded_env = env_yaml_resolve_variables(loaded_env)
 
     Logger.info("Showing environment file `{0}`:".format(name))
     for key in loaded_env:

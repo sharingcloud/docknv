@@ -139,8 +139,8 @@ def _handle_set_env(args):
 def _handle_update(args):
     config_name = args.name
     if config_name is None:
-        config = project_handler.project_get_active_configuration(".")
-        if not config:
+        config_name = project_handler.project_get_active_configuration(".")
+        if not config_name:
             Logger.error(
                 "No configuration selected. Use 'docknv config use [configuration]' to select a configuration.",
                 crash=True)
