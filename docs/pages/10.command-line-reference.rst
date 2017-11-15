@@ -356,7 +356,7 @@ config update
 
 Update a configuration by rerendering templates and re-copying static files. If you do not specify a configuration name, il will update the current configuration. If you do specify a configuration name, il will be updated and set as current.
 
-With the ``-r/--restart`` option, you can automatically stop the target configuration, update it, and restart it. It is more safe on Windows because it did not like updating mount points while the machines are on.
+With the ``-r/--restart`` option, you can automatically stop the target configuration, update it, and restart it. It is safer on Windows because it did not like updating mount points while the machines are on.
 
 Examples:
 
