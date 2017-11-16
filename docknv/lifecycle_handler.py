@@ -259,10 +259,8 @@ def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", 
     :param namespace_name:       Namespace name (str?) (default: None)
     :param create:               Create the container (bool) (default: False)
     """
-    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-
     if create:
-        lifecycle_machine_run(project_path, machine_name, shell_path, namespace_name)
+        lifecycle_machine_run(project_path, machine_name, shell_path, namespace_name=namespace_name)
     else:
         lifecycle_machine_exec(project_path, machine_name, shell_path, False, False,  namespace_name=namespace_name)
 

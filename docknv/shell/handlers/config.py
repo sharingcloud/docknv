@@ -58,7 +58,7 @@ def _init(subparsers):
     # Update
     update_cmd = subs.add_parser("update", help="update a known configuration")
     update_cmd.add_argument("name", help="configuration name", nargs="?", default=None)
-    update_cmd.add_argument("-r", "--restart", help="automatically stop, update, and start")
+    update_cmd.add_argument("-r", "--restart", action="store_true", help="automatically stop, update, and start")
 
     # Set schema
     set_schema_cmd = subs.add_parser("set-schema", help="change a configuration schema")
