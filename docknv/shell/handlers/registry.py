@@ -11,6 +11,7 @@ def _init(subparsers):
 
     start_cmd = subs.add_parser("start", help="start registry")
     start_cmd.add_argument("-p", "--path", help="storage path", nargs="?", default=None)
+
     subs.add_parser("stop", help="stop registry")
 
 

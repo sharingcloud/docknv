@@ -439,7 +439,7 @@ Examples:
 bundle restart
 ++++++++++++++
 
-Restart multiple configurations. You can force the restart (``-f/--force``).
+Restart multiple configurations. You can force the restart (``-f/--force``), and restart in foreground (``--foreground``).
 
 Examples:
 
@@ -449,9 +449,9 @@ Examples:
     docknv bundle restart test
     # same as 'docknv config use test; docknv config restart'
 
-    # Restart the `test` configuration with force
-    docknv bundle restart -f test
-    # same as 'docknv config use test; docknv config restart -f'
+    # Restart the `test` configuration with force and in foreground
+    docknv bundle restart -f --foreground test
+    # same as 'docknv config use test; docknv config restart -f --foreground'
 
     # Restart the `test` and `test2` configuration
     docknv bundle restart test test2

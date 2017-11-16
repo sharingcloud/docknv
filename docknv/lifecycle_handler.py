@@ -101,10 +101,11 @@ def lifecycle_schema_restart(project_path, foreground=False, force=False):
     Restart a schema.
 
     :param project_path:     Project path (str)
+    :param foreground:       Run in foreground (bool) (default: False)
+    :param force:            Force restart (bool) (default: False)
     """
     if not force:
-        d_cmd = "-d" if not foreground else ""
-        exec_compose_pretty(project_path, ["restart", d_cmd])
+        exec_compose_pretty(project_path, ["restart"])
     else:
         lifecycle_schema_stop(project_path)
         lifecycle_schema_start(project_path, foreground)
@@ -144,12 +145,13 @@ def lifecycle_bundle_start(project_path, config_names):
             lifecycle_schema_start(project_path)
 
 
-def lifecycle_bundle_restart(project_path, config_names, force=False):
+def lifecycle_bundle_restart(project_path, config_names, foreground=False, force=False):
     """
     Restart multiple configurations.
 
     :param project_path:     Project path (str)
     :param config_names:     Config names (iterable)
+    :param foreground:       Run in foreground (bool) (default: False)
     :param force:            Force restart (bool) (default: False)
     """
     from docknv.session_handler import session_check_bundle_configurations
@@ -158,7 +160,7 @@ def lifecycle_bundle_restart(project_path, config_names, force=False):
     session_check_bundle_configurations(project_path, config_names)
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
-            lifecycle_schema_restart(project_path, force)
+            lifecycle_schema_restart(project_path, foreground=foreground, force=force)
 
 
 def lifecycle_bundle_ps(project_path, config_names):
