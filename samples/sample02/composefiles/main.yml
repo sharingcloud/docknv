@@ -3,7 +3,7 @@ version: "3"
 # Services
 services:
 
-  # Portainer service: Docker web interface
+  # IPython service
   ipython:
     build: images/ipython/
     # Image tag

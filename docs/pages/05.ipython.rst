@@ -1,0 +1,219 @@
+Practical example: IPython Notebook
+===================================
+
+There is a practical example bundled with docknv, a project that starts a IPython Notebook, with persistent storage for
+the notebooks. It is located in the ``samples/sample02`` folder.
+
+It is quite simple and understandable enough to help you grasp the docknv fundamentals.
+
+The project has the following structure::
+
+    commands/
+      | __init__.py
+      |	notebook.py                         # Contains the 'notebook' command
+    composefiles/
+      | main.yml                            # Main Docker Compose YML file
+    data/
+      | files/
+        | ipython/
+          | startup/
+            | 00-first.ipy                  # Contains the startup script of IPython
+          | ipython_config.py.j2            # Contains the main configuration of IPython
+          | ipython_notebook_config.py.j2   # Contains the main configuration of IPython Notebook
+        | shared/
+          | notebooks/                      # Notebooks folder
+            | .gitkeep
+    envs/
+      | default.env.yml                     # Main environment file
+    images/
+      | ipython/
+        | Dockerfile                        # IPython Dockerfile
+    config.yml                              # docknv configuration file
+
+1. Structure details
+--------------------
+
+a. Environments
++++++++++++++++
+
+The ``default.env.yml`` environment is really simple, only composed of two environment variables:
+
+.. code-block:: yaml
+
+    environment:
+      IPYTHON_OUTPUT_PORT: 8888
+      PASSWORD_HASH: sha1:6aa977056539:28a155481d26cb31c93f507f1423fe2c6f30a49e
+
+
+These variables define the host output port (``IPYTHON_OUTPUT_PORT``) and the hashed password needed to connect to the IPython Notebook (``PASSWORD_HASH``).
+
+The ``IPYTHON_OUTPUT_PORT`` variable is used in the main *composefile* ``main.yml``.
+The ``PASSWORD_HASH`` value is used in the ``ipython_notebook_config.py.j2`` configuration template.
+
+
+b. Images
++++++++++
+
+Only one image is included in the project: the ``ipython`` custom image.
+
+The ``Dockerfile`` is also quite simple:
+
+- It starts from Ubuntu Trusty (``ubuntu:14.04``)
+- Then, it updates the repositories (``apt-get update -y``)
+- It fetches the needed *apt* packages (``apt-get install python-dev python-pip ipython-notebook vim graphviz -y``)
+- It fetches the needed *pip* packages (``pip install graphviz``)
+- It sets the running command (``ipython notebook --profile=nbserver``)
+- Then finally, it exposes the ``8888`` port.
+
+
+c. Data
++++++++
+
+The included data is split in two folders: the ``ipython`` folder, and the ``shared`` folder.
+
+The ``ipython`` folder contains the **templates and static files** to be used with the ``ipython`` service.
+The ``shared`` folder contains the **shared files** between the host and the containers of the project. In this case, it will contains the notebooks.
+
+**ipython/startup/00-first.ipy**
+
+This file contains the startup script for a IPython shell and a IPython Notebook.
+
+.. code-block:: python
+
+    %load_ext autoreload
+    %autoreload 2
+
+It enables the autoreload functionality. If you are currently in a shell or notebook and if you changed Python files you have already imported, it will be autoreloaded without having to exit and re-enter the shell or notebook.
+
+**ipython/ipython_config.py.j2**
+
+This Jinja2 configuration template file contains the base configuration of IPython. If we want to parameterize features of IPython with environment variables, we can use them in this file.
+
+**ipython/ipython_notebook_config.py.j2**
+
+Same as the previous file, but for the IPython Notebook. This template includes the ``PASSWORD_HASH`` environment variable for the ``c.NotebookApp.password`` key.
+
+.. code-block:: python
+
+    c.NotebookApp.password = u'{{ PASSWORD_HASH }}'
+
+
+
+d. Composefiles
++++++++++++++++
+
+This project only include a single Docker Compose YML file: ``main.yml``.
+
+Here is the content:
+
+.. code-block:: yaml
+
+    version: "3"
+
+    # Services
+    services:
+
+      # IPython service
+      ipython:
+        build: images/ipython/
+        # Image tag
+        image: localhost:5000/sample02_ipython
+        volumes:
+          static:
+            - ipython/startup:/root/.ipython/profile_nbserver/startup
+          templates:
+            - ipython/ipython_config.py.j2:/root/.ipython/profile_nbserver/ipython_config.py
+            - ipython/ipython_notebook_config.py.j2:/root/.ipython/profile_nbserver/ipython_notebook_config.py
+          shared:
+            - shared/notebooks:/notebooks
+        ports:
+          - "{{ IPYTHON_OUTPUT_PORT }}:8888"
+        networks:
+          net:
+
+        restart: on-failure
+
+    networks:
+      net:
+
+This template defines a single service, named ``ipython``, with an image linked at ``images/ipython``, tagged as ``localhost:5000/sample02_ipython``. This tag will allow the image to be send to a *local Docker registry*.
+
+It is linked to one *static folder volume*, two *template file volumes* and one *shared folder volume*, previously seen in the **Data** section.
+
+We redirect the host port using the ``IPYTHON_OUTPUT_PORT`` declared in the environment file, link the service to a ``net`` network, and activate the auto-restart on failure for the service.
+
+
+e. Configuration
+++++++++++++++++
+
+Now that we have seen almost every components of the project, we can check the docknv configuration file: ``config.yml``.
+
+.. code-block:: yaml
+
+    composefiles:
+      - composefiles/main.yml
+
+    commands:
+      notebook:
+        machine: ipython
+
+    schemas:
+      standard:
+        services:
+          - ipython
+        networks:
+          - net
+
+
+It uses the ``main.yml`` composefile, defines parameters for the ``notebook`` command (more info in the `f. Commands`_ section), and defines the ``standard`` schema, composed of the ``ipython`` service and the ``net`` network.
+
+
+f. Commands
++++++++++++
+
+One custom command in included with the project: the ``notebook`` command.
+
+It adds the ``notebook password`` action, that can be used to generate a custom password hash for a known plain-text password, in an interactive shell.
+
+You can then use this hashed password to replace the ``PASSWORD_HASH`` value of the default environment file, or even better, override the ``PASSWORD_HASH`` in an inherited environment file. (see the `Environment <03.environment.html>`_ section in the documentation for more information about the environment inheritance).
+
+2. Execution
+------------
+
+You should know everything about this project by now, so we can finally try to run the project.
+
+If we list the environments (``docknv env ls``), there only should be the ``default`` environment.
+If we list the schemas (``docknv schema ls``), there only should be the ``standard`` environment.
+Then if we list the configurations (``docknv config ls``), none should appear.
+
+If you do not have a local registry set up, begin with the ``docknv registry start`` command. You can check if the registry is up by executing ``docker ps`` and checking the ``registry`` entry.
+
+To start the project, we have to create a configuration, to link it to an environment, a schema, and optionally a namespace. In this case we will not use a namespace because we will not have concurrent executions.
+
+.. code-block:: bash
+
+    # Create a configuration named 'app', using the 'standard' schema and the 'default'
+    # environment file
+    docknv config create app standard default
+
+
+Now that the configuration is created, it should be set as **active**. You can check it with ``docknv config status``. If it shows ``app``, you can continue.
+
+The next step is the building, you have to execute the ``docknv config build`` command.
+
+.. code-block:: bash
+
+    # Build the images from the active configuration
+    docknv config build
+
+Finally, you can start the configuration.
+
+.. code-block:: bash
+
+    # Start everything!
+    docknv config start
+
+Once the command is finished, check the processes with the ``docknv config ps`` command.
+If everything is okay, you should now be able to connect to `http://localhost:8888 <http://localhost:8888>`_ and access the IPython Notebook!
+
+PS: The default IPython Notebook password is: ``adminadmin``
