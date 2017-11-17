@@ -530,6 +530,25 @@ Example:
     docknv env show test_env
 
 
+env edit
+++++++++
+
+Edit or create an environment file for the project.
+By default, it will open the ``atom`` editor. If you no not have ``atom``, you can specify another editor (``-e/--editor``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Edit an existing `test_env` environment file with `atom`
+    docknv env edit test_env
+
+    # Create a new `test_env2` environment file with `atom`
+    docknv env edit test_env2
+
+    # Edit an existing `test_env` environment file with `vim`
+    docknv env edit test_env -e vim # or --editor vim
+
 ---------------------------------
 
 Schema commands
