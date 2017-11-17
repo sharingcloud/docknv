@@ -26,12 +26,10 @@ def _init(subparsers):
     use_cmd.add_argument("name", help="configuration name")
 
     # Start
-    start_cmd = subs.add_parser("start", help="boot machines from schema")
-    start_cmd.add_argument("--foreground", action="store_true", help="start in foreground")
+    subs.add_parser("start", help="boot machines from schema")
 
     # Restart
     restart_cmd = subs.add_parser("restart", help="restart machines from schema")
-    restart_cmd.add_argument("--foreground", action="store_true", help="restart in foreground")
     restart_cmd.add_argument("-f", "--force", action="store_true", help="force restart")
 
     # Stop
@@ -80,7 +78,8 @@ def _handle(args):
 
 
 def _handle_build(args):
-    return lifecycle_handler.lifecycle_schema_build(".", args.no_cache, not args.do_not_push)
+    return lifecycle_handler.lifecycle_schema_build(
+        ".", no_cache=args.no_cache, push_to_registry=not args.do_not_push)
 
 
 def _handle_ls(args):
@@ -89,7 +88,7 @@ def _handle_ls(args):
 
 def _handle_start(args):
     with user_handler.user_try_lock("."):
-        return lifecycle_handler.lifecycle_schema_start(".", foreground=args.foreground)
+        return lifecycle_handler.lifecycle_schema_start(".")
 
 
 def _handle_stop(args):
@@ -99,7 +98,7 @@ def _handle_stop(args):
 
 def _handle_restart(args):
     with user_handler.user_try_lock("."):
-        return lifecycle_handler.lifecycle_schema_restart(".", args.foreground, args.force)
+        return lifecycle_handler.lifecycle_schema_restart(".", force=args.force)
 
 
 def _handle_ps(args):

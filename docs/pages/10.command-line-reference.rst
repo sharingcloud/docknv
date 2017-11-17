@@ -24,17 +24,14 @@ Machine commands
 machine start
 +++++++++++++
 
-Start a single machine, in foreground or in background (``-d/--daemon``).
+Start a single machine.
 
-Examples:
+Example:
 
 .. code-block:: bash
 
     # Start the `test` machine in foreground
     docknv machine start test
-
-    # Start the `test` machine in background
-    docknv machine start test -d # or --daemon
 
 
 machine stop
@@ -53,7 +50,7 @@ Example:
 machine restart
 +++++++++++++++
 
-Restart a single machine. You can normally restart a machine, in foreground or in background (``-d/--daemon``), and you can force the restart (``-f/--force``).
+Restart a single machine. You can normally restart a machine, and you can force the restart (``-f/--force``).
 
 Force restart will cause a complete `stop` and a complete `start`.
 
@@ -61,14 +58,11 @@ Examples:
 
 .. code-block:: bash
 
-    # Restart the `test` machine in foreground
+    # Restart the `test` machine
     docknv machine restart test
 
-    # Restart the `test` machine in background
-    docknv machine restart test -d # or --daemon
-
-    # Force restart the `test` machine in background
-    docknv machine restart test -f -d # or --force --daemon
+    # Force restart the `test` machine
+    docknv machine restart test -f # or --force
 
 
 machine run
@@ -248,23 +242,20 @@ Example:
 config start
 ++++++++++++
 
-Start the machines from the active configuration. You can start these machines in the foreground if needed (``--foreground``).
+Start the machines from the active configuration.
 
-Examples:
+Example:
 
 .. code-block:: bash
 
-    # Start the current configuration in background (default)
+    # Start the current configuration
     docknv config start
-
-    # Start the current configuration in foreground
-    docknv config start --foreground
 
 
 config restart
 ++++++++++++++
 
-Restart the machines from the active configuration. You can restart these machines in the foreground if needed (``--foreground``), and you can *force* the restart by stopping and starting (``-f/--force``).
+Restart the machines from the active configuration. You can *force* the restart by stopping and starting (``-f/--force``).
 
 Examples:
 
@@ -273,8 +264,8 @@ Examples:
     # Restart the current configuration
     docknv config restart
 
-    # Force restart the current configuration and put in foreground
-    docknv config restart --foreground -f # or --force
+    # Force restart the current configuration
+    docknv config restart -f # or --force
 
 
 config stop
@@ -439,7 +430,7 @@ Examples:
 bundle restart
 ++++++++++++++
 
-Restart multiple configurations. You can force the restart (``-f/--force``), and restart in foreground (``--foreground``).
+Restart multiple configurations. You can force the restart (``-f/--force``).
 
 Examples:
 
@@ -449,9 +440,9 @@ Examples:
     docknv bundle restart test
     # same as 'docknv config use test; docknv config restart'
 
-    # Restart the `test` configuration with force and in foreground
-    docknv bundle restart -f --foreground test
-    # same as 'docknv config use test; docknv config restart -f --foreground'
+    # Restart the `test` configuration with force
+    docknv bundle restart -f test
+    # same as 'docknv config use test; docknv config restart -f'
 
     # Restart the `test` and `test2` configuration
     docknv bundle restart test test2

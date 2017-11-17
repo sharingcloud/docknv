@@ -16,7 +16,6 @@ def _init(subparsers):
 
     start_cmd = subs.add_parser("start", help="start a container")
     start_cmd.add_argument("machine", help="machine name")
-    start_cmd.add_argument("-d", "--daemon", action="store_true", help="run in background")
 
     stop_cmd = subs.add_parser("stop", help="stop a container")
     stop_cmd.add_argument("machine", help="machine name")
@@ -24,7 +23,6 @@ def _init(subparsers):
     restart_cmd = subs.add_parser("restart", help="restart a container")
     restart_cmd.add_argument("machine", help="machine name")
     restart_cmd.add_argument("-f", "--force", action="store_true", help="force restart")
-    restart_cmd.add_argument("-d", "--daemon", action="store_true", help="run in background")
 
     run_cmd = subs.add_parser("run", help="run a command on a container")
     run_cmd.add_argument("machine", help="machine name")
@@ -35,7 +33,6 @@ def _init(subparsers):
     exec_cmd.add_argument("machine", help="machine name")
     exec_cmd.add_argument("run_command", help="command to run")
     exec_cmd.add_argument("--no-tty", help="disable tty", action="store_true")
-    exec_cmd.add_argument("-r", "--return-code", help="forward ret code", action="store_true")
 
     shell_cmd = subs.add_parser("shell", help="run shell")
     shell_cmd.add_argument("machine", help="machine name")
@@ -74,28 +71,34 @@ def _handle_build(args):
     context = command_handler.command_get_context(".")
     namespace_name = context.namespace_name
     return lifecycle_handler.lifecycle_machine_build(
-        ".", args.machine, args.no_cache, not args.do_not_push, namespace_name)
+        ".", args.machine,
+        no_cache=args.no_cache,
+        push_to_registry=not args.do_not_push,
+        namespace_name=namespace_name)
 
 
 def _handle_run(args):
     context = command_handler.command_get_context(".")
     namespace_name = context.namespace_name
     return lifecycle_handler.lifecycle_machine_run(
-        ".", args.machine, args.run_command, daemon=args.daemon, namespace_name=namespace_name)
+        ".", args.machine, args.run_command,
+        daemon=args.daemon, namespace_name=namespace_name)
 
 
 def _handle_exec(args):
     context = command_handler.command_get_context(".")
     namespace_name = context.namespace_name
     return lifecycle_handler.lifecycle_machine_exec(
-        ".", args.machine, args.run_command, args.no_tty, args.return_code, namespace_name)
+        ".", args.machine, args.run_command,
+        no_tty=args.no_tty, namespace_name=namespace_name)
 
 
 def _handle_shell(args):
     context = command_handler.command_get_context(".")
     namespace_name = context.namespace_name
     return lifecycle_handler.lifecycle_machine_shell(
-        ".", args.machine, args.shell, namespace_name, args.create)
+        ".", args.machine, shell_path=args.shell,
+        namespace_name=namespace_name, create=args.create)
 
 
 def _handle_restart(args):
@@ -103,7 +106,9 @@ def _handle_restart(args):
     namespace_name = context.namespace_name
     with user_handler.user_try_lock("."):
         return lifecycle_handler.lifecycle_machine_restart(
-            ".", args.machine, args.force, namespace_name)
+            ".", args.machine,
+            force=args.force,
+            namespace_name=namespace_name)
 
 
 def _handle_stop(args):
@@ -111,7 +116,7 @@ def _handle_stop(args):
     namespace_name = context.namespace_name
     with user_handler.user_try_lock("."):
         return lifecycle_handler.lifecycle_machine_stop(
-            ".", args.machine, namespace_name)
+            ".", args.machine, namespace_name=namespace_name)
 
 
 def _handle_start(args):
@@ -119,28 +124,29 @@ def _handle_start(args):
     namespace_name = context.namespace_name
     with user_handler.user_try_lock("."):
         return lifecycle_handler.lifecycle_machine_start(
-            ".", args.machine, namespace_name)
+            ".", args.machine, namespace_name=namespace_name)
 
 
 def _handle_push(args):
     context = command_handler.command_get_context(".")
     namespace_name = context.namespace_name
     return lifecycle_handler.lifecycle_machine_push(
-        ".", args.machine, args.host_path, args.container_path, namespace_name)
+        ".", args.machine, args.host_path, args.container_path, namespace_name=namespace_name)
 
 
 def _handle_pull(args):
     context = command_handler.command_get_context(".")
     namespace_name = context.namespace_name
     return lifecycle_handler.lifecycle_machine_pull(
-        ".", args.machine, args.container_path, args.host_path, namespace_name)
+        ".", args.machine, args.container_path, args.host_path, namespace_name=namespace_name)
 
 
 def _handle_logs(args):
     context = command_handler.command_get_context(".")
     namespace_name = context.namespace_name
     return lifecycle_handler.lifecycle_machine_logs(
-        ".", args.machine, tail=args.tail, follow=args.follow, namespace_name=namespace_name)
+        ".", args.machine,
+        tail=args.tail, follow=args.follow, namespace_name=namespace_name)
 
 
 def _handle_freeze(args):

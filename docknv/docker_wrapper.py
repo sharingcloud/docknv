@@ -1,11 +1,9 @@
 """Docker commands wrapper."""
 
-import os
 import subprocess
-
 import six
 
-from docknv.logger import Logger, Fore
+from docknv.logger import Logger
 
 
 def get_docker_container(project_path, machine):
@@ -42,13 +40,9 @@ def exec_docker(project_path, args):
     :param project_path:     Project path (str)
     :param args:             Arguments (...)
     """
-    if os.name == 'nt':
-        commands = "cd {0} & docker {1}".format(project_path, " ".join(args))
-    else:
-        commands = "cd {0}; docker {1}; cd - > /dev/null".format(
-            project_path, " ".join(args))
-
-    os.system(commands)
+    cmd = ["docker", *[str(a) for a in args]]
+    Logger.debug("Executing docker command: {0}".format(cmd))
+    return subprocess.call(cmd, cwd=project_path)
 
 
 def exec_compose(project_path, args):
@@ -64,14 +58,9 @@ def exec_compose(project_path, args):
     config = project_read(project_path)
 
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
-        if os.name == 'nt':
-            commands = "cd {0} & docker-compose -f {1} {2}".format(
-                project_path, user_file, " ".join(args))
-        else:
-            commands = "cd {0}; docker-compose -f {1} {2}; cd - > /dev/null".format(project_path, user_file,
-                                                                                    " ".join(args))
-
-        os.system(commands)
+        cmd = ["docker-compose", "-f", user_file, *[str(a) for a in args]]
+        Logger.debug("Executing compose command: {0}".format(cmd))
+        return subprocess.call(cmd, cwd=project_path)
 
 
 def exec_compose_pretty(project_path, args):
@@ -89,10 +78,11 @@ def exec_compose_pretty(project_path, args):
     config = project_read(project_path)
 
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
-        cmd = "docker-compose -f {0} {1}".format(user_file, " ".join(args))
+        cmd = ["docker-compose", "-f", user_file, *[str(a) for a in args]]
 
-        proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                shell=True, universal_newlines=True)
+        Logger.debug("Executing (pretty) compose command: {0}".format(cmd))
+        proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 
         while True:
             out = proc.stdout.readline()
@@ -100,22 +90,28 @@ def exec_compose_pretty(project_path, args):
                 break
             if out:
                 out = out.strip()
-                if _pretty_handler_new(out):
+                if _pretty_handler(args, out):
                     Logger.info(out)
+
         rc = proc.poll()
+        return rc
 
-        Logger.debug("Return code: {0}".format(rc))
+
+def _pretty_handler(args, line):
+    action = args[0]
+    if not _pretty_handler_common(line):
+        return False
+
+    if action in ["start", "stop", "restart"]:
+        if not _pretty_handler_network(line):
+            return False
+
+    return True
 
 
-def _pretty_handler_new(line):
+def _pretty_handler_common(line):
     # Ignore swarm warning
     if "Compose does not support 'deploy'" in line:
-        return False
-
-    elif line.startswith("Network") and line.endswith("not found."):
-        return False
-
-    elif line.startswith("network") and line.endswith("has active endpoints"):
         return False
 
     elif line.startswith("Found orphan containers"):
@@ -124,10 +120,20 @@ def _pretty_handler_new(line):
     elif line == "":
         return False
 
-    elif line.startswith("Removing network"):
+    elif line.startswith("\x1b"):
         return False
 
-    elif line.startswith("\x1b"):
+    return True
+
+
+def _pretty_handler_network(line):
+    if line.startswith("Network") and line.endswith("not found."):
+        return False
+
+    elif line.startswith("network") and line.endswith("has active endpoints"):
+        return False
+
+    elif line.startswith("Removing network"):
         return False
 
     return True
