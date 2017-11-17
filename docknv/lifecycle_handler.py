@@ -1,5 +1,7 @@
 """docknv machines and schema lifecycle handling."""
 
+import shlex
+
 from docknv.logger import Logger, Fore, Style
 from docknv.docker_wrapper import (
     exec_compose, exec_compose_pretty, get_docker_container,
@@ -320,7 +322,7 @@ def lifecycle_machine_run(project_path, machine_name, command, daemon=False, nam
 
     d_cmd = "-d" if daemon else ""
 
-    return exec_compose(project_path, ["run", "--rm", "--service-ports", d_cmd, machine_name, command])
+    return exec_compose(project_path, ["run", "--rm", "--service-ports", d_cmd, machine_name, *shlex.split(command)])
 
 
 def lifecycle_machine_push(project_path, machine_name, host_path, container_path, namespace_name=None):
@@ -381,7 +383,7 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
         Logger.error("Machine `{0}` is not running.".format(machine_name))
     else:
         tty_cmd = "-ti" if not no_tty else ""
-        cmd = ["exec", tty_cmd, container, command]
+        cmd = ["exec", tty_cmd, container, *shlex.split(command)]
         code = exec_docker(project_path, cmd)
         if code != 0:
             Logger.error("Error while executing command {0} on machine {1}".format(
@@ -411,7 +413,7 @@ def lifecycle_machine_exec_multiple(project_path, machine_name, commands, no_tty
         code = 0
         for command in commands:
             tty_cmd = "-ti" if not no_tty else ""
-            code = exec_docker(project_path, ["exec", tty_cmd, container, command])
+            code = exec_docker(project_path, ["exec", tty_cmd, container, *shlex.split(command)])
             if code != 0:
                 break
 
