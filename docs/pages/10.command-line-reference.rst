@@ -549,6 +549,26 @@ Examples:
     # Edit an existing `test_env` environment file with `vim`
     docknv env edit test_env -e vim # or --editor vim
 
+
+env convert
++++++++++++
+
+Convert an environment file from the old Python format to the new YAML format.
+If you convert a Python environment with an **import directive**, do not forget to also convert the imported Python environment.
+
+The new YAML file will be in the environment folder (``envs``), with the ``.env.yml`` extension.
+
+Example:
+
+.. code-block:: bash
+
+    # Convert a `old_test` Python environment file to the YAML format
+    docknv env convert old_test
+
+    # Convert a `old_default` Python environment file to the YAML format
+    docknv env convert old_default
+
+
 ---------------------------------
 
 Schema commands

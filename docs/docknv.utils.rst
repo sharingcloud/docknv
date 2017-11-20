@@ -4,6 +4,14 @@ docknv\.utils package
 Submodules
 ----------
 
+docknv\.utils\.deprecated module
+--------------------------------
+
+.. automodule:: docknv.utils.deprecated
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 docknv\.utils\.diff\_system module
 ----------------------------------
 

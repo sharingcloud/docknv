@@ -19,19 +19,26 @@ def _init(subparsers):
     edit_cmd.add_argument("env_name", help="environment file name")
     edit_cmd.add_argument("-e", "--editor", nargs="?", default="atom", help="editor to use (default: atom)")
 
+    convert_cmd = subs.add_parser("convert", help="convert an old Python environment to the new format")
+    convert_cmd.add_argument("env_name", help="environment file name")
+
 
 def _handle(args):
     return exec_handler("env", args, globals())
 
 
 def _handle_ls(args):
-    return environment_handler.env_yaml_list(".")
+    environment_handler.env_yaml_list(".")
 
 
 def _handle_show(args):
-    return environment_handler.env_yaml_show(".", args.env_name)
+    environment_handler.env_yaml_show(".", args.env_name)
 
 
 def _handle_edit(args):
     path = environment_handler.env_get_yaml_path(".", args.env_name)
     return subprocess.call([args.editor, path], shell=True)
+
+
+def _handle_convert(args):
+    environment_handler.env_yaml_convert(".", args.env_name)

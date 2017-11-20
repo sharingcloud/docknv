@@ -6,7 +6,14 @@ from docknv.environment_handler import (
     env_yaml_load_in_memory,
     env_yaml_resolve_variables,
     env_yaml_inherits,
-    env_get_yaml_path
+    env_get_yaml_path,
+    env_get_py_path,
+    env_yaml_convert
+)
+
+from docknv.tests.utils import (
+    using_temporary_directory,
+    copy_sample
 )
 
 
@@ -82,6 +89,35 @@ def test_yaml_resolve_variables():
     assert resolved_env["VAR_SUB_TEST"] == "pouet"
     assert resolved_env["CONCAT_EXAMPLE"] == "Hello pouet"
     assert resolved_env["DOUBLE_CONCAT_EXAMPLE"] == "hi + hi = hihi"
+
+
+def test_yaml_convert():
+    """Convert a Python environment file in YAML."""
+    with using_temporary_directory() as tempdir:
+        project_path = copy_sample("sample01", tempdir)
+
+        old_default = env_get_py_path(project_path, "old-default")
+        old_test = env_get_py_path(project_path, "old-test")
+
+        assert os.path.exists(old_default)
+        assert os.path.exists(old_test)
+
+        new_default = env_get_yaml_path(project_path, "old-default")
+        new_test = env_get_yaml_path(project_path, "old-test")
+
+        assert not os.path.exists(new_default)
+        assert not os.path.exists(new_test)
+
+        converted_default, default_yaml_data = env_yaml_convert(project_path, "old-default")
+        converted_test, test_yaml_data = env_yaml_convert(project_path, "old-test")
+
+        assert converted_default == new_default
+        assert converted_test == new_test
+
+        assert "imports" in test_yaml_data
+        assert "old-default" in test_yaml_data["imports"]
+
+        assert "imports" not in default_yaml_data
 
 
 def test_yaml_inherits():
