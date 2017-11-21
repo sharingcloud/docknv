@@ -44,7 +44,6 @@ def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
     rcode = 0
     for service in schema_config["config"]["services"]:
         service_name = "{0}_{1}".format(namespace, service) if namespace != "default" else service
-
         no_cache_cmd = "--no-cache" if no_cache else ""
         rcode = exec_compose_pretty(project_path, ["build", service_name, no_cache_cmd])
         if rcode != 0:

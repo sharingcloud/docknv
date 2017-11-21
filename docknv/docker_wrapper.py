@@ -40,7 +40,7 @@ def exec_docker(project_path, args):
     :param project_path:     Project path (str)
     :param args:             Arguments (...)
     """
-    cmd = ["docker", *[str(a) for a in args]]
+    cmd = ["docker", *[str(a) for a in args if a != ""]]
     Logger.debug("Executing docker command: {0}".format(cmd))
     return subprocess.call(cmd, cwd=project_path)
 
@@ -58,7 +58,7 @@ def exec_compose(project_path, args):
     config = project_read(project_path)
 
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
-        cmd = ["docker-compose", "-f", user_file, *[str(a) for a in args]]
+        cmd = ["docker-compose", "-f", user_file, *[str(a) for a in args if a != ""]]
         Logger.debug("Executing compose command: {0}".format(cmd))
         return subprocess.call(cmd, cwd=project_path)
 
@@ -78,7 +78,7 @@ def exec_compose_pretty(project_path, args):
     config = project_read(project_path)
 
     with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
-        cmd = ["docker-compose", "-f", user_file, *[str(a) for a in args]]
+        cmd = ["docker-compose", "-f", user_file, *[str(a) for a in args if a != ""]]
 
         Logger.debug("Executing (pretty) compose command: {0}".format(cmd))
         proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE,
