@@ -189,6 +189,10 @@ def _composefile_apply_namespace_replacement(output_content, namespace, environm
         new_volumes = OrderedDict()
         if "volumes" in output_content["services"][key]:
             for volume in output_content["services"][key]["volumes"]:
+                # Ignore empty volumes
+                if volume == "":
+                    continue
+
                 volume_object = volume_extract_from_line(volume)
                 if volume_object.is_named:
                     if volume_object.host_path in shared_volumes:
@@ -280,25 +284,20 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
 
 def _composefile_resolve_static_volumes(project_path, project_name, config_name, volumes_data, final_volumes):
     from docknv.volume_handler import volume_extract_from_line
-    from docknv.session_handler import session_read_timestamps, session_save_timestamps
-    from docknv.utils.diff_system import (
-        diff_modification_time, get_files_last_modification_time, save_last_modification_time,
-        read_last_modification_time, concat_diffs
-    )
-
-    # Diff system
-    original_timestamps = session_read_timestamps(project_name, config_name)
-    new_timestamps = {}
 
     if "static" in volumes_data:
         for static_def in volumes_data["static"]:
+            # Ignore empty volumes
+            if static_def == "":
+                continue
+
             volume_object = volume_extract_from_line(static_def)
 
             # Create dirs & copy
             output_path = volume_object.generate_namespaced_volume_path("static", volume_object.host_path,
                                                                         project_name, config_name)
 
-            data_path = os.path.join(project_path, "data", "files", volume_object.host_path)
+            data_path = os.path.normpath(os.path.join(project_path, "data", "files", volume_object.host_path))
 
             # Get files to copy
             files_to_copy = []
@@ -308,22 +307,16 @@ def _composefile_resolve_static_volumes(project_path, project_name, config_name,
                 base_root = data_path
                 for root, folders, filenames in os.walk(data_path):
                     sub_part = root.replace(base_root, "")
-                    for filename in filenames:
-                        full_path = os.path.join(root, filename)
-                        full_output_path = os.path.join(output_path, sub_part, filename)
-                        files_to_copy.append((full_path, full_output_path))
-                        new_timestamps.update(get_files_last_modification_time(full_path))
+                    if len(sub_part) > 0:
+                        sub_part = sub_part[1:]
 
-            # timestamp_diff = diff_modification_time(original_timestamps, new_timestamps)
+                    for filename in filenames:
+                        full_path = os.path.normpath(os.path.join(root, filename))
+                        full_output_path = os.path.normpath(os.path.join(output_path, sub_part, filename))
+                        files_to_copy.append((full_path, full_output_path))
 
             # Copy !
             for file_to_copy, output_path_to_copy in files_to_copy:
-                # if file_to_copy not in timestamp_diff:
-                    # print("NOT IN TIMESTAMP")
-                # if file_to_copy not in timestamp_diff and os.path.isfile(output_path_to_copy):
-                    # Logger.debug(
-                        # "Static path `{0}` did not change. Nothing done.".format(file_to_copy))
-                # else:
                 Logger.debug(
                     "Copying static content from `{0}` to `{1}`...".format(file_to_copy, output_path_to_copy))
                 create_path_tree(os.path.dirname(output_path_to_copy))
@@ -341,9 +334,6 @@ def _composefile_resolve_static_volumes(project_path, project_name, config_name,
 
         del volumes_data["static"]
 
-    # Save diff
-    session_save_timestamps(project_name, config_name, concat_diffs(original_timestamps, new_timestamps))
-
     return final_volumes
 
 
@@ -352,6 +342,10 @@ def _composefile_resolve_shared_volumes(project_path, volumes_data, final_volume
 
     if "shared" in volumes_data:
         for shared_def in volumes_data["shared"]:
+            # Ignore empty volumes
+            if shared_def == "":
+                continue
+
             volume_object = volume_extract_from_line(shared_def)
 
             data_path = os.path.join(project_path, "data", "files", volume_object.host_path)
@@ -372,6 +366,10 @@ def _composefile_resolve_template_volumes(project_path, config_name, environment
     # Jinja templates
     if "templates" in volumes_data:
         for template_def in volumes_data["templates"]:
+            # Ignore empty volumes
+            if template_def == "":
+                continue
+
             volume_object = volume_extract_from_line(template_def)
             template_path = volume_object.host_path
 
@@ -388,6 +386,10 @@ def _composefile_resolve_template_volumes(project_path, config_name, environment
 def _composefile_resolve_standard_volumes(volumes_data, final_volumes):
     if "standard" in volumes_data:
         for standard_def in volumes_data["standard"]:
+            # Ignore empty volumes
+            if standard_def == "":
+                continue
+
             final_volumes.append(standard_def)
 
         del volumes_data["standard"]

@@ -14,12 +14,13 @@ def get_docker_container(project_path, machine):
     :param machine:          Machine name (str)
     :rtype: Container name (str)
     """
-    from docknv.project_handler import project_read
+    from docknv.project_handler import project_read, project_get_active_configuration
     from docknv.user_handler import user_temporary_copy_file
 
     config = project_read(project_path)
+    config_name = project_get_active_configuration(project_path)
 
-    with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
+    with user_temporary_copy_file(config.project_name, "docker-compose.yml", config_name) as user_file:
         cmd = "docker-compose -f {0} ps -q {1}".format(user_file, machine)
         proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE, shell=True)
         (out, _) = proc.communicate()
@@ -52,12 +53,13 @@ def exec_compose(project_path, args):
     :param project_path:     Project path (str)
     :param args:             Arguments (...)
     """
-    from docknv.project_handler import project_read
+    from docknv.project_handler import project_read, project_get_active_configuration
     from docknv.user_handler import user_temporary_copy_file
 
     config = project_read(project_path)
+    config_name = project_get_active_configuration(project_path)
 
-    with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
+    with user_temporary_copy_file(config.project_name, "docker-compose.yml", config_name) as user_file:
         cmd = ["docker-compose", "-f", user_file, *[str(a) for a in args if a != ""]]
         Logger.debug("Executing compose command: {0}".format(cmd))
         return subprocess.call(cmd, cwd=project_path)
@@ -70,14 +72,15 @@ def exec_compose_pretty(project_path, args):
     :param project_path:     Project path (str)
     :param args:             Arguments (...)
     """
-    from docknv.project_handler import project_read
+    from docknv.project_handler import project_read, project_get_active_configuration
     from docknv.user_handler import user_temporary_copy_file
 
     ##################
 
     config = project_read(project_path)
+    config_name = project_get_active_configuration(project_path)
 
-    with user_temporary_copy_file(config.project_name, "docker-compose.yml") as user_file:
+    with user_temporary_copy_file(config.project_name, "docker-compose.yml", config_name) as user_file:
         cmd = ["docker-compose", "-f", user_file, *[str(a) for a in args if a != ""]]
 
         Logger.debug("Executing (pretty) compose command: {0}".format(cmd))

@@ -191,7 +191,7 @@ def user_try_lock(project_path):
     else:
         try:
             yield
-        except Exception:
+        except BaseException:
             user_disable_lock(project_path)
             raise
 
@@ -199,16 +199,17 @@ def user_try_lock(project_path):
 
 
 @contextmanager
-def user_temporary_copy_file(project_name, path_to_file):
+def user_temporary_copy_file(project_name, path_to_file, config_name=None):
     """
     Make a temporary copy of a user config file.
 
     :param project_name:     Project name (str)
     :param path_to_file:     Path to file (str)
+    :param config_name:      Config name (str?) (default: None)
 
     **Context manager**
     """
-    path = user_get_file_from_project(project_name, path_to_file)
+    path = user_get_file_from_project(project_name, path_to_file, config_name)
 
     generated_file_name = ".{0}.{1}".format(user_get_id(), os.path.basename(path))
     shutil.copyfile(path, generated_file_name)
