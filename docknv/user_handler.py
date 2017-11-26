@@ -247,4 +247,4 @@ def _get_docknv_path():
 
     :rtype: Config path (str)
     """
-    return os.path.expanduser("~/.docknv")
+    return os.path.normpath(os.path.expanduser("~/.docknv"))

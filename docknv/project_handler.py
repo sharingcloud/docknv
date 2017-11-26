@@ -156,8 +156,7 @@ def project_use_configuration(project_path, config_name, quiet=False):
     if config["user"] != current_id:
         Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
 
-    path = project_get_composefile(
-        project_path, config_name)
+    path = project_get_composefile(project_path, config_name)
 
     if not os.path.exists(path):
         Logger.error("Missing composefile for configuration `{0}`".format(config_name))
@@ -209,12 +208,10 @@ def project_get_composefile(project_path, config_name):
     :param project_path:     Project path (str)
     :param config_name:      Config name (str)
     """
-    from docknv.user_handler import user_get_project_path
+    from docknv.user_handler import user_get_file_from_project
 
     project_name = project_get_name(project_path)
-    config_path = user_get_project_path(project_name, config_name)
-
-    return os.path.join(config_path, "docker-compose.yml")
+    return user_get_file_from_project(project_name, "docker-compose.yml", config_name)
 
 
 def project_generate_compose_from_configuration(project_path, config_name):
