@@ -16,7 +16,8 @@ setup(
           'six',
           'PyYAML',
           'colorama',
-          'Jinja2'
+          'Jinja2',
+          'whichcraft'
     ],
     zip_safe=False,
     entry_points={

@@ -8,6 +8,7 @@ from docknv import (
 )
 
 from docknv.shell.common import exec_handler
+from docknv.utils.ioutils import get_editor_executable
 
 
 def _init(subparsers):
@@ -19,7 +20,7 @@ def _init(subparsers):
 
     edit_cmd = subs.add_parser("edit", help="edit user config for this project")
     edit_cmd.add_argument("config", nargs="?", default=None)
-    edit_cmd.add_argument("-e", "--editor", nargs="?", default="atom")
+    edit_cmd.add_argument("-e", "--editor", nargs="?", default=None, help="editor to use (default: auto-detect)")
 
     subs.add_parser("rm-lock", help="remove the user lockfile")
 
@@ -33,9 +34,10 @@ def _handle_clean(args):
 
 
 def _handle_edit(args):
+    editor = get_editor_executable(args.editor)
     config_data = project_handler.project_read(".")
     path = user_handler.user_get_project_path(config_data.project_name, args.config)
-    return subprocess.call([args.editor, path], shell=True)
+    return subprocess.call([editor, path], shell=True)
 
 
 def _handle_rm_lock(args):

@@ -2,3 +2,4 @@ six
 PyYAML
 colorama
 Jinja2
+whichcraft
