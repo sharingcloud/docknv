@@ -3,3 +3,5 @@ PyYAML
 colorama
 Jinja2
 whichcraft
+docker
+pypiwin32

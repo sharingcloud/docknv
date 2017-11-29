@@ -4,6 +4,16 @@ import os
 import shutil
 
 
+def get_lower_basename(path):
+    """
+    Get the basename of a path, lowercased.
+
+    :param path:    Path (str)
+    :rtype: Lowercase basename (str)
+    """
+    return os.path.basename(os.path.abspath(path)).lower()
+
+
 def create_path_or_replace(path_to_create):
     """
     Create or replace path.

@@ -2,6 +2,7 @@
 
 import shlex
 
+from docknv.utils.paths import get_lower_basename
 from docknv.logger import Logger, Fore, Style
 from docknv.docker_wrapper import (
     exec_compose, exec_compose_pretty, get_docker_container,
@@ -461,11 +462,9 @@ def lifecycle_volume_remove(project_path, volume_name):
     :param project_path:     Project path (str)
     :param volume_name:      Volume name (str)
     """
-    from docknv.project_handler import project_get_name
-
     Logger.info("Removing volume `{0}`".format(volume_name))
 
-    project_name = project_get_name(project_path)
+    project_name = get_lower_basename(project_path)
     volume_path = "{0}_{1}".format(project_name, volume_name)
     code = exec_docker(project_path, ["volume", "rm", volume_path])
     if code != 0:

@@ -17,7 +17,9 @@ setup(
           'PyYAML',
           'colorama',
           'Jinja2',
-          'whichcraft'
+          'whichcraft',
+          'docker',
+          'pypiwin32'
     ],
     zip_safe=False,
     entry_points={

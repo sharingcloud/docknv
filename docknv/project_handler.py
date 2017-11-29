@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from docknv.logger import Logger
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yaml_merge
 from docknv.utils.words import generate_config_name
-from docknv.utils.paths import create_path_tree
+from docknv.utils.paths import create_path_tree, get_lower_basename
 from docknv.utils.ioutils import io_open
 
 CONFIG_FILE_NAME = "config.yml"
@@ -126,16 +126,6 @@ def project_update_configuration_schema(project_path, config_name, schema_name):
     session_update_schema(project_path, project_config, config_name, schema_name)
 
 
-def project_get_name(project_path):
-    """
-    Get project name from path.
-
-    :param project_path:     Project path (str)
-    :rtype: Project path (str)
-    """
-    return os.path.basename(os.path.abspath(project_path)).lower()
-
-
 def project_use_configuration(project_path, config_name, quiet=False):
     """
     Use a composefile from a known configuration.
@@ -210,7 +200,7 @@ def project_get_composefile(project_path, config_name):
     """
     from docknv.user_handler import user_get_file_from_project
 
-    project_name = project_get_name(project_path)
+    project_name = get_lower_basename(project_path)
     return user_get_file_from_project(project_name, "docker-compose.yml", config_name)
 
 
@@ -361,7 +351,7 @@ def project_clean_user_config_path(project_path, config_name=None):
     """
     from docknv.user_handler import user_clean_config_path
 
-    project_name = project_get_name(project_path)
+    project_name = get_lower_basename(project_path)
     if not config_name:
         Logger.info("Attempting to clean user configuration for project `{0}`".format(project_name))
     else:

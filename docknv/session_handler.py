@@ -5,6 +5,7 @@ import os
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.ioutils import io_open
+from docknv.utils.paths import get_lower_basename
 
 from docknv.logger import Logger, Fore
 
@@ -102,14 +103,14 @@ def session_remove_configuration(project_path, config_name):
     :param config_name:      Config name (str)
     """
     from docknv.project_handler import (
-        project_get_composefile, project_get_name, project_get_active_configuration,
+        project_get_composefile, project_get_active_configuration,
         project_unset_configuration
     )
 
     from docknv.user_handler import user_get_id, user_clean_config_path
 
     config = session_read_configuration(project_path)
-    project_name = project_get_name(project_path)
+    project_name = get_lower_basename(project_path)
     if config_name not in config["values"]:
         Logger.error("Missing configuration `{0}`.".format(config_name))
 
