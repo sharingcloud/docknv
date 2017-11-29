@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import os
 import re
 import copy
+import imp
 
 from collections import OrderedDict
 
@@ -163,8 +164,6 @@ def env_yaml_convert(project_path, name):
     :param name:            Environment name (str)
     :rtype: Absolute path to YAML environment file (str), YAML data (dict)
     """
-    import imp
-
     # Loading Python env
     py_env = {}
     py_env_path = env_get_py_path(project_path, name)
@@ -212,8 +211,6 @@ def env_py_load_in_memory(project_path, name):
     :param name:             Environment file name (str)
     :rtype: Environment data (dict)
     """
-    import imp
-
     env_path = env_get_py_path(project_path, name)
 
     if not os.path.isfile(env_path):

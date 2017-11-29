@@ -6,8 +6,16 @@ from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.ioutils import io_open
 from docknv.utils.paths import get_lower_basename
+from docknv.utils.diff_system import read_last_modification_time, save_last_modification_time
 
 from docknv.logger import Logger, Fore
+
+from docknv.environment_handler import env_yaml_check_file
+
+from docknv.user_handler import user_get_id, user_clean_config_path, user_get_file_from_project
+
+from docknv.schema_handler import schema_check
+
 
 SESSION_FILE_NAME = ".docknv.yml"
 
@@ -82,8 +90,6 @@ def session_update_environment(project_path, config_name, environment_name):
     :param config_name:          Config name (str)
     :param environment_name:     Environment name (str)
     """
-    from docknv.environment_handler import env_yaml_check_file
-
     if env_yaml_check_file(project_path, environment_name):
         docknv_config = session_read_configuration(project_path)
 
@@ -106,8 +112,6 @@ def session_remove_configuration(project_path, config_name):
         project_get_composefile, project_get_active_configuration,
         project_unset_configuration
     )
-
-    from docknv.user_handler import user_get_id, user_clean_config_path
 
     config = session_read_configuration(project_path)
     project_name = get_lower_basename(project_path)
@@ -150,8 +154,6 @@ def session_update_schema(project_path, project_config, config_name, schema_name
     :param config_name:      Config name (str)
     :param schema_name:      Schema name (str)
     """
-    from docknv.schema_handler import schema_check
-
     if schema_check(project_config, schema_name):
         docknv_config = session_read_configuration(project_path)
 
@@ -241,9 +243,6 @@ def session_read_timestamps(project_name, config_name):
     :param config_name:     Config name (str)
     :rtype: Timestamp data (dict)
     """
-    from docknv.user_handler import user_get_file_from_project
-    from docknv.utils.diff_system import read_last_modification_time
-
     timestamps_path = user_get_file_from_project(project_name, "timestamps.json", config_name)
     original_timestamps = {}
     if os.path.exists(timestamps_path):
@@ -261,9 +260,6 @@ def session_save_timestamps(project_name, config_name, timestamps):
     :param config_name:     Config name (str)
     :param timestamps:      Timestamp data (dict)
     """
-    from docknv.user_handler import user_get_file_from_project
-    from docknv.utils.diff_system import save_last_modification_time
-
     timestamps_path = user_get_file_from_project(project_name, "timestamps.json", config_name)
     with io_open(timestamps_path, mode="w") as stream:
         save_last_modification_time(stream, timestamps)

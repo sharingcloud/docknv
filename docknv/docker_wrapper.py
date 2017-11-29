@@ -4,6 +4,8 @@ import subprocess
 import six
 
 from docknv.logger import Logger
+from docknv.project_handler import project_read, project_get_active_configuration
+from docknv.user_handler import user_temporary_copy_file
 
 
 def get_docker_container(project_path, machine):
@@ -14,9 +16,6 @@ def get_docker_container(project_path, machine):
     :param machine:          Machine name (str)
     :rtype: Container name (str)
     """
-    from docknv.project_handler import project_read, project_get_active_configuration
-    from docknv.user_handler import user_temporary_copy_file
-
     config = project_read(project_path)
     config_name = project_get_active_configuration(project_path)
 
@@ -53,9 +52,6 @@ def exec_compose(project_path, args):
     :param project_path:     Project path (str)
     :param args:             Arguments (...)
     """
-    from docknv.project_handler import project_read, project_get_active_configuration
-    from docknv.user_handler import user_temporary_copy_file
-
     config = project_read(project_path)
     config_name = project_get_active_configuration(project_path)
 
@@ -72,11 +68,6 @@ def exec_compose_pretty(project_path, args):
     :param project_path:     Project path (str)
     :param args:             Arguments (...)
     """
-    from docknv.project_handler import project_read, project_get_active_configuration
-    from docknv.user_handler import user_temporary_copy_file
-
-    ##################
-
     config = project_read(project_path)
     config_name = project_get_active_configuration(project_path)
 

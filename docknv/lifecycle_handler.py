@@ -2,12 +2,27 @@
 
 import shlex
 
-from docknv.utils.paths import get_lower_basename
 from docknv.logger import Logger, Fore, Style
+from docknv.utils.paths import get_lower_basename
+
 from docknv.docker_wrapper import (
     exec_compose, exec_compose_pretty, get_docker_container,
     exec_docker
 )
+
+from docknv.session_handler import (
+    session_get_configuration, session_check_bundle_configurations
+)
+
+from docknv.schema_handler import schema_get_configuration
+
+from docknv.project_handler import (
+    project_get_active_configuration, project_read,
+    project_use_temporary_configuration
+)
+
+from docknv.docker_api_wrapper import docker_ps, using_docker_client, text_ellipse
+from docknv.command_handler import command_get_context
 
 
 def lifecycle_get_machine_name(machine_name, namespace_name=None):
@@ -31,10 +46,6 @@ def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
     :param no_cache:             Do not use cache (bool) (default: False)
     :param push_to_registry:     Push to registry (bool) (default: True)
     """
-    from docknv.session_handler import session_get_configuration
-    from docknv.schema_handler import schema_get_configuration
-    from docknv.project_handler import project_get_active_configuration, project_read
-
     current_config = project_get_active_configuration(project_path)
     current_config_data = session_get_configuration(project_path, current_config)
 
@@ -83,8 +94,6 @@ def lifecycle_schema_ps(project_path):
 
     :param project_path:     Project path (str)
     """
-    from docknv.docker_api_wrapper import docker_ps, using_docker_client, text_ellipse
-    from docknv.command_handler import command_get_context
     ctx = command_get_context(project_path)
 
     with using_docker_client() as client:
@@ -124,9 +133,6 @@ def lifecycle_bundle_stop(project_path, config_names):
     :param project_path:     Project path (str)
     :param config_names:     Config names (iterable)
     """
-    from docknv.session_handler import session_check_bundle_configurations
-    from docknv.project_handler import project_use_temporary_configuration
-
     session_check_bundle_configurations(project_path, config_names)
     code = 0
     for config_name in config_names:
@@ -143,9 +149,6 @@ def lifecycle_bundle_start(project_path, config_names):
     :param project_path:     Project path (str)
     :param config_names:     Config names (iterable)
     """
-    from docknv.session_handler import session_check_bundle_configurations
-    from docknv.project_handler import project_use_temporary_configuration
-
     session_check_bundle_configurations(project_path, config_names)
     code = 0
     for config_name in config_names:
@@ -163,9 +166,6 @@ def lifecycle_bundle_restart(project_path, config_names, force=False):
     :param config_names:     Config names (iterable)
     :param force:            Force restart (bool) (default: False)
     """
-    from docknv.session_handler import session_check_bundle_configurations
-    from docknv.project_handler import project_use_temporary_configuration
-
     session_check_bundle_configurations(project_path, config_names)
     code = 0
     for config_name in config_names:
@@ -182,9 +182,6 @@ def lifecycle_bundle_ps(project_path, config_names):
     :param project_path:     Project path (str)
     :param config_names:     Config names (iterable)
     """
-    from docknv.session_handler import session_check_bundle_configurations
-    from docknv.project_handler import project_use_temporary_configuration
-
     session_check_bundle_configurations(project_path, config_names)
     code = 0
     for config_name in config_names:
@@ -203,9 +200,6 @@ def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_r
     :param no_cache:             Do not use cache (bool) (default: False)
     :param push_to_registry:     Push to registry (bool) (default: True)
     """
-    from docknv.session_handler import session_check_bundle_configurations
-    from docknv.project_handler import project_use_temporary_configuration
-
     session_check_bundle_configurations(project_path, config_names)
     code = 0
     for config_name in config_names:

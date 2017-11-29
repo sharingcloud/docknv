@@ -2,6 +2,7 @@
 
 from docknv import (
     schema_handler,
+    project_handler
 )
 
 from docknv.shell.common import exec_handler
@@ -19,4 +20,5 @@ def _handle(args):
 
 
 def _handle_ls(args):
-    return schema_handler.schema_list(".")
+    project_data = project_handler.project_read(".")
+    return schema_handler.schema_list(project_data)

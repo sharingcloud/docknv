@@ -4,6 +4,8 @@
 import os
 import platform
 
+from docknv.user_handler import user_get_project_path
+
 
 class VolumeObject(object):
     """Volume object entry."""
@@ -66,8 +68,6 @@ def volume_generate_namespaced_path(file_type, project_name, config_name):
 
     :rtype: Volume path (str)
     """
-    from docknv.user_handler import user_get_project_path
-
     user_config_path = user_get_project_path(project_name, config_name)
 
     if file_type == "static":

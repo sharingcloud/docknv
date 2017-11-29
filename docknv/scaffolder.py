@@ -10,6 +10,12 @@ from docknv.utils.ioutils import io_open
 
 from docknv.logger import Logger
 
+from docknv.environment_handler import (
+    env_yaml_write_to_file, env_yaml_inherits,
+    env_yaml_load_in_memory, env_get_yaml_path
+)
+
+
 IGNORE_FILE_CONTENT = """
 __pyc__/
 *.pyc
@@ -92,11 +98,6 @@ def scaffold_environment(project_path, env_name, env_content=None):
     :param env_name:         Environment name (str)
     :param env_content:      Environment content (str?) (default: None)
     """
-    from docknv.environment_handler import (
-        env_yaml_write_to_file,
-        env_get_yaml_path
-    )
-
     env_content = env_content if env_content else {}
     env_path = env_get_yaml_path(project_path, env_name)
     if os.path.exists(env_path):
@@ -127,11 +128,6 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
     :param env_name_source:  Source environment name (str)
     :param env_name_dest:    Destination environment name (str)
     """
-    from docknv.environment_handler import (
-        env_yaml_inherits, env_yaml_load_in_memory, env_get_yaml_path,
-        env_yaml_write_to_file
-    )
-
     if env_name_source == env_name_dest:
         Logger.error('Source environment name and destination environment name cannot be the same.')
 

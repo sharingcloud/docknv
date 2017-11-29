@@ -7,6 +7,7 @@ import shutil
 
 from contextlib import contextmanager
 
+from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.ioutils import io_open
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.logger import Logger
@@ -227,8 +228,6 @@ def user_clean_config_path(project_name, config_name=None):
     :param project_name:     Project name (str)
     :param config_name:      Config name (str?) (default: None)
     """
-    from docknv.utils.prompt import prompt_yes_no
-
     folder_path = user_get_project_path(project_name, config_name)
 
     if not os.path.exists(folder_path):

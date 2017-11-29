@@ -11,6 +11,8 @@ from docknv.utils.serialization import yaml_ordered_dump, yaml_ordered_load
 from docknv.utils.ioutils import io_open
 from docknv.utils.paths import get_lower_basename
 
+from docknv.user_handler import user_get_project_path
+
 
 def renderer_render_compose_template(compose_content, environment_data=None):
     """
@@ -60,8 +62,6 @@ def renderer_render_template(project_path, template_path, config_name, environme
     :param environment_data:     Environment data (dict?) (default: None)
     :rtype: File output name (str)
     """
-    from docknv.user_handler import user_get_project_path
-
     project_name = get_lower_basename(project_path)
     user_config_name = user_get_project_path(project_name, config_name)
     environment_data = environment_data if environment_data else {}

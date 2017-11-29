@@ -1,6 +1,15 @@
 """Command handler."""
 
 import os
+import pprint
+
+from docknv.utils.prompt import prompt_yes_no
+
+from docknv.project_handler import project_read, project_get_active_configuration, project_is_valid
+from docknv.session_handler import session_get_configuration
+from docknv.schema_handler import schema_get_configuration
+from docknv.environment_handler import env_yaml_load_in_memory, env_yaml_resolve_variables
+from docknv.user_handler import user_read_docknv_config, user_write_docknv_config
 
 
 class CommandContext(object):
@@ -18,7 +27,6 @@ class CommandContext(object):
 
     def __repr__(self):
         """Repr."""
-        import pprint
         return pprint.pformat({
             "project_name": self.project_name,
             "config_name": self.config_name,
@@ -84,13 +92,6 @@ def command_get_context(project_path):
     :param project_path: Project path (str)
     :rtype: Context data (dict)
     """
-    from docknv.project_handler import project_read, project_get_active_configuration, project_is_valid
-    from docknv.session_handler import session_get_configuration
-    from docknv.schema_handler import schema_get_configuration
-    from docknv.environment_handler import env_yaml_load_in_memory, env_yaml_resolve_variables
-    from docknv.user_handler import user_read_docknv_config, user_write_docknv_config
-    from docknv.utils.prompt import prompt_yes_no
-
     if not project_is_valid(project_path):
         return CommandContext()
 
