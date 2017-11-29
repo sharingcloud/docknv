@@ -9,6 +9,7 @@ import importlib
 
 from docknv.logger import Logger
 from docknv.version import __version__
+from docknv.project_handler import project_read
 
 STANDARD_COMMANDS = (
     "machine", "config", "bundle", "env", "schema",
@@ -103,6 +104,9 @@ class Shell(object):
 def _register_handlers(shell, current_dir, commands_dir, commands_context):
     from docknv import command_handler
 
+    project_data = project_read(current_dir)
+    config_data = project_data.config_data
+
     for root, _, files in os.walk(commands_dir):
         for filename in files:
             if filename.endswith(".py"):
@@ -122,7 +126,7 @@ def _register_handlers(shell, current_dir, commands_dir, commands_context):
                     pre_parse = getattr(src, "pre_parse")
                     post_parse = getattr(src, "post_parse")
 
-                    command_config = command_handler.command_get_config(current_dir, base_filename)
+                    command_config = command_handler.command_get_config(config_data, base_filename)
 
                     try:
                         pre_parse(shell, command_config, commands_context)

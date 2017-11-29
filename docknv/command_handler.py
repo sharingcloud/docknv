@@ -30,19 +30,14 @@ class CommandContext(object):
         })
 
 
-def command_get_config(project_path, command):
+def command_get_config(config_data, command):
     """
     Get command configuration from config.yml.
 
-    :param project_path:     Project path (str)
+    :param config_data:      Config data (dict)
     :param command:          Command name (str)
     :rtype: Command configuration (dict)
     """
-    from docknv.project_handler import project_read
-
-    project_data = project_read(project_path)
-    config_data = project_data.config_data
-
     commands = config_data.get('commands', None)
     if not commands:
         return {}
