@@ -280,7 +280,7 @@ def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", 
     else:
         return lifecycle_machine_exec(
             project_path, machine_name, shell_path,
-            no_tty=False, namespace_name=namespace_name)
+            no_tty=False, namespace_name=namespace_name, ignore_code=True)
 
 
 def lifecycle_machine_restart(project_path, machine_name, force=False,
@@ -360,7 +360,7 @@ def lifecycle_machine_pull(project_path, machine_name, container_path, host_path
 
 
 def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=False,
-                           namespace_name=None):
+                           namespace_name=None, ignore_code=False):
     """
     Execute a machine.
 
@@ -369,6 +369,7 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
     :param command:              Command (str?) (default: None)
     :param no_tty:               Do not use TTY (bool) (default: False)
     :param namespace_name:       Namespace name (str?) (default: None)
+    :param ignore_code:          Ignore return code (bool) (default: False)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
     container = get_docker_container(project_path, machine_name)
@@ -379,7 +380,7 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
         tty_cmd = "-ti" if not no_tty else ""
         cmd = ["exec", tty_cmd, container, *shlex.split(command)]
         code = exec_docker(project_path, cmd)
-        if code != 0:
+        if not ignore_code and code != 0:
             Logger.error("Error while executing command {0} on machine {1}".format(
                 cmd, machine_name
             ))
@@ -388,7 +389,7 @@ def lifecycle_machine_exec(project_path, machine_name, command=None, no_tty=Fals
 
 
 def lifecycle_machine_exec_multiple(project_path, machine_name, commands, no_tty=False,
-                                    namespace_name=None):
+                                    namespace_name=None, ignore_code=False):
     """
     Execute multiple commands on a machine.
 
@@ -397,6 +398,7 @@ def lifecycle_machine_exec_multiple(project_path, machine_name, commands, no_tty
     :param commands:             Commands (iterable)
     :param no_tty:               Do not use TTY (bool) (default: False)
     :param namespace_name:       Namespace name (str?) (default: None)
+    :param ignore_code:          Ignore return code (bool) (default: False)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
     container = get_docker_container(project_path, machine_name)
@@ -407,8 +409,13 @@ def lifecycle_machine_exec_multiple(project_path, machine_name, commands, no_tty
         code = 0
         for command in commands:
             tty_cmd = "-ti" if not no_tty else ""
-            code = exec_docker(project_path, ["exec", tty_cmd, container, *shlex.split(command)])
+            cmd = ["exec", tty_cmd, container, *shlex.split(command)]
+            code = exec_docker(project_path, cmd)
             if code != 0:
+                if not ignore_code:
+                    Logger.error("Error while executing command {0} on machine {1}".format(
+                        cmd, machine_name
+                    ))
                 break
 
         return code
