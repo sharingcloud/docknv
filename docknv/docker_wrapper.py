@@ -40,7 +40,7 @@ def exec_docker(project_path, args):
     :param project_path:     Project path (str)
     :param args:             Arguments (...)
     """
-    cmd = ["docker", *[str(a) for a in args if a != ""]]
+    cmd = ["docker"] + [str(a) for a in args if a != ""]
     Logger.debug("Executing docker command: {0}".format(cmd))
     return subprocess.call(cmd, cwd=project_path)
 
