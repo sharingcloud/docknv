@@ -1,7 +1,21 @@
 """docknv."""
 
+import platform
+
 from setuptools import setup
 from docknv.version import __version__
+
+dependencies = [
+    'six',
+    'PyYAML',
+    'colorama',
+    'Jinja2',
+    'whichcraft',
+    'docker'
+]
+
+if platform.system() == "Windows":
+    dependencies += ["pypiwin32"]
 
 setup(
     name='docknv',
@@ -12,15 +26,7 @@ setup(
     author_email='denis.bourge@sharingcloud.com',
     license='MIT',
     packages=['docknv'],
-    install_requires=[
-          'six',
-          'PyYAML',
-          'colorama',
-          'Jinja2',
-          'whichcraft',
-          'docker',
-          'pypiwin32'
-    ],
+    install_requires=dependencies,
     zip_safe=False,
     entry_points={
         'console_scripts': [
