@@ -487,7 +487,7 @@ def lifecycle_registry_start(path):
         cmd += ["-v", "{0}:/var/lib/registry".format(path)]
     cmd += ["--restart=always", "--name", "registry", "registry:2"]
 
-    return exec_docker(".", path)
+    return exec_docker(".", cmd)
 
 
 def lifecycle_registry_stop():
