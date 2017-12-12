@@ -225,6 +225,31 @@ def _composefile_apply_namespace_replacement(output_content, namespace, environm
     return output_content
 
 
+def composefile_handle_service_tags(compose_content, registry_url):
+    """
+    Handle service tags.
+
+    :param project_path:        Project path (str)
+    :param compose_content:     Compose content (dict)
+    :param registry_url:        Registry URL (str)
+    :rtype dict
+    """
+    Logger.debug("Handling service tags...")
+    output_content = copy.deepcopy(compose_content)
+
+    if "services" in output_content:
+        for service_name in output_content["services"]:
+            service_data = output_content["services"][service_name]
+
+            if "tag" in service_data:
+                Logger.debug("Handling tag for service `{0}`...".format(service_name))
+                service_tag = service_data["tag"]
+                service_data["image"] = "/".join([registry_url, service_tag])
+                del service_data["tag"]
+
+    return output_content
+
+
 def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default", environment="default",
                                 environment_data=None):
     """
@@ -398,6 +423,11 @@ def _composefile_resolve_networks(service_data, namespace):
             if isinstance(network, dict) and "aliases" in network:
                 new_aliases = []
                 for alias in network["aliases"]:
-                    new_aliases.append("{0}_{1}".format(namespace, alias))
+                    if namespace == "default":
+                        new_alias = alias
+                    else:
+                        new_alias = "_".join([namespace, alias])
+
+                    new_aliases.append(new_alias)
 
                 network["aliases"] = new_aliases

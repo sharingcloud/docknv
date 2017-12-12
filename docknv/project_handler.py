@@ -267,7 +267,7 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 
     from docknv.composefile_handler import (
         composefile_multiple_read, composefile_filter, composefile_resolve_volumes,
-        composefile_apply_namespace, composefile_write
+        composefile_apply_namespace, composefile_write, composefile_handle_service_tags
     )
 
     ####################
@@ -287,6 +287,11 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 
     # Load config file
     config_data = project_read(project_path)
+
+    try:
+        registry_url = config_data.config_data["registry"]["url"]
+    except BaseException:
+        registry_url = "localhost:5000"
 
     # Load environment
     if not env_yaml_check_file(project_path, environment):
@@ -310,6 +315,9 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     # Generate volumes declared in composefiles
     rendered_content = composefile_resolve_volumes(project_path, resolved_content, config_name, namespace,
                                                    environment, env_content)
+
+    # Handle services tags
+    rendered_content = composefile_handle_service_tags(rendered_content, registry_url)
 
     # Apply namespace
     namespaced_content = composefile_apply_namespace(rendered_content, namespace, environment)
