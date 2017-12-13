@@ -5,7 +5,7 @@ import six
 
 from docknv.logger import Logger
 from docknv.project_handler import project_read, project_get_active_configuration
-from docknv.user_handler import user_temporary_copy_file
+from docknv.user_handler import user_get_file_from_project
 
 
 def get_docker_container(project_path, machine):
@@ -18,19 +18,19 @@ def get_docker_container(project_path, machine):
     """
     config = project_read(project_path)
     config_name = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
 
-    with user_temporary_copy_file(config.project_name, "docker-compose.yml", config_name) as user_file:
-        cmd = "docker-compose -f {0} ps -q {1}".format(user_file, machine)
-        proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE, shell=True)
-        (out, _) = proc.communicate()
+    cmd = "docker-compose -f {0} --project-directory . ps -q {1}".format(config_filename, machine)
+    proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE, shell=True)
+    (out, _) = proc.communicate()
 
-        if six.PY3:
-            out = out.decode('utf-8')
+    if six.PY3:
+        out = out.decode('utf-8')
 
-        if out == "":
-            return None
+    if out == "":
+        return None
 
-        return out.strip()
+    return out.strip()
 
 
 def exec_docker(project_path, args):
@@ -54,11 +54,11 @@ def exec_compose(project_path, args):
     """
     config = project_read(project_path)
     config_name = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
 
-    with user_temporary_copy_file(config.project_name, "docker-compose.yml", config_name) as user_file:
-        cmd = ["docker-compose", "-f", user_file] + [str(a) for a in args if a != ""]
-        Logger.debug("Executing compose command: {0}".format(cmd))
-        return subprocess.call(cmd, cwd=project_path)
+    cmd = ["docker-compose", "-f", config_filename, "--project-directory", "."] + [str(a) for a in args if a != ""]
+    Logger.debug("Executing compose command: {0}".format(cmd))
+    return subprocess.call(cmd, cwd=project_path)
 
 
 def exec_compose_pretty(project_path, args):
@@ -70,25 +70,25 @@ def exec_compose_pretty(project_path, args):
     """
     config = project_read(project_path)
     config_name = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
 
-    with user_temporary_copy_file(config.project_name, "docker-compose.yml", config_name) as user_file:
-        cmd = ["docker-compose", "-f", user_file] + [str(a) for a in args if a != ""]
+    cmd = ["docker-compose", "-f", config_filename, "--project-directory", "."] + [str(a) for a in args if a != ""]
 
-        Logger.debug("Executing (pretty) compose command: {0}".format(cmd))
-        proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+    Logger.debug("Executing (pretty) compose command: {0}".format(cmd))
+    proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 
-        while True:
-            out = proc.stdout.readline()
-            if out == '' and proc.poll() is not None:
-                break
-            if out:
-                out = out.strip()
-                if _pretty_handler(args, out):
-                    Logger.info(out)
+    while True:
+        out = proc.stdout.readline()
+        if out == '' and proc.poll() is not None:
+            break
+        if out:
+            out = out.strip()
+            if _pretty_handler(args, out):
+                Logger.info(out)
 
-        rc = proc.poll()
-        return rc
+    rc = proc.poll()
+    return rc
 
 
 def _pretty_handler(args, line):
