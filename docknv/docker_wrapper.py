@@ -42,7 +42,7 @@ def exec_docker(project_path, args):
     """
     cmd = ["docker"] + [str(a) for a in args if a != ""]
     Logger.debug("Executing docker command: {0}".format(cmd))
-    return subprocess.call(" ".join(cmd), cwd=project_path)
+    return subprocess.call(cmd, cwd=project_path)
 
 
 def exec_compose(project_path, args):
@@ -58,7 +58,7 @@ def exec_compose(project_path, args):
 
     cmd = ["docker-compose", "-f", config_filename, "--project-directory", "."] + [str(a) for a in args if a != ""]
     Logger.debug("Executing compose command: {0}".format(cmd))
-    return subprocess.call(" ".join(cmd), cwd=project_path)
+    return subprocess.call(cmd, cwd=project_path)
 
 
 def exec_compose_pretty(project_path, args):
@@ -75,7 +75,7 @@ def exec_compose_pretty(project_path, args):
     cmd = ["docker-compose", "-f", config_filename, "--project-directory", "."] + [str(a) for a in args if a != ""]
 
     Logger.debug("Executing (pretty) compose command: {0}".format(cmd))
-    proc = subprocess.Popen(" ".join(cmd), cwd=project_path, stdout=subprocess.PIPE,
+    proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 
     while True:
