@@ -1,7 +1,5 @@
 """Machine sub commands."""
 
-from __future__ import unicode_literals
-
 from docknv import (
     lifecycle_handler,
     command_handler,

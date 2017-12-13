@@ -1,7 +1,5 @@
 """Volume sub commands."""
 
-from __future__ import unicode_literals
-
 from docknv import lifecycle_handler
 
 from docknv.shell.common import exec_handler

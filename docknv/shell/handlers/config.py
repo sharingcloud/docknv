@@ -1,7 +1,5 @@
 """Config sub commands."""
 
-from __future__ import unicode_literals
-
 from docknv import (
     session_handler,
     project_handler,

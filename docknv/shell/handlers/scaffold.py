@@ -1,7 +1,5 @@
 """Scaffold sub commands."""
 
-from __future__ import unicode_literals
-
 from docknv import scaffolder
 from docknv.shell.common import exec_handler
 

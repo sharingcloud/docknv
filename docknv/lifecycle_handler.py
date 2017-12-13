@@ -1,7 +1,5 @@
 """docknv machines and schema lifecycle handling."""
 
-from __future__ import unicode_literals
-
 import shlex
 
 from docknv.logger import Logger, Fore, Style
