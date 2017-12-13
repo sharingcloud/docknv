@@ -1,11 +1,12 @@
 """Simple logger."""
 
-from __future__ import unicode_literals
 from __future__ import print_function
 
 import time
 import sys
+
 import colorama
+import six
 
 from colorama import Fore, Style
 
@@ -50,8 +51,17 @@ class Logger(object):
         """
         if Logger._is_active(msg_type):
             current_time = time.time() - INIT_TIME
-            print(color + "[{0}] [{1}] {2}".format(
-                Logger._round_time(current_time), msg_type, message) + Style.RESET_ALL)
+            logged_str = "{0}[{1}] [{2}] {3}".format(
+                color,
+                Logger._round_time(current_time),
+                msg_type,
+                message,
+                Style.RESET_ALL
+            )
+
+            if six.PY2:
+                logged_str = logged_str.decode('utf-8', errors='replace') # noqa
+            print(logged_str)
 
     @staticmethod
     def info(message, color=Fore.GREEN):
@@ -109,6 +119,9 @@ class Logger(object):
         """
         if color:
             message = "{0}{1}{2}".format(color, message, Style.RESET_ALL)
+
+        if six.PY2:
+            message = unicode(message) # noqa
 
         if linebreak:
             print(message)

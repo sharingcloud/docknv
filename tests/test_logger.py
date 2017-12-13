@@ -1,12 +1,11 @@
 """Logger tests."""
 
-from __future__ import unicode_literals
-
 import pytest
 
 from docknv.tests.mocking import using_temporary_stdout
-
 from docknv.logger import Logger, Fore
+
+import six
 
 
 def test_log():
@@ -38,6 +37,16 @@ def test_log():
     with using_temporary_stdout() as stdout:
         Logger.raw("Pouet pouet", linebreak=False)
         assert not stdout.getvalue().endswith("\n"), "Should not end with a newline"
+
+    with using_temporary_stdout() as stdout:
+        Logger.info("H\x82h\x82 hoho")
+
+        if six.PY2:
+            res = "H\x82h\x82 hoho".decode('utf-8', errors='replace')
+        else:
+            res = "H\x82h\x82 hoho"
+
+        assert res in stdout.getvalue(), "Should work"
 
     with using_temporary_stdout() as stdout:
         # Error
