@@ -1,5 +1,7 @@
 """User sub commands."""
 
+from __future__ import unicode_literals
+
 import subprocess
 
 from docknv import (

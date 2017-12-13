@@ -1,5 +1,7 @@
 """IO utils."""
 
+from __future__ import unicode_literals
+
 import io
 import os
 from contextlib import contextmanager

@@ -1,5 +1,7 @@
 """Volume handler tests."""
 
+from __future__ import unicode_literals
+
 import pytest
 
 from docknv.volume_handler import volume_extract_from_line

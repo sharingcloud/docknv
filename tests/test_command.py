@@ -1,5 +1,7 @@
 """Command handler tests."""
 
+from __future__ import unicode_literals
+
 from docknv import command_handler
 
 

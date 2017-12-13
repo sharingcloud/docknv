@@ -1,5 +1,7 @@
 """YAML utilities."""
 
+from __future__ import unicode_literals
+
 import copy
 from collections import OrderedDict
 
@@ -65,9 +67,16 @@ def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
             data.items())
 
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
-    out = yaml.dump(data, stream, OrderedDumper, **kwds)
+    OrderedDumper.add_representer(str, yaml.representer.SafeRepresenter.represent_str)
+
     if six.PY2:
-        out = unicode(out)  # noqa
+        OrderedDumper.add_representer(unicode, yaml.representer.SafeRepresenter.represent_unicode) # noqa
+
+    out = yaml.dump(data, stream, OrderedDumper, **kwds)
+
+    if six.PY2:
+        out = unicode(out) # noqa
+
     return out
 
 

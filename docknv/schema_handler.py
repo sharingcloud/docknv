@@ -1,5 +1,7 @@
 """Schema handler."""
 
+from __future__ import unicode_literals
+
 import copy
 
 from docknv.logger import Logger, Fore

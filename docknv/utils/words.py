@@ -1,5 +1,8 @@
 """Words utilities."""
 
+from __future__ import unicode_literals
+
+
 import os
 import codecs
 import random

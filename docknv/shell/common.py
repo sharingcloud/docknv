@@ -1,5 +1,7 @@
 """Common handler code."""
 
+from __future__ import unicode_literals
+
 
 def exec_handler(cmd_name, args, handlers):
     """

@@ -1,5 +1,7 @@
 """Project tests."""
 
+from __future__ import unicode_literals
+
 
 def test_project_read():
     from docknv.project_handler import project_read

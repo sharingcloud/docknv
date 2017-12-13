@@ -1,5 +1,7 @@
 """Dockerfile packer."""
 
+from __future__ import unicode_literals
+
 from docknv.logger import Logger
 
 from docknv.project_handler import project_get_active_configuration, project_read

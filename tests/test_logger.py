@@ -1,5 +1,7 @@
 """Logger tests."""
 
+from __future__ import unicode_literals
+
 import pytest
 
 from docknv.tests.mocking import using_temporary_stdout

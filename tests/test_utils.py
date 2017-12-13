@@ -1,5 +1,7 @@
 """Utils tests."""
 
+from __future__ import unicode_literals
+
 import mock
 
 from docknv.tests.mocking import mock_input

@@ -1,5 +1,7 @@
 """Schema sub commands."""
 
+from __future__ import unicode_literals
+
 from docknv import (
     schema_handler,
     project_handler

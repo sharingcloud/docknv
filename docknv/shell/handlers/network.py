@@ -1,5 +1,7 @@
 """Network sub commands."""
 
+from __future__ import unicode_literals
+
 # TODO: Complete
 
 

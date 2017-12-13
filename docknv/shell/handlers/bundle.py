@@ -1,5 +1,7 @@
 """Bundle sub commands."""
 
+from __future__ import unicode_literals
+
 from docknv import (
     user_handler,
     lifecycle_handler

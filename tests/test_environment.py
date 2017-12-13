@@ -1,5 +1,7 @@
 """Environment handler tests."""
 
+from __future__ import unicode_literals
+
 import os
 
 from docknv.environment_handler import (

@@ -1,5 +1,7 @@
 """Image handler test."""
 
+from __future__ import unicode_literals
+
 import os
 
 from docknv.image_handler import (
