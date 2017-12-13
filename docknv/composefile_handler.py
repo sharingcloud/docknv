@@ -1,7 +1,5 @@
 """Composefile preprocessor."""
 
-from __future__ import unicode_literals
-
 import copy
 import os
 import shutil

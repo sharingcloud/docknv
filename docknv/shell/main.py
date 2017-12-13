@@ -1,7 +1,5 @@
 """Handler main functions."""
 
-from __future__ import unicode_literals
-
 import os
 import sys
 import imp

@@ -1,7 +1,5 @@
 """YAML utilities."""
 
-from __future__ import unicode_literals
-
 import copy
 from collections import OrderedDict
 

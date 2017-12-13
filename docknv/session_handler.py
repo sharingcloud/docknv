@@ -1,7 +1,5 @@
 """Session config handler."""
 
-from __future__ import unicode_literals
-
 import os
 
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump

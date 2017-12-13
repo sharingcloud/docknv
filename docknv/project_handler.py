@@ -1,7 +1,5 @@
 """Project handler."""
 
-from __future__ import unicode_literals
-
 import os
 
 from contextlib import contextmanager

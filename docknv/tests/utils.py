@@ -1,7 +1,5 @@
 """Test utilities."""
 
-from __future__ import unicode_literals
-
 import tempfile
 import shutil
 from contextlib import contextmanager
