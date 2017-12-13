@@ -292,7 +292,7 @@ def _env_yaml_replace_value(value, resolved_env):
         if var_name not in resolved_env:
             Logger.warn("[ENV] Unknown environment variable {0}. It may not have been resolved yet.".format(var_name))
         else:
-            return resolved_env[var_name]
+            return str(resolved_env[var_name])
 
     return re.sub(VARIABLE_DETECTION_RGX, _replace, value)
 

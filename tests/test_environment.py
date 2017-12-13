@@ -43,6 +43,7 @@ def test_yaml_environment():
     assert "TEST_ONE" in config
     assert config["TEST_VALUE"] == "inclusion"
     assert config["TEST_ONE"] == 1
+    assert config["TEST_ONE_2"] == "toto:${TEST_ONE}"
     assert config["VAR_TEST"] == "hi"
     assert config["VAR_SUB_TEST"] == "${VAR_TEST}"
 
