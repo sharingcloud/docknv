@@ -75,7 +75,7 @@ def exec_compose_pretty(project_path, args):
     cmd = ["docker-compose", "-f", config_filename, "--project-directory", "."] + [str(a) for a in args if a != ""]
 
     Logger.debug("Executing (pretty) compose command: {0}".format(cmd))
-    proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE,
+    proc = subprocess.Popen(" ".join(cmd), cwd=project_path, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 
     while True:
