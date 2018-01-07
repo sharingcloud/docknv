@@ -4,6 +4,7 @@ import os
 import re
 import copy
 import imp
+import json
 
 from collections import OrderedDict
 
@@ -99,6 +100,25 @@ def env_yaml_load_in_memory(project_path, name):
                 loaded_env[key] = result[key]
 
     return loaded_env
+
+
+def env_yaml_key_value_export(env_data):
+    """
+    Export YAML data as key/value.
+
+    :param env_data:    Environment data (dict)
+    :rtype: Key value string (str)
+    """
+    export_string = ""
+    for key in env_data:
+        value = env_data[key]
+        if isinstance(value, str):
+            value = value
+        else:
+            value = json.dumps(value)
+        export_string += key + "=" + value + "\n"
+
+    return export_string
 
 
 def env_yaml_resolve_variables(loaded_env):

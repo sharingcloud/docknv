@@ -11,6 +11,9 @@ from docknv.utils.paths import create_path_or_replace, create_path_tree, get_low
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.ioutils import io_open
 
+from docknv.user_handler import (
+    user_get_file_from_project
+)
 from docknv.template_renderer import renderer_render_template
 from docknv.volume_handler import (
     volume_extract_from_line, volume_generate_namespaced_path
@@ -277,12 +280,18 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     if "services" in output_content:
         for service_name in output_content["services"]:
 
+            service_data = output_content["services"][service_name]
+
+            # Set environment
+            if "env_file" not in service_data:
+                service_data["env_file"] = [
+                    user_get_file_from_project(project_name, 'environment.env', config_name)
+                ]
+
             Logger.debug(
                 "Resolving volumes for service `{0}`...".format(service_name))
 
-            service_data = output_content["services"][service_name]
             final_volumes = []
-
             if "volumes" in service_data and isinstance(service_data["volumes"], dict):
                 volumes_data = service_data["volumes"]
 

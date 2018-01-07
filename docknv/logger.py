@@ -51,7 +51,7 @@ class Logger(object):
         """
         if Logger._is_active(msg_type):
             current_time = time.time() - INIT_TIME
-            logged_str = "{0}[{1}] [{2}] {3}".format(
+            logged_str = "{0}[{1}] [{2}] {3}{4}".format(
                 color,
                 Logger._round_time(current_time),
                 msg_type,

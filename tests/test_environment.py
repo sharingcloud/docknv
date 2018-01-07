@@ -10,7 +10,8 @@ from docknv.environment_handler import (
     env_yaml_inherits,
     env_get_yaml_path,
     env_get_py_path,
-    env_yaml_convert
+    env_yaml_convert,
+    env_yaml_key_value_export
 )
 
 from docknv.tests.utils import (
@@ -128,3 +129,10 @@ def test_yaml_inherits():
     result = env_yaml_inherits({}, "test")
     assert "test" in result["imports"]
     assert result["environment"] == {}
+
+
+def test_yaml_key_value_export():
+    """Key/Value export test."""
+    config = env_yaml_load_in_memory("samples/sample01", "inclusion")
+    resolved_env = env_yaml_resolve_variables(config)
+    env_yaml_key_value_export(resolved_env)

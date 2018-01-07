@@ -257,9 +257,9 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     from docknv.template_renderer import renderer_render_compose_template
     from docknv.environment_handler import (
         env_yaml_check_file, env_yaml_load_in_memory,
-        env_yaml_resolve_variables
+        env_yaml_resolve_variables, env_yaml_key_value_export
     )
-    from docknv.user_handler import user_get_id
+    from docknv.user_handler import user_get_id, user_get_file_from_project
 
     from docknv.session_handler import (
         session_read_configuration, session_write_configuration, session_insert_configuration
@@ -299,6 +299,12 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 
     env_content = env_yaml_load_in_memory(project_path, environment)
     env_content = env_yaml_resolve_variables(env_content)
+
+    # Save environment
+    with io_open(
+        user_get_file_from_project(config_data.project_name, 'environment.env', config_name), mode='wt'
+    ) as handle:
+        handle.write(env_yaml_key_value_export(env_content))
 
     # Get schema configuration
     schema_config = schema_get_configuration(config_data, schema_name)

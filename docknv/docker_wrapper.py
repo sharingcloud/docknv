@@ -85,7 +85,7 @@ def exec_compose_pretty(project_path, args):
         if out:
             out = out.strip()
             if _pretty_handler(args, out):
-                Logger.info(out)
+                print(out)
 
     rc = proc.poll()
     return rc
@@ -112,9 +112,6 @@ def _pretty_handler_common(line):
         return False
 
     elif line == "":
-        return False
-
-    elif line.startswith("\x1b"):
         return False
 
     return True
