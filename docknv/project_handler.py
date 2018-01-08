@@ -301,9 +301,8 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     env_content = env_yaml_resolve_variables(env_content)
 
     # Save environment
-    with io_open(
-        user_get_file_from_project(config_data.project_name, 'environment.env', config_name), mode='wt'
-    ) as handle:
+    env_kv_path = user_get_file_from_project(config_data.project_name, 'environment.env', config_name)
+    with io_open(env_kv_path, encoding="utf-8", mode="wt+") as handle:
         handle.write(env_yaml_key_value_export(env_content))
 
     # Get schema configuration
