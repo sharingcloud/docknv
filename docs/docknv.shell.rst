@@ -1,13 +1,6 @@
 docknv\.shell package
 =====================
 
-Subpackages
------------
-
-.. toctree::
-
-    docknv.shell.handlers
-
 Submodules
 ----------
 

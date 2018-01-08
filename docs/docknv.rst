@@ -1,15 +1,6 @@
 docknv package
 ==============
 
-Subpackages
------------
-
-.. toctree::
-
-    docknv.shell
-    docknv.tests
-    docknv.utils
-
 Submodules
 ----------
 

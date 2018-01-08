@@ -534,16 +534,16 @@ env edit
 ++++++++
 
 Edit or create an environment file for the project.
-By default, it will open the ``atom`` editor. If you no not have ``atom``, you can specify another editor (``-e/--editor``).
+By default, it will try to auto-detect your editor. If you want to use a specific editor, you can use the command: ``-e/--editor``.
 
 Examples:
 
 .. code-block:: bash
 
-    # Edit an existing `test_env` environment file with `atom`
+    # Edit an existing `test_env` environment file with the default editor
     docknv env edit test_env
 
-    # Create a new `test_env2` environment file with `atom`
+    # Create a new `test_env2` environment file with the default editor
     docknv env edit test_env2
 
     # Edit an existing `test_env` environment file with `vim`
