@@ -5,7 +5,7 @@ import os
 from contextlib import contextmanager
 
 from docknv.logger import Logger
-from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yaml_merge
+from docknv.utils.serialization import yaml_ordered_load, yaml_merge
 from docknv.utils.words import generate_config_name
 from docknv.utils.paths import create_path_tree, get_lower_basename
 from docknv.utils.ioutils import io_open
@@ -259,7 +259,10 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
         env_yaml_check_file, env_yaml_load_in_memory,
         env_yaml_resolve_variables, env_yaml_key_value_export
     )
-    from docknv.user_handler import user_get_id, user_get_file_from_project
+    from docknv.user_handler import (
+        user_get_id, user_get_file_from_project,
+        user_ensure_config_path_exists
+    )
 
     from docknv.session_handler import (
         session_read_configuration, session_write_configuration, session_insert_configuration
@@ -301,6 +304,7 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     env_content = env_yaml_resolve_variables(env_content)
 
     # Save environment
+    user_ensure_config_path_exists(config_data.project_name, config_name)
     env_kv_path = user_get_file_from_project(config_data.project_name, 'environment.env', config_name)
     with io_open(env_kv_path, encoding="utf-8", mode="wt+") as handle:
         handle.write(env_yaml_key_value_export(env_content))

@@ -64,7 +64,7 @@ def user_get_file_from_project(project_name, path_to_file, config_name=None):
         return os.path.join(user_get_project_path(project_name), config_name, path_to_file)
 
 
-def user_ensure_config_path_exists(project_name):
+def user_ensure_config_path_exists(project_name, config_name=None):
     """
     Ensure the config path existence.
 
@@ -77,6 +77,11 @@ def user_ensure_config_path_exists(project_name):
         os.makedirs(user_config_path)
     if not os.path.exists(user_project_config_path):
         os.makedirs(user_project_config_path)
+
+    if config_name:
+        user_project_config2_path = user_get_project_path(project_name, config_name)
+        if not os.path.exists(user_project_config2_path):
+            os.makedirs(user_project_config2_path)
 
 
 def user_read_docknv_config(project_name):
@@ -244,4 +249,5 @@ def _get_docknv_path():
 
     :rtype: Config path (str)
     """
-    return os.path.normpath(os.path.expanduser("~/.docknv"))
+    docknv_path = os.environ.get("DOCKNV_USER_PATH", "~/.docknv")
+    return os.path.normpath(os.path.expanduser(docknv_path))

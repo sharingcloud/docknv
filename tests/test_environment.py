@@ -135,4 +135,7 @@ def test_yaml_key_value_export():
     """Key/Value export test."""
     config = env_yaml_load_in_memory("samples/sample01", "inclusion")
     resolved_env = env_yaml_resolve_variables(config)
-    env_yaml_key_value_export(resolved_env)
+    export = env_yaml_key_value_export(resolved_env)
+
+    assert "VAR_SUB_TEST=hi" in export
+    assert "ARRAY_EXAMPLE=[\"coucou\", \"hi\", \"hi\"]" in export
