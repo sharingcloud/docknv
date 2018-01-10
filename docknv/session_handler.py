@@ -235,6 +235,17 @@ def session_insert_configuration(session_data, config_name, schema_name, environ
     return session_data
 
 
+def session_validate_user(session_data, user_id):
+    """
+    Check a configuration user ID.
+
+    :param session_data:    Session data (dict)
+    :param user_id:         User ID to check (str/int)
+    :rtype: True/False
+    """
+    return session_data["user"] == user_id
+
+
 def session_read_timestamps(project_name, config_name):
     """
     Read timestamps for a project name and a config name.

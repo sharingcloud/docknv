@@ -136,14 +136,15 @@ def project_use_configuration(project_path, config_name, quiet=False):
     :param config_name:      Config name (str)
     :param quiet:            Be quiet (bool) (default: False)
     """
-    from docknv.session_handler import session_get_configuration
+    from docknv.session_handler import (
+        session_get_configuration, session_validate_user
+    )
     from docknv.user_handler import user_get_id, user_copy_file_to_config
 
     config_content = project_read(project_path)
     config = session_get_configuration(project_path, config_name)
 
-    current_id = user_get_id()
-    if config["user"] != current_id:
+    if not session_validate_user(config, user_get_id()):
         Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
 
     path = project_get_composefile(project_path, config_name)
@@ -211,9 +212,15 @@ def project_generate_compose_from_configuration(project_path, config_name):
     :param project_path:     Project path (str)
     :param config_name:      Config name (str)
     """
-    from docknv.session_handler import session_get_configuration
+    from docknv.session_handler import (
+        session_get_configuration, session_validate_user
+    )
+    from docknv.user_handler import user_get_id
 
     config = session_get_configuration(project_path, config_name)
+    if not session_validate_user(config, user_get_id()):
+        Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
+
     project_generate_compose(".", config["schema"], config["namespace"], config["environment"],
                              config_name, update=True)
 
