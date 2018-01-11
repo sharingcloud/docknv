@@ -243,7 +243,7 @@ def session_validate_user(session_data, user_id):
     :param user_id:         User ID to check (str/int)
     :rtype: True/False
     """
-    return session_data["user"] == user_id
+    return session_data["user"] == user_id or user_id == 0
 
 
 def session_read_timestamps(project_name, config_name):
