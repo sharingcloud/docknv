@@ -96,7 +96,7 @@ def _pretty_handler(args, line):
     if not _pretty_handler_common(line):
         return False
 
-    if action in ["start", "stop", "restart"]:
+    if action in ["start", "stop", "restart", "up", "down"]:
         if not _pretty_handler_lifecycle(line):
             return False
         if not _pretty_handler_network(line):
