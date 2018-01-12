@@ -97,6 +97,8 @@ def _pretty_handler(args, line):
         return False
 
     if action in ["start", "stop", "restart"]:
+        if not _pretty_handler_lifecycle(line):
+            return False
         if not _pretty_handler_network(line):
             return False
 
@@ -125,6 +127,13 @@ def _pretty_handler_network(line):
         return False
 
     elif line.startswith("Removing network"):
+        return False
+
+    return True
+
+
+def _pretty_handler_lifecycle(line):
+    if line.startswith("\x1b"):
         return False
 
     return True
