@@ -4,3 +4,4 @@ colorama
 Jinja2
 whichcraft
 docker
+tox
