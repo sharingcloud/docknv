@@ -30,5 +30,8 @@ def test_create_path_tree():
 
 def test_get_lower_basename():
     """Test get_lower_basename."""
-    assert get_lower_basename("/hello/Folder/FolderName") == "foldername"
-    assert get_lower_basename("C:\\Users\\Pouet\\MyFolderName") == "myfoldername"
+    import platform
+    if platform.system() == 'Windows':
+        assert get_lower_basename("C:\\Users\\Pouet\\MyFolderName") == "myfoldername"
+    else:
+        assert get_lower_basename("/hello/Folder/FolderName") == "foldername"
