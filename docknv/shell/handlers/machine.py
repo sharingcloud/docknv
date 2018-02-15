@@ -106,8 +106,7 @@ def _handle_restart(args):
     namespace_name = context.namespace_name
     with user_handler.user_try_lock("."):
         return lifecycle_handler.lifecycle_machine_restart(
-            ".", args.machine,
-            force=args.force,
+            ".", args.machine, force=args.force,
             namespace_name=namespace_name)
 
 

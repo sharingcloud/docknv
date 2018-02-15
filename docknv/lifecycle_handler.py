@@ -293,12 +293,11 @@ def lifecycle_machine_restart(project_path, machine_name, force=False,
     :param force:                Force restart (bool) (default: False)
     :param namespace_name:       Namespace name (str?) (default: None)
     """
-    machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-
     if force:
         lifecycle_machine_stop(project_path, machine_name, namespace_name=namespace_name)
         return lifecycle_machine_start(project_path, machine_name, namespace_name=namespace_name)
     else:
+        machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
         return exec_compose_pretty(project_path, ["restart", machine_name])
 
 
