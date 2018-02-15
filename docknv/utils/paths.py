@@ -11,7 +11,7 @@ def get_lower_basename(path):
     :param path:    Path (str)
     :rtype: Lowercase basename (str)
     """
-    return os.path.basename(os.path.abspath(path)).lower()
+    return os.path.basename(os.path.normpath(os.path.abspath(path))).lower()
 
 
 def create_path_or_replace(path_to_create):
