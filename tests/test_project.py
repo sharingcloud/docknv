@@ -10,6 +10,7 @@ from docknv.tests.utils import (
 
 
 def test_project_read():
+    """Test project read."""
     from docknv.project_handler import project_read
 
     with using_temporary_directory() as tempdir:
@@ -23,6 +24,7 @@ def test_project_read():
 
 
 def test_project_generate_compose():
+    """Test generate compose."""
     from docknv.project_handler import project_generate_compose
 
     with using_temporary_directory() as tempdir:

@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import os
+import pytest
 
 from docknv.environment_handler import (
     env_yaml_load_in_memory,
@@ -11,7 +12,8 @@ from docknv.environment_handler import (
     env_get_yaml_path,
     env_get_py_path,
     env_yaml_convert,
-    env_yaml_key_value_export
+    env_yaml_key_value_export,
+    env_yaml_list
 )
 
 from docknv.tests.utils import (
@@ -124,9 +126,28 @@ def test_yaml_convert():
         assert "imports" not in default_yaml_data
 
 
+def test_yaml_list():
+    """List."""
+    with using_temporary_directory() as tempdir:
+        project_path = copy_sample("sample01", tempdir)
+
+        # OK test
+        env_yaml_list(project_path)
+
+        # Non existing test
+        toto_path = os.path.join(project_path, 'toto')
+        with pytest.raises(RuntimeError):
+            env_yaml_list(toto_path)
+
+        # Empty test
+        toto_env_path = os.path.join(toto_path, 'envs')
+        os.makedirs(toto_env_path)
+        env_yaml_list(toto_path)
+
+
 def test_yaml_inherits():
     """Inheritance test."""
-    result = env_yaml_inherits({}, "test")
+    result = env_yaml_inherits("test")
     assert "test" in result["imports"]
     assert result["environment"] == {}
 

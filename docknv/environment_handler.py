@@ -136,11 +136,10 @@ def env_yaml_resolve_variables(loaded_env):
     return resolved_env
 
 
-def env_yaml_inherits(source_data, source_name):
+def env_yaml_inherits(source_name):
     """
     Inherit a YAML environment.
 
-    :param source_data:     Source data (dict)
     :param source_name:     Source name (str)
     :rtype: YAML data (dict)
     """

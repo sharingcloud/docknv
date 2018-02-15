@@ -146,11 +146,8 @@ def scaffold_environment_copy(project_path, env_name_source, env_name_dest):
             print("Nothing done.")
             return
 
-    # Loading source env
-    source_content = env_yaml_load_in_memory(project_path, env_name_source)
-
     # Inherit
-    dest_data = env_yaml_inherits(source_content, env_name_source)
+    dest_data = env_yaml_inherits(env_name_source)
     env_yaml_write_to_file(dest_data, env_path_dest)
 
     Logger.info("Environment file `{0}` copied to `{1}`".format(env_name_source, env_name_dest))

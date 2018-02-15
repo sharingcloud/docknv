@@ -3,6 +3,7 @@
 import subprocess
 
 from docknv import environment_handler
+from docknv.logger import Logger
 from docknv.shell.common import exec_handler
 from docknv.utils.ioutils import get_editor_executable
 
@@ -22,6 +23,10 @@ def _init(subparsers):
 
     convert_cmd = subs.add_parser("convert", help="convert an old Python environment to the new format")
     convert_cmd.add_argument("env_name", help="environment file name")
+
+    inherit_cmd = subs.add_parser("create-from", help='create an environment file from another')
+    inherit_cmd.add_argument("env_name", help="environment file name")
+    inherit_cmd.add_argument("from_env", help="source environment name")
 
 
 def _handle(args):
@@ -44,3 +49,12 @@ def _handle_edit(args):
 
 def _handle_convert(args):
     environment_handler.env_yaml_convert(".", args.env_name)
+
+
+def _handle_create_from(args):
+    if not environment_handler.env_yaml_check_file(".", args.from_env):
+        Logger.error("Missing environment file `{0}`".format(args.from_env))
+
+    inherited = environment_handler.env_yaml_inherits(args.from_env)
+    dest_env = environment_handler.env_get_yaml_path(".", args.env_name)
+    environment_handler.env_yaml_write_to_file(inherited, dest_env)
