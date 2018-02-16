@@ -1,5 +1,6 @@
 """docknv machines and schema lifecycle handling."""
 
+import os
 import shlex
 
 from docknv.logger import Logger, Fore, Style
@@ -54,6 +55,9 @@ def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
     config_data = project_read(project_path)
     schema_config = schema_get_configuration(config_data, current_config_data["schema"])
     config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+
+    commands = []
 
     namespace = current_config_data["namespace"]
     rcode = 0
@@ -61,15 +65,20 @@ def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
         service_name = "{0}_{1}".format(namespace, service) if namespace != "default" else service
         no_cache_cmd = "--no-cache" if no_cache else ""
         rcode = exec_compose(project_path, config_filename, ["build", service_name, no_cache_cmd], pretty=True)
-        if rcode != 0:
+        commands.append(rcode)
+        if not dry_run and rcode != 0:
             raise RuntimeError("Build failed for service {0}.".format(service_name))
 
         if push_to_registry:
             rcode = exec_compose(project_path, config_filename, ["push", service_name], pretty=True)
-            if rcode != 0:
+            commands.append(rcode)
+            if not dry_run and rcode != 0:
                 raise RuntimeError("Push failed for service {0}.".format(service_name))
 
-    return rcode
+    if dry_run:
+        return commands
+    else:
+        return rcode
 
 
 def lifecycle_schema_start(project_path):
@@ -134,8 +143,17 @@ def lifecycle_schema_restart(project_path, force=False):
         config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
         return exec_compose(project_path, config_filename, ["restart"], pretty=True)
     else:
-        lifecycle_schema_stop(project_path)
-        return lifecycle_schema_start(project_path)
+        dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+
+        if dry_run:
+            return (
+                lifecycle_schema_stop(project_path),
+                lifecycle_schema_start(project_path)
+            )
+
+        else:
+            lifecycle_schema_stop(project_path)
+            return lifecycle_schema_start(project_path)
 
 # BUNDLE FUNCTIONS ##############
 

@@ -44,3 +44,14 @@ def copy_sample(sample, destination):
     shutil.copytree("samples/{0}".format(sample), output_path)
 
     return output_path
+
+
+def assert_cmd(cmd, value):
+    """
+    Assert a command.
+
+    :param cmd:     Command (list)
+    :param value:   Value (str)
+    :rtype: True/False
+    """
+    return " ".join(cmd) == value
