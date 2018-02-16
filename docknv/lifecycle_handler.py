@@ -6,7 +6,7 @@ from docknv.logger import Logger, Fore, Style
 from docknv.utils.paths import get_lower_basename
 
 from docknv.docker_wrapper import (
-    exec_compose, exec_compose_pretty, get_docker_container,
+    exec_compose, get_docker_container,
     exec_docker
 )
 
@@ -23,6 +23,8 @@ from docknv.project_handler import (
 
 from docknv.docker_api_wrapper import docker_ps, using_docker_client, text_ellipse
 from docknv.command_handler import command_get_context
+
+from docknv.user_handler import user_get_file_from_project
 
 
 def lifecycle_get_machine_name(machine_name, namespace_name=None):
@@ -51,18 +53,19 @@ def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
 
     config_data = project_read(project_path)
     schema_config = schema_get_configuration(config_data, current_config_data["schema"])
+    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
 
     namespace = current_config_data["namespace"]
     rcode = 0
     for service in schema_config["config"]["services"]:
         service_name = "{0}_{1}".format(namespace, service) if namespace != "default" else service
         no_cache_cmd = "--no-cache" if no_cache else ""
-        rcode = exec_compose_pretty(project_path, ["build", service_name, no_cache_cmd])
+        rcode = exec_compose(project_path, config_filename, ["build", service_name, no_cache_cmd], pretty=True)
         if rcode != 0:
             raise RuntimeError("Build failed for service {0}.".format(service_name))
 
         if push_to_registry:
-            rcode = exec_compose_pretty(project_path, ["push", service_name])
+            rcode = exec_compose(project_path, config_filename, ["push", service_name], pretty=True)
             if rcode != 0:
                 raise RuntimeError("Push failed for service {0}.".format(service_name))
 
@@ -75,8 +78,12 @@ def lifecycle_schema_start(project_path):
 
     :param project_path:     Project path (str)
     """
+    config_data = project_read(project_path)
+    current_config = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+
     command = ["up", "-d"]
-    return exec_compose_pretty(project_path, command)
+    return exec_compose(project_path, config_filename, command, pretty=True)
 
 
 def lifecycle_schema_stop(project_path):
@@ -85,7 +92,11 @@ def lifecycle_schema_stop(project_path):
 
     :param project_path:     Project path (str)
     """
-    return exec_compose_pretty(project_path, ["down"])
+    config_data = project_read(project_path)
+    current_config = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+
+    return exec_compose(project_path, config_filename, ["down"], pretty=True)
 
 
 def lifecycle_schema_ps(project_path):
@@ -118,7 +129,10 @@ def lifecycle_schema_restart(project_path, force=False):
     :param force:            Force restart (bool) (default: False)
     """
     if not force:
-        return exec_compose_pretty(project_path, ["restart"])
+        config_data = project_read(project_path)
+        current_config = project_get_active_configuration(project_path)
+        config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+        return exec_compose(project_path, config_filename, ["restart"], pretty=True)
     else:
         lifecycle_schema_stop(project_path)
         return lifecycle_schema_start(project_path)
@@ -223,17 +237,21 @@ def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
+    config_data = project_read(project_path)
+    current_config = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+
     if no_cache:
         args = ["build", "--no-cache", machine_name]
     else:
         args = ["build", machine_name]
 
-    code = exec_compose_pretty(project_path, args)
+    code = exec_compose(project_path, config_filename, args, pretty=True)
     if code != 0:
         raise RuntimeError("Build failed for machine {0}.".format(machine_name))
 
     if push_to_registry:
-        code = exec_compose_pretty(project_path, ["push", machine_name])
+        code = exec_compose(project_path, config_filename, ["push", machine_name], pretty=True)
         if code != 0:
             raise RuntimeError("Push failed for machine {0}.".format(machine_name))
 
@@ -249,8 +267,11 @@ def lifecycle_machine_stop(project_path, machine_name, namespace_name=None):
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
+    config_data = project_read(project_path)
+    current_config = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
 
-    return exec_compose_pretty(project_path, ["stop", machine_name])
+    return exec_compose(project_path, config_filename, ["stop", machine_name], pretty=True)
 
 
 def lifecycle_machine_start(project_path, machine_name, namespace_name=None):
@@ -262,7 +283,11 @@ def lifecycle_machine_start(project_path, machine_name, namespace_name=None):
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-    return exec_compose_pretty(project_path, ["start", machine_name])
+    config_data = project_read(project_path)
+    current_config = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+
+    return exec_compose(project_path, config_filename, ["start", machine_name], pretty=True)
 
 
 def lifecycle_machine_shell(project_path, machine_name, shell_path="/bin/bash", namespace_name=None, create=False):
@@ -298,7 +323,11 @@ def lifecycle_machine_restart(project_path, machine_name, force=False,
         return lifecycle_machine_start(project_path, machine_name, namespace_name=namespace_name)
     else:
         machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-        return exec_compose_pretty(project_path, ["restart", machine_name])
+        config_data = project_read(project_path)
+        current_config = project_get_active_configuration(project_path)
+        config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+
+        return exec_compose(project_path, config_filename, ["restart", machine_name], pretty=True)
 
 
 def lifecycle_machine_run(project_path, machine_name, command, daemon=False, namespace_name=None):
@@ -312,10 +341,13 @@ def lifecycle_machine_run(project_path, machine_name, command, daemon=False, nam
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-
     d_cmd = "-d" if daemon else ""
 
-    return exec_compose(project_path, ["run", "--rm", "--service-ports", d_cmd, machine_name] + shlex.split(command))
+    config = project_read(project_path)
+    config_name = project_get_active_configuration(project_path)
+    config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
+
+    return exec_compose(project_path, config_filename, ["run", "--rm", "--service-ports", d_cmd, machine_name] + shlex.split(command))
 
 
 def lifecycle_machine_push(project_path, machine_name, host_path, container_path, namespace_name=None):

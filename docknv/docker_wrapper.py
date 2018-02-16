@@ -1,5 +1,6 @@
 """Docker commands wrapper."""
 
+import os
 import subprocess
 import six
 
@@ -41,54 +42,50 @@ def exec_docker(project_path, args):
     :param args:             Arguments (...)
     """
     cmd = ["docker"] + [str(a) for a in args if a != ""]
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
     Logger.debug("Executing docker command: {0}".format(cmd))
+
+    if dry_run:
+        return cmd
+
     return subprocess.call(cmd, cwd=project_path)
 
 
-def exec_compose(project_path, args):
+def exec_compose(project_path, config_filename, args, pretty=False):
     """
     Execute a Docker Compose command.
 
     :param project_path:     Project path (str)
+    :param config_filename:  Config filename (str)
     :param args:             Arguments (...)
+    :param pretty:           Pretty filtering ? (default: False) (bool)
     """
-    config = project_read(project_path)
-    config_name = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+    cmd = ["docker-compose", "-f", config_filename, "--project-directory", project_path]
+    cmd += [str(a) for a in args if a != ""]
 
-    cmd = ["docker-compose", "-f", config_filename, "--project-directory", "."] + [str(a) for a in args if a != ""]
     Logger.debug("Executing compose command: {0}".format(cmd))
+
+    if dry_run:
+        return cmd
+
+    if pretty:
+        proc = subprocess.Popen(" ".join(cmd), cwd=project_path, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+
+        while True:
+            out = proc.stdout.readline()
+            if out == '' and proc.poll() is not None:
+                break
+            if out:
+                out = out.strip()
+                if _pretty_handler(args, out):
+                    print(out)
+
+        rc = proc.poll()
+        return rc
+
     return subprocess.call(cmd, cwd=project_path)
-
-
-def exec_compose_pretty(project_path, args):
-    """
-    Execute a Docker Compose command, properly filtered.
-
-    :param project_path:     Project path (str)
-    :param args:             Arguments (...)
-    """
-    config = project_read(project_path)
-    config_name = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
-
-    cmd = ["docker-compose", "-f", config_filename, "--project-directory", "."] + [str(a) for a in args if a != ""]
-
-    Logger.debug("Executing (pretty) compose command: {0}".format(cmd))
-    proc = subprocess.Popen(" ".join(cmd), cwd=project_path, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
-
-    while True:
-        out = proc.stdout.readline()
-        if out == '' and proc.poll() is not None:
-            break
-        if out:
-            out = out.strip()
-            if _pretty_handler(args, out):
-                print(out)
-
-    rc = proc.poll()
-    return rc
 
 
 def _pretty_handler(args, line):
