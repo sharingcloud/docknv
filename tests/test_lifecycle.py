@@ -22,6 +22,7 @@ def _prepare_project(tempdir):
 
     project_path = copy_sample("sample01", tempdir)
     project_generate_compose(project_path, "hello", "test", "default", "test")
+    project_generate_compose(project_path, "hello", "test2", "default", "test2")
     project_use_configuration(project_path, "test")
     return project_path
 
@@ -120,3 +121,136 @@ def test_lifecycle_schema_restart():
 
         assert assert_cmd(stop_cmd, expected_stop_cmd)
         assert assert_cmd(start_cmd, expected_start_cmd)
+
+
+# BUNDLE ###########
+
+
+def test_lifecycle_bundle_start():
+    """Test lifecycle bundle start."""
+    with using_temporary_directory() as tempdir:
+        project_path = _prepare_project(tempdir)
+        config_filename1 = user_get_file_from_project("sample01", "docker-compose.yml", "test")
+        config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
+
+        # Bundle start
+        cmds = lifecycle_handler.lifecycle_bundle_start(project_path, ["test", "test2"])
+
+        expected_cmds = (
+            'docker-compose -f {0} --project-directory {1} up -d'.format(
+                config_filename1, project_path),
+            'docker-compose -f {0} --project-directory {1} up -d'.format(
+                config_filename2, project_path)
+        )
+
+        for i in range(len(cmds)):
+            assert assert_cmd(cmds[i], expected_cmds[i])
+
+
+def test_lifecycle_bundle_stop():
+    """Test lifecycle bundle stop."""
+    with using_temporary_directory() as tempdir:
+        project_path = _prepare_project(tempdir)
+        config_filename1 = user_get_file_from_project("sample01", "docker-compose.yml", "test")
+        config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
+
+        # Bundle start
+        cmds = lifecycle_handler.lifecycle_bundle_stop(project_path, ["test", "test2"])
+
+        expected_cmds = (
+            'docker-compose -f {0} --project-directory {1} down'.format(
+                config_filename1, project_path),
+            'docker-compose -f {0} --project-directory {1} down'.format(
+                config_filename2, project_path)
+        )
+
+        for i in range(len(cmds)):
+            assert assert_cmd(cmds[i], expected_cmds[i])
+
+
+def test_lifecycle_bundle_restart():
+    """Test lifecycle bundle restart."""
+    with using_temporary_directory() as tempdir:
+        project_path = _prepare_project(tempdir)
+        config_filename1 = user_get_file_from_project("sample01", "docker-compose.yml", "test")
+        config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
+
+        # Bundle restart force
+        cmds = lifecycle_handler.lifecycle_bundle_restart(project_path, ["test", "test2"], force=True)
+        expected_cmds = (
+            (
+                'docker-compose -f {0} --project-directory {1} down'.format(
+                    config_filename1, project_path),
+                'docker-compose -f {0} --project-directory {1} up -d'.format(
+                    config_filename1, project_path)
+            ),
+            (
+                'docker-compose -f {0} --project-directory {1} down'.format(
+                    config_filename2, project_path),
+                'docker-compose -f {0} --project-directory {1} up -d'.format(
+                    config_filename2, project_path)
+            )
+        )
+
+        for i in range(len(cmds)):
+            assert assert_cmd(cmds[i][0], expected_cmds[i][0])
+            assert assert_cmd(cmds[i][1], expected_cmds[i][1])
+
+        # Bundle restart no-force
+        cmds = lifecycle_handler.lifecycle_bundle_restart(project_path, ["test", "test2"])
+        expected_cmds = (
+            'docker-compose -f {0} --project-directory {1} restart'.format(
+                config_filename1, project_path),
+            'docker-compose -f {0} --project-directory {1} restart'.format(
+                config_filename2, project_path)
+        )
+
+        for i in range(len(cmds)):
+            assert assert_cmd(cmds[i], expected_cmds[i])
+
+
+def test_lifecycle_bundle_build():
+    """Test lifecycle bundle build."""
+    with using_temporary_directory() as tempdir:
+        project_path = _prepare_project(tempdir)
+        config_filename1 = user_get_file_from_project("sample01", "docker-compose.yml", "test")
+        config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
+
+        # Bundle start
+        cmds = lifecycle_handler.lifecycle_bundle_build(project_path, ["test", "test2"])
+
+        expected_cmds = (
+            (
+                'docker-compose -f {0} --project-directory {1} build test_hello-world'.format(
+                    config_filename1, project_path),
+                'docker-compose -f {0} --project-directory {1} push test_hello-world'.format(
+                    config_filename1, project_path)
+            ),
+            (
+                'docker-compose -f {0} --project-directory {1} build test2_hello-world'.format(
+                    config_filename2, project_path),
+                'docker-compose -f {0} --project-directory {1} push test2_hello-world'.format(
+                    config_filename2, project_path)
+            )
+        )
+
+        for i in range(len(cmds)):
+            assert assert_cmd(cmds[i][0], expected_cmds[i][0])
+            assert assert_cmd(cmds[i][1], expected_cmds[i][1])
+
+# MACHINE ##########
+
+
+# REGISTRY #########
+
+def test_lifecycle_registry_start():
+    """Test lifecycle registry start."""
+    cmd = lifecycle_handler.lifecycle_registry_start(None)
+    assert assert_cmd(cmd, 'docker run -d -p 5000:5000 --restart=always --name registry registry:2')
+
+
+def test_lifecycle_registry_stop():
+    """Test lifecycle registry stop."""
+    cmd = lifecycle_handler.lifecycle_registry_stop()
+    assert assert_cmd(cmd[0], 'docker stop registry')
+    assert assert_cmd(cmd[1], 'docker rm registry')

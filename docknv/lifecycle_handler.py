@@ -166,12 +166,17 @@ def lifecycle_bundle_stop(project_path, config_names):
     :param config_names:     Config names (iterable)
     """
     session_check_bundle_configurations(project_path, config_names)
-    code = 0
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+    codes = []
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
-            code = lifecycle_schema_stop(project_path)
+            codes.append(lifecycle_schema_stop(project_path))
 
-    return code
+    if dry_run:
+        return codes
+    else:
+        return codes[-1]
 
 
 def lifecycle_bundle_start(project_path, config_names):
@@ -182,12 +187,17 @@ def lifecycle_bundle_start(project_path, config_names):
     :param config_names:     Config names (iterable)
     """
     session_check_bundle_configurations(project_path, config_names)
-    code = 0
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+    codes = []
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
-            code = lifecycle_schema_start(project_path)
+            codes.append(lifecycle_schema_start(project_path))
 
-    return code
+    if dry_run:
+        return codes
+    else:
+        return codes[-1]
 
 
 def lifecycle_bundle_restart(project_path, config_names, force=False):
@@ -199,12 +209,17 @@ def lifecycle_bundle_restart(project_path, config_names, force=False):
     :param force:            Force restart (bool) (default: False)
     """
     session_check_bundle_configurations(project_path, config_names)
-    code = 0
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+    codes = []
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
-            code = lifecycle_schema_restart(project_path, force=force)
+            codes.append(lifecycle_schema_restart(project_path, force=force))
 
-    return code
+    if dry_run:
+        return codes
+    else:
+        return codes[-1]
 
 
 def lifecycle_bundle_ps(project_path, config_names):
@@ -215,12 +230,17 @@ def lifecycle_bundle_ps(project_path, config_names):
     :param config_names:     Config names (iterable)
     """
     session_check_bundle_configurations(project_path, config_names)
-    code = 0
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+    codes = []
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
-            code = lifecycle_schema_ps(project_path)
+            codes.append(lifecycle_schema_ps(project_path))
 
-    return code
+    if dry_run:
+        return codes
+    else:
+        return codes[-1]
 
 
 def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_registry=True):
@@ -233,12 +253,17 @@ def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_r
     :param push_to_registry:     Push to registry (bool) (default: True)
     """
     session_check_bundle_configurations(project_path, config_names)
-    code = 0
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+    codes = []
+
     for config_name in config_names:
         with project_use_temporary_configuration(project_path, config_name):
-            code = lifecycle_schema_build(project_path, no_cache, push_to_registry)
+            codes.append(lifecycle_schema_build(project_path, no_cache, push_to_registry))
 
-    return code
+    if dry_run:
+        return codes
+    else:
+        return codes[-1]
 
 # MACHINE FUNCTIONS #############
 
@@ -365,7 +390,11 @@ def lifecycle_machine_run(project_path, machine_name, command, daemon=False, nam
     config_name = project_get_active_configuration(project_path)
     config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
 
-    return exec_compose(project_path, config_filename, ["run", "--rm", "--service-ports", d_cmd, machine_name] + shlex.split(command))
+    return exec_compose(
+        project_path,
+        config_filename,
+        ["run", "--rm", "--service-ports", d_cmd, machine_name] + shlex.split(command)
+    )
 
 
 def lifecycle_machine_push(project_path, machine_name, host_path, container_path, namespace_name=None):
@@ -541,4 +570,10 @@ def lifecycle_registry_start(path):
 
 def lifecycle_registry_stop():
     """Stop a registry."""
-    return exec_docker(".", ["stop", "registry"]) and exec_docker(".", ["rm", "registry"])
+    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
+    codes = [exec_docker(".", ["stop", "registry"]), exec_docker(".", ["rm", "registry"])]
+
+    if dry_run:
+        return codes
+    else:
+        return codes[-1]
