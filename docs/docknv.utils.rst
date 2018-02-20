@@ -1,6 +1,11 @@
 docknv\.utils package
 =====================
 
+.. automodule:: docknv.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
 
@@ -61,10 +66,3 @@ docknv\.utils\.words module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: docknv.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,6 +1,11 @@
 docknv\.shell package
 =====================
 
+.. automodule:: docknv.shell
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
 
@@ -21,10 +26,3 @@ docknv\.shell\.main module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: docknv.shell
-    :members:
-    :undoc-members:
-    :show-inheritance:

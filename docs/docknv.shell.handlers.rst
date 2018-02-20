@@ -1,6 +1,11 @@
 docknv\.shell\.handlers package
 ===============================
 
+.. automodule:: docknv.shell.handlers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
 
@@ -93,10 +98,3 @@ docknv\.shell\.handlers\.volume module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: docknv.shell.handlers
-    :members:
-    :undoc-members:
-    :show-inheritance:

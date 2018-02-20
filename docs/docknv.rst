@@ -1,6 +1,11 @@
 docknv package
 ==============
 
+.. automodule:: docknv
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
 
@@ -149,10 +154,3 @@ docknv\.volume\_handler module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: docknv
-    :members:
-    :undoc-members:
-    :show-inheritance:

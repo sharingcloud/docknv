@@ -1,7 +1,8 @@
-## 4.0.0.alpha
+## 4.0
 
 - YAML configuration files instead of Python files
 - Merging `schema` and `config` commands.
+- More tests and fixes.
 
 ## 3.7.4
 
