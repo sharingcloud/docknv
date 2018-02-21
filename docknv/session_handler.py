@@ -201,7 +201,7 @@ def session_show_configuration_list(project_path):
     config = session_read_configuration(project_path)
     len_values = len(config["values"])
     if len_values == 0:
-        Logger.warn("No configuration found. Use `docknv config generate` to generate configurations.")
+        Logger.warn("No configuration found. Use `docknv config create` to generate configurations.")
     else:
         Logger.info("Known configurations:")
         for key in config["values"]:
