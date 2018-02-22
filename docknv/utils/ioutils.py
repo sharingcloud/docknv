@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from whichcraft import which
 import six
 
-EDITORS = ["atom", "vim", "emacs", "nano"]
+EDITORS = ["code", "atom", "vim", "emacs", "nano"]
 
 
 @contextmanager
