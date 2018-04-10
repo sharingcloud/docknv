@@ -28,7 +28,7 @@ def _init(subparsers):
     build_cmd = subs.add_parser("build", help="build machines from schemas")
     build_cmd.add_argument("configs", nargs="+")
     build_cmd.add_argument("--no-cache", help="no cache", action="store_true")
-    build_cmd.add_argument("--do-not-push", help="do not push to registry", action="store_true")
+    build_cmd.add_argument("--push", help="push to registry", action="store_true")
 
 
 def _handle(args):
@@ -58,4 +58,4 @@ def _handle_ps(args):
 def _handle_build(args):
     return lifecycle_handler.lifecycle_bundle_build(
         ".", args.configs,
-        no_cache=args.no_cache, push_to_registry=not args.do_not_push)
+        no_cache=args.no_cache, push_to_registry=args.push)

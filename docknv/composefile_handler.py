@@ -247,7 +247,8 @@ def composefile_handle_service_tags(compose_content, registry_url):
             if "tag" in service_data:
                 Logger.debug("Handling tag for service `{0}`...".format(service_name))
                 service_tag = service_data["tag"]
-                service_data["image"] = "/".join([registry_url, service_tag])
+                # service_data["image"] = "/".join([registry_url, service_tag])
+                service_data["image"] = service_tag
                 del service_data["tag"]
 
     return output_content

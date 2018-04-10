@@ -56,7 +56,7 @@ def _init(subparsers):
 
     build_cmd = subs.add_parser("build", help="build a machine")
     build_cmd.add_argument("machine", help="machine name")
-    build_cmd.add_argument("--do-not-push", help="do not push to registry", action="store_true")
+    build_cmd.add_argument("--push", help="push to registry", action="store_true")
     build_cmd.add_argument("--no-cache", help="build without cache", action="store_true")
 
     freeze_cmd = subs.add_parser("freeze", help="freeze a machine")
@@ -73,7 +73,7 @@ def _handle_build(args):
     return lifecycle_handler.lifecycle_machine_build(
         ".", args.machine,
         no_cache=args.no_cache,
-        push_to_registry=not args.do_not_push,
+        push_to_registry=args.push,
         namespace_name=namespace_name)
 
 

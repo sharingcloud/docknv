@@ -41,13 +41,13 @@ def lifecycle_get_machine_name(machine_name, namespace_name=None):
 # SCHEMA FUNCTIONS ###############
 
 
-def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=True):
+def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=False):
     """
     Build a schema.
 
     :param project_path:         Project path (str)
     :param no_cache:             Do not use cache (bool) (default: False)
-    :param push_to_registry:     Push to registry (bool) (default: True)
+    :param push_to_registry:     Push to registry (bool) (default: False)
     """
     current_config = project_get_active_configuration(project_path)
     current_config_data = session_get_configuration(project_path, current_config)
@@ -243,14 +243,14 @@ def lifecycle_bundle_ps(project_path, config_names):
         return codes[-1]
 
 
-def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_registry=True):
+def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_registry=False):
     """
     Build multiple configurations.
 
     :param project_path:         Project path (str)
     :param config_names:         Config names (iterable)
     :param no_cache:             Do not use cache (bool) (default: False)
-    :param push_to_registry:     Push to registry (bool) (default: True)
+    :param push_to_registry:     Push to registry (bool) (default: False)
     """
     session_check_bundle_configurations(project_path, config_names)
     dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
@@ -268,14 +268,14 @@ def lifecycle_bundle_build(project_path, config_names, no_cache=False, push_to_r
 # MACHINE FUNCTIONS #############
 
 
-def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_registry=True, namespace_name=None):
+def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_registry=False, namespace_name=None):
     """
     Build a machine.
 
     :param project_path:         Project path (str)
     :param machine_name:         Machine name (str)
     :param no_cache:             Do not use cache (bool) (default: False)
-    :param push_to_registry:     Push to registry (bool) (default: True)
+    :param push_to_registry:     Push to registry (bool) (default: False)
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)

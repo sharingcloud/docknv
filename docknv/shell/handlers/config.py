@@ -44,7 +44,7 @@ def _init(subparsers):
     # Build
     build_cmd = subs.add_parser("build", help="build machines from schema")
     build_cmd.add_argument("--no-cache", help="no cache", action="store_true")
-    build_cmd.add_argument("--do-not-push", help="do not push to registry", action="store_true")
+    build_cmd.add_argument("--push", help="push to registry", action="store_true")
 
     # Create
     create_cmd = subs.add_parser("create", help="create a docknv configuration")
@@ -79,7 +79,7 @@ def _handle(args):
 
 def _handle_build(args):
     return lifecycle_handler.lifecycle_schema_build(
-        ".", no_cache=args.no_cache, push_to_registry=not args.do_not_push)
+        ".", no_cache=args.no_cache, push_to_registry=args.push)
 
 
 def _handle_ls(args):
