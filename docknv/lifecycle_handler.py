@@ -550,30 +550,3 @@ def lifecycle_volume_remove(project_path, volume_name):
         raise RuntimeError("Error while removing volume {0}".format(volume_path))
 
     return code
-
-
-def lifecycle_registry_start(path):
-    """
-    Start a registry.
-
-    :param path:             Registry path (str)
-    """
-    Logger.info("Starting registry... {0}".format(path))
-
-    cmd = ["run", "-d", "-p", "5000:5000"]
-    if path:
-        cmd += ["-v", "{0}:/var/lib/registry".format(path)]
-    cmd += ["--restart=always", "--name", "registry", "registry:2"]
-
-    return exec_docker(".", cmd)
-
-
-def lifecycle_registry_stop():
-    """Stop a registry."""
-    dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
-    codes = [exec_docker(".", ["stop", "registry"]), exec_docker(".", ["rm", "registry"])]
-
-    if dry_run:
-        return codes
-    else:
-        return codes[-1]

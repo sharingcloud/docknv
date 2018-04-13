@@ -239,18 +239,3 @@ def test_lifecycle_bundle_build():
             assert assert_cmd(cmds[i][1], expected_cmds[i][1])
 
 # MACHINE ##########
-
-
-# REGISTRY #########
-
-def test_lifecycle_registry_start():
-    """Test lifecycle registry start."""
-    cmd = lifecycle_handler.lifecycle_registry_start(None)
-    assert assert_cmd(cmd, 'docker run -d -p 5000:5000 --restart=always --name registry registry:2')
-
-
-def test_lifecycle_registry_stop():
-    """Test lifecycle registry stop."""
-    cmd = lifecycle_handler.lifecycle_registry_stop()
-    assert assert_cmd(cmd[0], 'docker stop registry')
-    assert assert_cmd(cmd[1], 'docker rm registry')

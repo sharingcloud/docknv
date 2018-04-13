@@ -117,7 +117,7 @@ Here is the content:
       ipython:
         build: images/ipython/
         # Image tag
-        image: localhost:5000/sample02_ipython
+        tag: sample02_ipython
         volumes:
           static:
             - ipython/startup:/root/.ipython/profile_nbserver/startup
@@ -136,7 +136,7 @@ Here is the content:
     networks:
       net:
 
-This template defines a single service, named ``ipython``, with an image linked at ``images/ipython``, tagged as ``localhost:5000/sample02_ipython``. This tag will allow the image to be send to a *local Docker registry*.
+This template defines a single service, named ``ipython``, with an image linked at ``images/ipython``, tagged as ``sample02_ipython``. This tag will allow the image to be send to a *local Docker registry* if needed.
 
 It is linked to one *static folder volume*, two *template file volumes* and one *shared folder volume*, previously seen in the **Data** section.
 
@@ -185,8 +185,6 @@ You should know everything about this project by now, so we can finally try to r
 If we list the environments (``docknv env ls``), there only should be the ``default`` environment.
 If we list the schemas (``docknv schema ls``), there only should be the ``standard`` environment.
 Then if we list the configurations (``docknv config ls``), none should appear.
-
-If you do not have a local registry set up, begin with the ``docknv registry start`` command. You can check if the registry is up by executing ``docker ps`` and checking the ``registry`` entry.
 
 To start the project, we have to create a configuration, to link it to an environment, a schema, and optionally a namespace. In this case we will not use a namespace because we will not have concurrent executions.
 

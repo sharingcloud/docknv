@@ -15,7 +15,6 @@ Each command is described with an example.
 - *volume*: manage volumes
 - *user*: manage user config files
 - *scaffold*: scaffolding
-- *registry*: start and stop registry
 
 
 Machine commands
@@ -166,7 +165,7 @@ machine build
 
 Build a machine image. If you have edited the Dockerfile of your image, run this command to rebuild.
 
-The image will automatically be pushed to the local registry, but you can prevent this ( ``--do-not-push``). You can also ignore the cache and rebuild everything (``--no-cache``).
+The image can be pushed to a registry if needed (``--push``). You can also ignore the cache and rebuild everything (``--no-cache``).
 
 Examples:
 
@@ -310,7 +309,7 @@ Example:
 config build
 ++++++++++++
 
-Build the machines from the active configuration. As for the `machine build`, you can build without pushing to the local registry (``--do-not-push``), and rebuild without cache (``--no-cache``).
+Build the machines from the active configuration. As for the `machine build`, you can build and push to a registry (``--push``), and rebuild without cache (``--no-cache``).
 
 Examples:
 
@@ -485,18 +484,18 @@ Examples:
 bundle build
 ++++++++++++
 
-Build the machines of multiple configurations. As for the `config build` command, you can build without cache (``--no-cache``), and without pushing to the local registry (``--do-not-push``).
+Build the machines of multiple configurations. As for the `config build` command, you can build without cache (``--no-cache``), and push to a registry (``--push``).
 
 Examples:
 
 .. code-block:: bash
 
     # Build the machines of the `test` configuration without pushing
-    docknv bundle build --do-not-push test
-    # same as 'docknv config use test; docknv config build --do-not-push'
+    docknv bundle build test
+    # same as 'docknv config use test; docknv config build'
 
-    # Build the machines of the `test` and `test2` configurations without cache
-    docknv bundle build --no-cache test test2
+    # Build the machines of the `test` and `test2` configurations without cache and pushing
+    docknv bundle build --no-cache --push test test2
 
 
 ---------------------------------
@@ -706,34 +705,3 @@ Examples:
     docknv scaffold env test_env
     # Create a `test_env2` environment by inheriting from the `default` environment
     docknv scaffold env test_env2 -i default
-
-
----------------------------------
-
-Registry commands
------------------
-
-registry start
-++++++++++++++
-
-Start the local registry.
-
-Example:
-
-.. code-block:: bash
-
-    # Start the local registry
-    docknv registry start
-
-
-registry stop
-+++++++++++++
-
-Stop the local registry.
-
-Example:
-
-.. code-block:: bash
-
-    # Stop the local registry
-    docknv registry stop

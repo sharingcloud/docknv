@@ -12,7 +12,7 @@ from docknv.project_handler import project_read
 
 STANDARD_COMMANDS = (
     "machine", "config", "bundle", "env", "schema",
-    "volume", "user", "scaffold", "registry"
+    "volume", "user", "scaffold"
 )
 
 
