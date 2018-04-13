@@ -12,6 +12,7 @@ __pycache__
 # Tox
 /.tox
 /bin/
+/.pytest_cache
 
 # Coverage
 .coverage

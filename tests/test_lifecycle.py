@@ -217,7 +217,7 @@ def test_lifecycle_bundle_build():
         config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
 
         # Bundle start
-        cmds = lifecycle_handler.lifecycle_bundle_build(project_path, ["test", "test2"])
+        cmds = lifecycle_handler.lifecycle_bundle_build(project_path, ["test", "test2"], push_to_registry=True)
 
         expected_cmds = (
             (
