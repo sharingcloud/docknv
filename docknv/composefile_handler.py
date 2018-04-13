@@ -7,9 +7,17 @@ import shutil
 from collections import OrderedDict
 
 from docknv.logger import Logger
-from docknv.utils.paths import create_path_or_replace, create_path_tree
+from docknv.utils.paths import create_path_or_replace, create_path_tree, get_lower_basename
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.ioutils import io_open
+
+from docknv.user_handler import (
+    user_get_file_from_project
+)
+from docknv.template_renderer import renderer_render_template
+from docknv.volume_handler import (
+    volume_extract_from_line, volume_generate_namespaced_path
+)
 
 
 def composefile_read(project_path, compose_file_path):
@@ -56,7 +64,7 @@ def composefile_write(compose_content, output_path):
     with io_open(output_path, encoding="utf-8", mode="w") as handle:
         handle.write(yaml_ordered_dump(compose_content))
 
-    Logger.info("Compose content written to file `{0}`".format(output_path))
+    Logger.debug("Compose content written to file `{0}`".format(output_path))
 
 
 def composefile_filter(merged_content, schema_configuration):
@@ -177,8 +185,6 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
 
 
 def _composefile_apply_namespace_replacement(output_content, namespace, environment, shared_volumes):
-    from docknv.volume_handler import volume_extract_from_line
-
     # Service replacement
     new_keys_repl = OrderedDict()
     for key in output_content["services"]:
@@ -189,6 +195,10 @@ def _composefile_apply_namespace_replacement(output_content, namespace, environm
         new_volumes = OrderedDict()
         if "volumes" in output_content["services"][key]:
             for volume in output_content["services"][key]["volumes"]:
+                # Ignore empty volumes
+                if volume == "":
+                    continue
+
                 volume_object = volume_extract_from_line(volume)
                 if volume_object.is_named:
                     if volume_object.host_path in shared_volumes:
@@ -218,6 +228,33 @@ def _composefile_apply_namespace_replacement(output_content, namespace, environm
     return output_content
 
 
+def composefile_handle_service_tags(compose_content, registry_url):
+    """
+    Handle service tags.
+
+    :param project_path:        Project path (str)
+    :param compose_content:     Compose content (dict)
+    :param registry_url:        Registry URL (str)
+    :rtype dict
+    """
+    Logger.debug("Handling service tags...")
+    output_content = copy.deepcopy(compose_content)
+
+    if "services" in output_content:
+        for service_name in output_content["services"]:
+            service_data = output_content["services"][service_name]
+
+            if "tag" in service_data:
+                Logger.debug("Handling tag for service `{0}`...".format(service_name))
+                service_tag = service_data["tag"]
+                # Todo
+                # service_data["image"] = "/".join([registry_url, service_tag])
+                service_data["image"] = service_tag
+                del service_data["tag"]
+
+    return output_content
+
+
 def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default", environment="default",
                                 environment_data=None):
     """
@@ -231,13 +268,10 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     :param environment_data: Environment data (str?) (default: None)
     :rtype: dict
     """
-    from docknv.project_handler import project_get_name
-    from docknv.volume_handler import volume_generate_namespaced_path
-
-    Logger.info("Resolving volumes...")
+    Logger.debug("Resolving volumes...")
     output_content = copy.deepcopy(compose_content)
 
-    project_name = project_get_name(project_path)
+    project_name = get_lower_basename(project_path)
 
     # Cleaning static files
     create_path_or_replace(
@@ -248,12 +282,18 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     if "services" in output_content:
         for service_name in output_content["services"]:
 
+            service_data = output_content["services"][service_name]
+
+            # Set environment
+            if "env_file" not in service_data:
+                service_data["env_file"] = [
+                    user_get_file_from_project(project_name, 'environment.env', config_name)
+                ]
+
             Logger.debug(
                 "Resolving volumes for service `{0}`...".format(service_name))
 
-            service_data = output_content["services"][service_name]
             final_volumes = []
-
             if "volumes" in service_data and isinstance(service_data["volumes"], dict):
                 volumes_data = service_data["volumes"]
 
@@ -279,29 +319,49 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
 
 
 def _composefile_resolve_static_volumes(project_path, project_name, config_name, volumes_data, final_volumes):
-    from docknv.volume_handler import volume_extract_from_line
-
     if "static" in volumes_data:
         for static_def in volumes_data["static"]:
+            # Ignore empty volumes
+            if static_def == "":
+                continue
+
             volume_object = volume_extract_from_line(static_def)
 
             # Create dirs & copy
             output_path = volume_object.generate_namespaced_volume_path("static", volume_object.host_path,
                                                                         project_name, config_name)
 
-            data_path = os.path.join(project_path, "data", "files", volume_object.host_path)
+            data_path = os.path.normpath(os.path.join(project_path, "data", "files", volume_object.host_path))
 
-            Logger.debug("Copying static content from `{0}` to `{1}`...".format(data_path, output_path))
+            # Get files to copy
+            files_to_copy = []
+            if os.path.isfile(data_path):
+                files_to_copy.append((data_path, output_path))
+            else:
+                base_root = data_path
+                for root, folders, filenames in os.walk(data_path):
+                    sub_part = root.replace(base_root, "")
+                    if len(sub_part) > 0:
+                        sub_part = sub_part[1:]
+
+                    for filename in filenames:
+                        full_path = os.path.normpath(os.path.join(root, filename))
+                        full_output_path = os.path.normpath(os.path.join(output_path, sub_part, filename))
+                        files_to_copy.append((full_path, full_output_path))
 
             # Copy !
-            if os.path.isfile(data_path):
-                create_path_tree(os.path.dirname(output_path))
-                shutil.copy(data_path, output_path)
-            else:
-                try:
-                    shutil.copytree(data_path, output_path)
-                except OSError:
-                    pass
+            for file_to_copy, output_path_to_copy in files_to_copy:
+                Logger.debug(
+                    "Copying static content from `{0}` to `{1}`...".format(file_to_copy, output_path_to_copy))
+                create_path_tree(os.path.dirname(output_path_to_copy))
+
+                if os.path.isdir(file_to_copy):
+                    try:
+                        os.mkdir(file_to_copy)
+                    except Exception:
+                        pass
+                else:
+                    shutil.copy2(file_to_copy, output_path_to_copy)
 
             volume_object.host_path = output_path
             final_volumes.append(str(volume_object))
@@ -312,10 +372,12 @@ def _composefile_resolve_static_volumes(project_path, project_name, config_name,
 
 
 def _composefile_resolve_shared_volumes(project_path, volumes_data, final_volumes):
-    from docknv.volume_handler import volume_extract_from_line
-
     if "shared" in volumes_data:
         for shared_def in volumes_data["shared"]:
+            # Ignore empty volumes
+            if shared_def == "":
+                continue
+
             volume_object = volume_extract_from_line(shared_def)
 
             data_path = os.path.join(project_path, "data", "files", volume_object.host_path)
@@ -330,12 +392,14 @@ def _composefile_resolve_shared_volumes(project_path, volumes_data, final_volume
 
 
 def _composefile_resolve_template_volumes(project_path, config_name, environment_data, volumes_data, final_volumes):
-    from docknv.volume_handler import volume_extract_from_line
-    from docknv.template_renderer import renderer_render_template
 
     # Jinja templates
     if "templates" in volumes_data:
         for template_def in volumes_data["templates"]:
+            # Ignore empty volumes
+            if template_def == "":
+                continue
+
             volume_object = volume_extract_from_line(template_def)
             template_path = volume_object.host_path
 
@@ -352,6 +416,10 @@ def _composefile_resolve_template_volumes(project_path, config_name, environment
 def _composefile_resolve_standard_volumes(volumes_data, final_volumes):
     if "standard" in volumes_data:
         for standard_def in volumes_data["standard"]:
+            # Ignore empty volumes
+            if standard_def == "":
+                continue
+
             final_volumes.append(standard_def)
 
         del volumes_data["standard"]
@@ -366,6 +434,11 @@ def _composefile_resolve_networks(service_data, namespace):
             if isinstance(network, dict) and "aliases" in network:
                 new_aliases = []
                 for alias in network["aliases"]:
-                    new_aliases.append("{0}_{1}".format(namespace, alias))
+                    if namespace == "default":
+                        new_alias = alias
+                    else:
+                        new_alias = "_".join([namespace, alias])
+
+                    new_aliases.append(new_alias)
 
                 network["aliases"] = new_aliases

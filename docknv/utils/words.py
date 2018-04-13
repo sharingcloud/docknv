@@ -1,5 +1,6 @@
 """Words utilities."""
 
+
 import os
 import codecs
 import random

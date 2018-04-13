@@ -1,13 +1,10 @@
 docknv package
 ==============
 
-Subpackages
------------
-
-.. toctree::
-
-    docknv.utils
-    docknv.tests
+.. automodule:: docknv
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Submodules
 ----------
@@ -24,6 +21,14 @@ docknv\.composefile\_handler module
 -----------------------------------
 
 .. automodule:: docknv.composefile_handler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+docknv\.docker\_api\_wrapper module
+-----------------------------------
+
+.. automodule:: docknv.docker_api_wrapper
     :members:
     :undoc-members:
     :show-inheritance:
@@ -48,6 +53,14 @@ docknv\.environment\_handler module
 -----------------------------------
 
 .. automodule:: docknv.environment_handler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+docknv\.image\_handler module
+-----------------------------
+
+.. automodule:: docknv.image_handler
     :members:
     :undoc-members:
     :show-inheritance:
@@ -108,14 +121,6 @@ docknv\.session\_handler module
     :undoc-members:
     :show-inheritance:
 
-docknv\.shell module
---------------------
-
-.. automodule:: docknv.shell
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 docknv\.template\_renderer module
 ---------------------------------
 
@@ -149,10 +154,3 @@ docknv\.volume\_handler module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: docknv
-    :members:
-    :undoc-members:
-    :show-inheritance:

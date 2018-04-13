@@ -1,5 +1,7 @@
 """YAML utils tests."""
 
+from __future__ import unicode_literals
+
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yaml_merge
 
 

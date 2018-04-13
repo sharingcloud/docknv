@@ -1,3 +1,15 @@
+# Changelog
+
+## 4.1
+
+- Removing `registry` command, tagging system added.
+
+## 4.0
+
+- YAML configuration files instead of Python files
+- Merging `schema` and `config` commands.
+- More tests and fixes.
+
 ## 3.7.4
 
 - Python 3 and Windows support OK.
@@ -15,5 +27,5 @@
 ## 3.6.0
 
 - Environment import system!
-    - You can now import environments using the following snippet.
-    - Example for **base-default**: `# -*- import: base-default -*-`
+  - You can now import environments using the following snippet.
+  - Example for **base-default**: `# -*- import: base-default -*-`

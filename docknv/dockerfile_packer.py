@@ -2,6 +2,8 @@
 
 from docknv.logger import Logger
 
+from docknv.project_handler import project_get_active_configuration, project_read
+
 
 def dockerfile_packer(project_path, service_name):
     """
@@ -12,8 +14,6 @@ def dockerfile_packer(project_path, service_name):
     :param project_path:     Project path (str)
     :param service_name:     Service name (str)
     """
-    from docknv.project_handler import project_get_active_configuration, project_read
-
     # Get project data
     project_data = project_read(project_path)
 

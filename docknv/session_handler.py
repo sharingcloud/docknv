@@ -5,8 +5,17 @@ import os
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.ioutils import io_open
+from docknv.utils.paths import get_lower_basename
+from docknv.utils.diff_system import read_last_modification_time, save_last_modification_time
 
 from docknv.logger import Logger, Fore
+
+from docknv.environment_handler import env_yaml_check_file
+
+from docknv.user_handler import user_get_id, user_clean_config_path, user_get_file_from_project
+
+from docknv.schema_handler import schema_check
+
 
 SESSION_FILE_NAME = ".docknv.yml"
 
@@ -27,7 +36,7 @@ def session_read_configuration(project_path):
             config_data = yaml_ordered_load(handle.read())
         return config_data
 
-    return {"values": {}}
+    return {"values": {}, "project_path": None}
 
 
 def session_write_configuration(project_path, content):
@@ -81,16 +90,15 @@ def session_update_environment(project_path, config_name, environment_name):
     :param config_name:          Config name (str)
     :param environment_name:     Environment name (str)
     """
-    from docknv.environment_handler import env_check_file
-
-    if env_check_file(project_path, environment_name):
-        docknv_config = session_read_configuration(
-            project_path)
+    if env_yaml_check_file(project_path, environment_name):
+        docknv_config = session_read_configuration(project_path)
 
         if session_check_configuration(docknv_config, config_name):
             docknv_config["values"][config_name]["environment"] = environment_name
             session_write_configuration(project_path, docknv_config)
             Logger.info("Configuration `{0}` updated with environment `{1}`".format(config_name, environment_name))
+    else:
+        Logger.error("Environment `{0}` does not exist.".format(environment_name))
 
 
 def session_remove_configuration(project_path, config_name):
@@ -100,14 +108,17 @@ def session_remove_configuration(project_path, config_name):
     :param project_path:     Project path (str)
     :param config_name:      Config name (str)
     """
-    from docknv.project_handler import project_get_composefile
-    from docknv.user_handler import user_current_get_id
+    from docknv.project_handler import (
+        project_get_composefile, project_get_active_configuration,
+        project_unset_configuration
+    )
 
     config = session_read_configuration(project_path)
+    project_name = get_lower_basename(project_path)
     if config_name not in config["values"]:
         Logger.error("Missing configuration `{0}`.".format(config_name))
 
-    uid = user_current_get_id()
+    uid = user_get_id()
 
     config_to_remove = config["values"][config_name]
     if config_to_remove["user"] != uid:
@@ -123,7 +134,14 @@ def session_remove_configuration(project_path, config_name):
 
         del config["values"][config_name]
 
+        # Check if config is active
+        active_configuration = project_get_active_configuration(project_path)
+        if active_configuration == config_name:
+            project_unset_configuration(project_path)
+
         session_write_configuration(project_path, config)
+        user_clean_config_path(project_name, config_name)
+
         Logger.info("Configuration `{0}` removed.".format(config_name))
 
 
@@ -136,8 +154,6 @@ def session_update_schema(project_path, project_config, config_name, schema_name
     :param config_name:      Config name (str)
     :param schema_name:      Schema name (str)
     """
-    from docknv.schema_handler import schema_check
-
     if schema_check(project_config, schema_name):
         docknv_config = session_read_configuration(project_path)
 
@@ -185,7 +201,7 @@ def session_show_configuration_list(project_path):
     config = session_read_configuration(project_path)
     len_values = len(config["values"])
     if len_values == 0:
-        Logger.warn("No configuration found. Use `docknv config generate` to generate configurations.")
+        Logger.warn("No configuration found. Use `docknv config create` to generate configurations.")
     else:
         Logger.info("Known configurations:")
         for key in config["values"]:
@@ -196,3 +212,65 @@ def session_show_configuration_list(project_path):
 
             Logger.raw("  - {0} [namespace: {1}, environment: {2}, schema: {3}, user id: {4}]".format(
                 key, namespace, environment, schema, user), color=Fore.BLUE)
+
+
+def session_insert_configuration(session_data, config_name, schema_name, environment_name, namespace_name, user_id):
+    """
+    Insert a new configuration in the session data.
+
+    :param session_data:        Session data (dict)
+    :param config_name:         Configuration name (str)
+    :param schema_name:         Schema name (str)
+    :param environment_name:    Environment name (str)
+    :param namespace_name:      Namespace name (str)
+    :param user_id:             User ID (str/int)
+    """
+    session_data["values"][config_name] = {
+        "environment": environment_name,
+        "schema": schema_name,
+        "namespace": namespace_name,
+        "user": user_id
+    }
+
+    return session_data
+
+
+def session_validate_user(session_data, user_id):
+    """
+    Check a configuration user ID.
+
+    :param session_data:    Session data (dict)
+    :param user_id:         User ID to check (str/int)
+    :rtype: True/False
+    """
+    return session_data["user"] == user_id or user_id == 0
+
+
+def session_read_timestamps(project_name, config_name):
+    """
+    Read timestamps for a project name and a config name.
+
+    :param project_name:    Project name (str)
+    :param config_name:     Config name (str)
+    :rtype: Timestamp data (dict)
+    """
+    timestamps_path = user_get_file_from_project(project_name, "timestamps.json", config_name)
+    original_timestamps = {}
+    if os.path.exists(timestamps_path):
+        with io_open(timestamps_path, mode="r") as stream:
+            original_timestamps = read_last_modification_time(stream)
+
+    return original_timestamps
+
+
+def session_save_timestamps(project_name, config_name, timestamps):
+    """
+    Save timestamps for a project name and a config name.
+
+    :param project_name:    Project name (str)
+    :param config_name:     Config name (str)
+    :param timestamps:      Timestamp data (dict)
+    """
+    timestamps_path = user_get_file_from_project(project_name, "timestamps.json", config_name)
+    with io_open(timestamps_path, mode="w") as stream:
+        save_last_modification_time(stream, timestamps)

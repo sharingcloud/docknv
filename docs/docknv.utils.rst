@@ -1,8 +1,29 @@
 docknv\.utils package
 =====================
 
+.. automodule:: docknv.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
+
+docknv\.utils\.deprecated module
+--------------------------------
+
+.. automodule:: docknv.utils.deprecated
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+docknv\.utils\.diff\_system module
+----------------------------------
+
+.. automodule:: docknv.utils.diff_system
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 docknv\.utils\.ioutils module
 -----------------------------
@@ -45,10 +66,3 @@ docknv\.utils\.words module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: docknv.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:

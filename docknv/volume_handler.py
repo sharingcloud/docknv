@@ -1,7 +1,9 @@
 """Volume handler."""
 
-
+import os
 import platform
+
+from docknv.user_handler import user_get_project_path
 
 
 class VolumeObject(object):
@@ -9,7 +11,7 @@ class VolumeObject(object):
 
     def __init__(self, host_path, container_path, mode="rw"):
         """
-        The VolumeObject constructor.
+        Volume object constructor.
 
         :param host_path:        Host path (str)
         :param container_path:   Container path (str)
@@ -43,7 +45,12 @@ class VolumeObject(object):
 
         :rtype: Volume path (str)
         """
-        return "{0}/{1}".format(volume_generate_namespaced_path(file_type, project_name, config_name), path)
+        return os.path.normpath(
+            "{0}/{1}".format(
+                volume_generate_namespaced_path(file_type, project_name, config_name),
+                path
+            )
+        )
 
     def __str__(self):
         """Str."""
@@ -60,14 +67,12 @@ def volume_generate_namespaced_path(file_type, project_name, config_name):
 
     :rtype: Volume path (str)
     """
-    from docknv.user_handler import user_get_project_config_name_path
-
-    user_config_path = user_get_project_config_name_path(project_name, config_name)
+    user_config_path = user_get_project_path(project_name, config_name)
 
     if file_type == "static":
-        return "{0}/data/static".format(user_config_path)
+        return os.path.normpath("{0}/data/static".format(user_config_path))
     elif file_type == "shared":
-        return "./data/global"
+        return os.path.normpath("./data/global")
 
 
 def volume_extract_from_line(line):

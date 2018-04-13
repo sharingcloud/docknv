@@ -7,6 +7,7 @@ root = true
 [*]
 end_of_line = lf
 insert_final_newline = true
+trim_trailing_whitespace = true
 
 # Matches multiple files with brace expansion notation
 # Set default charset
@@ -15,6 +16,11 @@ charset = utf-8
 
 # 4 space indentation
 [*.py]
+end_of_line = lf
+indent_style = space
+indent_size = 4
+
+[*.html]
 indent_style = space
 indent_size = 4
 

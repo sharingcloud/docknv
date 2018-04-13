@@ -1,0 +1,707 @@
+Command-line reference
+======================
+
+Here you can find the command-line reference.
+
+Each command is described with an example.
+
+**Subcommands**
+
+- *machine*: manage one machine at a time (machine mode)
+- *config*: manage groups of machines at once (config mode)
+- *bundle*: manage groups of configs at once (bundle mode)
+- *env*: manage environments
+- *schema*: manage schemas
+- *volume*: manage volumes
+- *user*: manage user config files
+- *scaffold*: scaffolding
+
+
+Machine commands
+----------------
+
+machine start
++++++++++++++
+
+Start a single machine.
+
+Example:
+
+.. code-block:: bash
+
+    # Start the `test` machine in foreground
+    docknv machine start test
+
+
+machine stop
+++++++++++++
+
+Stop a single machine.
+
+Example:
+
+.. code-block:: bash
+
+    # Stop the `test` machine
+    docknv machine stop test
+
+
+machine restart
++++++++++++++++
+
+Restart a single machine. You can normally restart a machine, and you can force the restart (``-f/--force``).
+
+Force restart will cause a complete `stop` and a complete `start`.
+
+Examples:
+
+.. code-block:: bash
+
+    # Restart the `test` machine
+    docknv machine restart test
+
+    # Force restart the `test` machine
+    docknv machine restart test -f # or --force
+
+
+machine run
++++++++++++
+
+Run a custom command on a single machine by creating a new container. You can run this command in foreground or in background (``-d/--daemon``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Run a Python HTTP server on machine `test`
+    docknv machine run test "python -m http.server"
+
+    # Execute a ping command in background on machine `test`
+    docknv machine run test -d "ping www.google.fr"
+
+
+machine exec
+++++++++++++
+
+Execute a custom command on a **running** container. You can disable the TTY (``--no-tty``) and fetch the return code (``-r/--return-code``).
+
+Examples:
+
+.. code-block:: bash
+
+    # List the root folder content on running machine `test`
+    docknv machine exec test "bash -c 'ls /'"
+
+    # Sum numbers on machine `test`, and get the return code
+    docknv machine exec test --return-code "python -c '5+5'"
+
+    # Execute a ping command on machine `test` and disable TTY
+    docknv machine exec test --no-tty "ping www.google.fr"
+
+machine shell
++++++++++++++
+
+Run a shell on a **running** container. You can change the shell executable as a second parameter, and if needed you can *create* the container before running the shell (``-c/--create``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Run a shell (/bin/bash as default) on running machine `test`
+    docknv machine shell test
+
+    # Run a custom shell (/bin/zsh) on running machine `test`
+    docknv machine shell test /bin/zsh
+
+    # Create the container and run a shell on machine `test`
+    docknv machine shell test -c # or --create
+
+machine logs
+++++++++++++
+
+View the logs of a **running** container. You can show everything, or get the last lines (``--tail``  with count parameter), or even follow the logs (``-f/--follow``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Get complete logs from running machine `test`
+    docknv machine logs test
+
+    # Get 10 last lines of logs from running machine `test`
+    docknv machine logs test --tail 10
+
+    # Follow the logs from running machine `test`
+    docknv machine logs test -f # or --follow
+
+machine push
+++++++++++++
+
+Push a file from the host to a **running** container. First, you specify the host path, then the container path.
+
+Example:
+
+.. code-block:: bash
+
+    # Push a sample.txt file to a running machine `test`
+    docknv machine push test ./sample.txt /tmp/sample.txt
+
+
+machine pull
+++++++++++++
+
+Pull a file from a **running** container to the host. First, you specify the container path then the host path.
+
+Example:
+
+.. code-block:: bash
+
+    # Pull a sample.txt file from a running machine `test`
+    docknv machine pull test /tmp/sample.txt ./sample.txt
+
+
+machine build
++++++++++++++
+
+Build a machine image. If you have edited the Dockerfile of your image, run this command to rebuild.
+
+The image can be pushed to a registry if needed (``--push``). You can also ignore the cache and rebuild everything (``--no-cache``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Update the build of the `test` machine
+    docknv machine build test
+
+    # Update the build of the `test` machine without pushing it to the local registry
+    docknv machine build test --do-not-push
+
+    # Rebuild the `test` machine without cache
+    docknv machine build test --no-cache
+
+
+machine freeze [EXPERIMENTAL]
++++++++++++++++++++++++++++++
+
+Freeze a machine, by packing linked static volumes inside of the Dockerfile.
+This allows for quick development cycle and ready-to-use Dockerfile for Swarm deployment (for example).
+
+Example:
+
+.. code-block:: bash
+
+    # Freeze the `test` machine
+    docknv machine freeze test
+
+---------------------------------
+
+Configuration commands
+----------------------
+
+config status
++++++++++++++
+
+Show the current configuration for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # Show the current configuration name
+    docknv config status
+
+
+config ls
++++++++++
+
+List the available configurations for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # List the available configurations
+    docknv config ls
+
+
+config use
+++++++++++
+
+Set a configuration as active for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # Define the `standard` configuration as current
+    docknv config use standard
+
+
+config start
+++++++++++++
+
+Start the machines from the active configuration.
+
+Example:
+
+.. code-block:: bash
+
+    # Start the current configuration
+    docknv config start
+
+
+config restart
+++++++++++++++
+
+Restart the machines from the active configuration. You can *force* the restart by stopping and starting (``-f/--force``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Restart the current configuration
+    docknv config restart
+
+    # Force restart the current configuration
+    docknv config restart -f # or --force
+
+
+config stop
++++++++++++
+
+Stop the machines from the active configuration.
+
+Example:
+
+.. code-block:: bash
+
+    # Stop the current configuration
+    docknv config stop
+
+
+config ps
++++++++++
+
+Get the machine statuses from the active configuration.
+
+Example:
+
+.. code-block:: bash
+
+    # Get the machine statuses
+    docknv config ps
+
+
+config unset
+++++++++++++
+
+Unset the current configuration.
+
+Example:
+
+.. code-block:: bash
+
+    # Unset the current configuration
+    docknv config unset
+
+
+config build
+++++++++++++
+
+Build the machines from the active configuration. As for the `machine build`, you can build and push to a registry (``--push``), and rebuild without cache (``--no-cache``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Build the current configuration
+    docknv config build
+
+    # Build the current configuration without pushing to the local registry
+    docknv config build --do-not-push
+
+    # Rebuild the current configuration without cache
+    docknv config build --no-cache
+
+
+config create
++++++++++++++
+
+Create a configuration from a *configuration name*, a *schema name*, an *environment name*, and if needed, a *namespace* (``-n/--namespace``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Build a `test` configuration with the `test_schema` schema and the `test_env` environment.
+    docknv config create test test_schema test_env
+
+    # Build a `test2` configuration with the `test_schema` schema, the `test_env` environment, and the `test` namespace
+    docknv config create test2 test_schema test_env -n test
+
+
+config update
++++++++++++++
+
+Update a configuration by rerendering templates and re-copying static files. If you do not specify a configuration name, il will update the current configuration. If you do specify a configuration name, il will be updated and set as current.
+
+With the ``-r/--restart`` option, you can automatically stop the target configuration, update it, and restart it. It is safer on Windows because it did not like updating mount points while the machines are on.
+
+Examples:
+
+.. code-block:: bash
+
+    # Update the current configuration
+    docknv config update
+
+    # Update the `test` configuration and set it as current
+    docknv config update test
+
+    # Update the current configuration by stopping, updating and starting
+    docknv config update -r
+
+    # Update the `test` configuration by stopping, updating and starting
+    docknv config update test -r
+
+
+config set-schema
++++++++++++++++++
+
+Change the schema for a configuration name.
+
+Example:
+
+.. code-block:: bash
+
+    # Change the schema of a `test` configuration to set the `test_schema2` schema
+    docknv config set-schema test test_schema2
+
+
+config set-env
+++++++++++++++
+
+Change the environment for a configuration name.
+
+Example:
+
+.. code-block:: bash
+
+    # Change the environment of a `test` configuration to set the `test_env2` environment
+    docknv config set-env test test_env2
+
+
+config rm
++++++++++
+
+Delete a configuration. If you delete your current configuration, il will be unset.
+
+Example:
+
+.. code-block:: bash
+
+    # Remove the `test` configuration
+    docknv config rm test
+
+
+---------------------------------
+
+Bundle commands
+---------------
+
+bundle start
+++++++++++++
+
+Start multiple configurations.
+
+Examples:
+
+.. code-block:: bash
+
+    # Start the `test` configuration
+    docknv bundle start test
+    # same as 'docknv config use test; docknv config start'
+
+    # Start the `test` and `test2` configuration
+    docknv bundle start test test2
+
+
+bundle restart
+++++++++++++++
+
+Restart multiple configurations. You can force the restart (``-f/--force``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Restart the `test` configuration
+    docknv bundle restart test
+    # same as 'docknv config use test; docknv config restart'
+
+    # Restart the `test` configuration with force
+    docknv bundle restart -f test
+    # same as 'docknv config use test; docknv config restart -f'
+
+    # Restart the `test` and `test2` configuration
+    docknv bundle restart test test2
+
+
+bundle stop
++++++++++++
+
+Stop multiple configurations.
+
+Examples:
+
+.. code-block:: bash
+
+    # Stop the `test` configuration
+    docknv bundle stop test
+    # same as 'docknv config use test; docknv config stop'
+
+    # Stop the `test` and `test2` configuration
+    docknv bundle stop test test2
+
+
+bundle ps
++++++++++
+
+Check the processes of multiple configurations.
+
+Examples:
+
+.. code-block:: bash
+
+    # Check the processes of the `test` configuration
+    docknv bundle ps test
+    # same as 'docknv config use test; docknv config ps'
+
+    # Check the processes of the `test` and `test2` configurations
+    docknv bundle ps test test2
+
+
+bundle build
+++++++++++++
+
+Build the machines of multiple configurations. As for the `config build` command, you can build without cache (``--no-cache``), and push to a registry (``--push``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Build the machines of the `test` configuration without pushing
+    docknv bundle build test
+    # same as 'docknv config use test; docknv config build'
+
+    # Build the machines of the `test` and `test2` configurations without cache and pushing
+    docknv bundle build --no-cache --push test test2
+
+
+---------------------------------
+
+Environment commands
+--------------------
+
+env ls
+++++++
+
+List the available environments for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # List the available environments
+    docknv env ls
+
+
+env show
+++++++++
+
+Show the contents of an environment file for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # Show the contents of the `test_env` environment file
+    docknv env show test_env
+
+
+env edit
+++++++++
+
+Edit or create an environment file for the project.
+By default, it will try to auto-detect your editor. If you want to use a specific editor, you can use the command: ``-e/--editor``.
+
+Examples:
+
+.. code-block:: bash
+
+    # Edit an existing `test_env` environment file with the default editor
+    docknv env edit test_env
+
+    # Create a new `test_env2` environment file with the default editor
+    docknv env edit test_env2
+
+    # Edit an existing `test_env` environment file with `vim`
+    docknv env edit test_env -e vim # or --editor vim
+
+
+env convert
++++++++++++
+
+Convert an environment file from the old Python format to the new YAML format.
+If you convert a Python environment with an **import directive**, do not forget to also convert the imported Python environment.
+
+The new YAML file will be in the environment folder (``envs``), with the ``.env.yml`` extension.
+
+Example:
+
+.. code-block:: bash
+
+    # Convert a `old_test` Python environment file to the YAML format
+    docknv env convert old_test
+
+    # Convert a `old_default` Python environment file to the YAML format
+    docknv env convert old_default
+
+
+---------------------------------
+
+Schema commands
+---------------
+
+schema ls
++++++++++
+
+List the available schemas for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # List the available schemas
+    docknv schema ls
+
+
+---------------------------------
+
+Volume commands
+---------------
+
+volume ls
++++++++++
+
+List the named volumes for the project.
+
+Example:
+
+.. code-block:: bash
+
+    # List the named volumes
+    docknv volume ls
+
+
+volume rm
++++++++++
+
+Remove a named volume.
+
+Example:
+
+.. code-block:: bash
+
+    # Remove the `test` named volume
+    docknv volume rm test
+
+
+---------------------------------
+
+User commands
+-------------
+
+user clean
+++++++++++
+
+Clean the user project files or config for the current project.
+If you do not specify a config name, il will remove all of the current user project configuration.
+
+The user project configuration is located at ``$HOME/.docknv/$PROJECT_NAME``.
+
+Examples:
+
+.. code-block:: bash
+
+    # Remove the `test` user configuration
+    docknv user clean test
+
+    # Remove all of the user project configuration
+    docknv user clean
+
+
+user rm-lock
+++++++++++++
+
+Remove the user lockfile. If something bad happened and the lockfile persisted, **if you are sure of hat you are doing**, you can safely remove it with this command.
+
+The lockfile is named ``.$UID.lock``.
+
+Example:
+
+.. code-block:: bash
+
+    # Remove the user lockfile
+    docknv user rm-lock
+
+
+---------------------------------
+
+Scaffold commands
+-----------------
+
+scaffold project
+++++++++++++++++
+
+Create a whole docknv project from scratch, at a given path. The **project name is the path basename**.
+
+It will automatically generate the base folder structure, a ``.gitignore`` and a ``config.yml``.
+
+Example:
+
+.. code-block:: bash
+
+    # Generate an `example` project at /tmp/test/example.
+    docknv scaffold project /tmp/test/example
+
+
+scaffold image
+++++++++++++++
+
+Create an image entry for the current project. You must specify the image name, the image URL (like ``portainer/portainer`` or ``ubuntu``), and an image tag (by default ``latest``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Create a "portainer" image entry with the "portainer/portainer" url and the "latest" tag
+    docknv scaffold image portainer portainer/portainer
+
+    # Create an "ubuntu" image entry with the "ubuntu" image and the "16.04" tag
+    docknv scaffold image ubuntu ubuntu 16.04
+
+
+scaffold env
+++++++++++++
+
+Create an environment file from scratch, or inherits from an existing environment file (``-i/--inherit``).
+
+Examples:
+
+.. code-block:: bash
+
+    # Create a `test_env` environment from scratch
+    docknv scaffold env test_env
+    # Create a `test_env2` environment by inheriting from the `default` environment
+    docknv scaffold env test_env2 -i default

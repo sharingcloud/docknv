@@ -1,5 +1,3 @@
-project_name: sample01
-
 composefiles:
   - composefiles/sample.yml
 
@@ -11,3 +9,7 @@ schemas:
       - portainer
     networks:
       - net
+
+  hello:
+    services:
+      - hello-world

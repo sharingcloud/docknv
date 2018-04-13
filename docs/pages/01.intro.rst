@@ -1,0 +1,22 @@
+Introduction
+------------
+
+**docknv** (for *Docker with environments*) is a wrapper around
+*Docker*, *Docker Compose* and *Docker Swarm*.
+
+Here are the features:
+
+-  **Environment configuration management**: you can define environment
+   configuration files, to easily set and use values.
+-  **Templating system**: you can insert your defined environment values
+   in templates all over your volumes files, using the powerful Jinja2
+   template engine.
+-  **Mix Compose files**: you can easily merge classic Docker Compose
+   templates together.
+-  **Use schemas and namespaces to isolate**: you can isolate portions
+   of infrastructure to build and run services independently.
+-  **Concurrent executions**: on a single host, and from the same entry
+   point, you can deploy multiple schemas in different namespaces.
+-  **Custom commands**: you can extend the docknv command system to
+   include your own custom commands and execute any action within
+   docknv.

@@ -14,11 +14,11 @@ import mock
 
 
 @contextmanager
-def using_temp_stdout():
+def using_temporary_stdout():
     """
-    Temporary change the stdout.
+    Temporarily change the stdout.
 
-    **Coroutine**
+    **Context manager**
     """
     old_stdout = sys.stdout
     logger = StringIO()
@@ -31,10 +31,11 @@ def using_temp_stdout():
 @contextmanager
 def mock_input(value):
     """
-    Mocking input for a value.
+    Mock input for a value.
 
     :param value:    Value (str)
-    **Coroutine**
+
+    **Context manager**
     """
     if six.PY2:
         with mock.patch("__builtin__.raw_input", return_value=value):
