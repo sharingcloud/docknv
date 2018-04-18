@@ -6,6 +6,8 @@ import shutil
 
 from collections import OrderedDict
 
+from slugify import slugify
+
 from docknv.logger import Logger
 from docknv.utils.paths import create_path_or_replace, create_path_tree, get_lower_basename
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
@@ -247,7 +249,7 @@ def composefile_handle_service_tags(compose_content, registry_url):
             if "tag" in service_data:
                 Logger.debug("Handling tag for service `{0}`...".format(service_name))
                 service_tag = service_data["tag"]
-                # Todo
+                # TODO
                 # service_data["image"] = "/".join([registry_url, service_tag])
                 service_data["image"] = service_tag
                 del service_data["tag"]
@@ -435,9 +437,9 @@ def _composefile_resolve_networks(service_data, namespace):
                 new_aliases = []
                 for alias in network["aliases"]:
                     if namespace == "default":
-                        new_alias = alias
+                        new_alias = slugify(alias)
                     else:
-                        new_alias = "_".join([namespace, alias])
+                        new_alias = slugify("-".join([namespace, alias]))
 
                     new_aliases.append(new_alias)
 

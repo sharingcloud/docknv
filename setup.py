@@ -11,6 +11,7 @@ dependencies = [
     'colorama',
     'Jinja2',
     'whichcraft',
+    'python-slugify',
     'docker'
 ]
 
