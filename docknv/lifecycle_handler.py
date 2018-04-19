@@ -362,8 +362,14 @@ def lifecycle_machine_restart(project_path, machine_name, force=False,
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     if force:
-        lifecycle_machine_stop(project_path, machine_name, namespace_name=namespace_name)
-        return lifecycle_machine_start(project_path, machine_name, namespace_name=namespace_name)
+        machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
+        config_data = project_read(project_path)
+        current_config = project_get_active_configuration(project_path)
+        config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+
+        exec_compose(project_path, config_filename, ["rm", "-s", "-f", machine_name], pretty=True)
+        return lifecycle_schema_start(project_path)
+
     else:
         machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
         config_data = project_read(project_path)
