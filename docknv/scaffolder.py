@@ -12,7 +12,7 @@ from docknv.logger import Logger
 
 from docknv.environment_handler import (
     env_yaml_write_to_file, env_yaml_inherits,
-    env_yaml_load_in_memory, env_get_yaml_path
+    env_get_yaml_path
 )
 
 

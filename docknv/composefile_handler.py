@@ -320,6 +320,23 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     return output_content
 
 
+def _get_files_to_copy(data_path, output_path):
+    files_to_copy = []
+    if os.path.isfile(data_path):
+        files_to_copy.append((data_path, output_path))
+    else:
+        base_root = data_path
+        for root, folders, filenames in os.walk(data_path):
+            sub_part = root.replace(base_root, "")
+            if len(sub_part) > 0:
+                sub_part = sub_part[1:]
+
+            for filename in filenames:
+                full_path = os.path.normpath(os.path.join(root, filename))
+                full_output_path = os.path.normpath(os.path.join(output_path, sub_part, filename))
+                files_to_copy.append((full_path, full_output_path))
+
+
 def _composefile_resolve_static_volumes(project_path, project_name, config_name, volumes_data, final_volumes):
     if "static" in volumes_data:
         for static_def in volumes_data["static"]:
@@ -336,20 +353,7 @@ def _composefile_resolve_static_volumes(project_path, project_name, config_name,
             data_path = os.path.normpath(os.path.join(project_path, "data", "files", volume_object.host_path))
 
             # Get files to copy
-            files_to_copy = []
-            if os.path.isfile(data_path):
-                files_to_copy.append((data_path, output_path))
-            else:
-                base_root = data_path
-                for root, folders, filenames in os.walk(data_path):
-                    sub_part = root.replace(base_root, "")
-                    if len(sub_part) > 0:
-                        sub_part = sub_part[1:]
-
-                    for filename in filenames:
-                        full_path = os.path.normpath(os.path.join(root, filename))
-                        full_output_path = os.path.normpath(os.path.join(output_path, sub_part, filename))
-                        files_to_copy.append((full_path, full_output_path))
+            files_to_copy = _get_files_to_copy(data_path, output_path)
 
             # Copy !
             for file_to_copy, output_path_to_copy in files_to_copy:

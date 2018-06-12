@@ -1,7 +1,5 @@
 """docknv."""
 
-import platform
-
 from setuptools import setup
 from docknv.version import __version__
 
@@ -14,9 +12,6 @@ dependencies = [
     'python-slugify',
     'docker'
 ]
-
-if platform.system() == "Windows":
-    dependencies += ["pypiwin32"]
 
 setup(
     name='docknv',
