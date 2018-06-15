@@ -2,12 +2,13 @@
 
 import os
 import sys
+import traceback
 
 
 def docknv_entry_point():
     """Entry point for docknv."""
     from docknv.command_handler import command_get_context
-    from docknv.logger import Logger
+    from docknv.logger import Logger, LoggerError
 
     from .shell import Shell, register_handlers
 
@@ -23,4 +24,8 @@ def docknv_entry_point():
     except BaseException as e:
         Logger.error(e, crash=False)
 
-    return shell.run(sys.argv[1:])
+    try:
+        return shell.run(sys.argv[1:])
+    except BaseException as e:
+        if not isinstance(e, LoggerError):
+            Logger.error(traceback.format_exc(), crash=False)

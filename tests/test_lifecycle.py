@@ -20,8 +20,8 @@ def _prepare_project(tempdir):
     os.environ["DOCKNV_USER_PATH"] = project_path
 
     project_path = copy_sample("sample01", tempdir)
-    project_generate_compose(project_path, "hello", "test", "default", "test")
-    project_generate_compose(project_path, "hello", "test2", "default", "test2")
+    project_generate_compose(project_path, "test", "hello", "default", "test")
+    project_generate_compose(project_path, "test2", "hello", "default", "test2")
     project_use_configuration(project_path, "test")
     return project_path
 
