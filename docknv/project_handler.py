@@ -5,7 +5,7 @@ import os
 from contextlib import contextmanager
 
 from docknv.logger import Logger
-from docknv.utils.serialization import yaml_ordered_load, yaml_merge
+from docknv.utils.serialization import yaml_ordered_load
 from docknv.utils.paths import create_path_tree, get_lower_basename
 from docknv.utils.ioutils import io_open
 
@@ -252,7 +252,6 @@ def project_generate_compose(project_path, config_name, schema_name="all", envir
     :rtype: Config name (str)
     """
     from docknv.schema_handler import schema_get_configuration
-    from docknv.template_renderer import renderer_render_compose_template
     from docknv.environment_handler import (
         env_yaml_check_file, env_yaml_load_in_memory,
         env_yaml_resolve_variables, env_yaml_key_value_export)
@@ -265,8 +264,7 @@ def project_generate_compose(project_path, config_name, schema_name="all", envir
         session_read_configuration, session_write_configuration, session_insert_configuration)
 
     from docknv.composefile_handler import (
-        composefile_multiple_read, composefile_filter, composefile_resolve_volumes,
-        composefile_apply_namespace, composefile_write, composefile_handle_service_tags)
+        composefile_write, composefile_process)
 
     ####################
     # Configuration name
@@ -305,31 +303,14 @@ def project_generate_compose(project_path, config_name, schema_name="all", envir
     # Get schema configuration
     schema_config = schema_get_configuration(config_data, schema_name)
 
-    # List linked composefiles
-    compose_files_content = composefile_multiple_read(project_path, config_data.composefiles)
-
-    # Merge and filter using schema
-    merged_content = composefile_filter(yaml_merge(compose_files_content), schema_config)
-
-    # Resolve compose content
-    resolved_content = renderer_render_compose_template(merged_content, env_content)
-
-    # Generate volumes declared in composefiles
-    rendered_content = composefile_resolve_volumes(project_path, resolved_content, config_name, namespace,
-                                                   environment, env_content)
-
-    # Handle services tags
-    rendered_content = composefile_handle_service_tags(rendered_content, registry_url)
-
-    # Apply namespace
-    namespaced_content = composefile_apply_namespace(rendered_content, namespace, environment)
-
-    # Generate main compose file
+    # Process composefile
+    processed_composefile = composefile_process(
+        project_path, config_data.composefiles, config_name, schema_config,
+        environment, env_content, namespace, registry_url)
     output_compose_file = project_get_composefile(project_path, config_name)
     if not os.path.exists(output_compose_file):
         create_path_tree(os.path.dirname(output_compose_file))
-
-    composefile_write(namespaced_content, output_compose_file)
+    composefile_write(processed_composefile, output_compose_file)
 
     if not update:
         # Write new session configuration

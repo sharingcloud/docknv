@@ -10,16 +10,16 @@ from slugify import slugify
 
 from docknv.logger import Logger
 from docknv.utils.paths import create_path_or_replace, create_path_tree
-from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
+from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yaml_merge
 from docknv.utils.ioutils import io_open
 
+
 from docknv.user_handler import (
-    user_get_file_from_project
-)
-from docknv.template_renderer import renderer_render_template
+    user_get_file_from_project)
+from docknv.template_renderer import (
+    renderer_render_template, renderer_render_compose_template)
 from docknv.volume_handler import (
-    volume_extract_from_line, volume_generate_namespaced_path
-)
+    volume_extract_from_line, volume_generate_namespaced_path)
 
 
 def composefile_read(project_path, compose_file_path):
@@ -104,47 +104,6 @@ def composefile_filter(merged_content, schema_configuration):
         return new_merged
 
 
-def _composefile_filter_volumes(content, needed):
-    to_remove = []
-    if "volumes" in content:
-        for volume_name in content["volumes"]:
-            if volume_name not in needed:
-                to_remove.append(volume_name)
-
-    for value in to_remove:
-        Logger.debug("- Removing volume {0}...".format(value))
-        del content["volumes"][value]
-
-    return content
-
-
-def _composefile_filter_services(content, needed):
-    to_remove = []
-    for service_name in content["services"]:
-        if service_name not in needed:
-            to_remove.append(service_name)
-
-    for value in to_remove:
-        Logger.debug("- Removing service {0}...".format(value))
-        del content["services"][value]
-
-    return content
-
-
-def _composefile_filter_networks(content, needed):
-    to_remove = []
-    if "networks" in content:
-        for network_name in content["networks"]:
-            if network_name not in needed:
-                to_remove.append(network_name)
-
-    for value in to_remove:
-        Logger.debug("- Removing network {0}...".format(value))
-        del content["networks"][value]
-
-    return content
-
-
 def composefile_apply_namespace(compose_content, namespace="default", environment="default"):
     """
     Apply namespace to compose content.
@@ -190,50 +149,6 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
     return _composefile_apply_namespace_replacement(output_content, namespace, environment, shared_volumes)
 
 
-def _composefile_apply_namespace_replacement(output_content, namespace, environment, shared_volumes):
-    # Service replacement
-    new_keys_repl = OrderedDict()
-    for key in output_content["services"]:
-        new_key = "{0}_{1}".format(namespace, key)
-        new_keys_repl[new_key] = key
-
-        # Find volumes
-        new_volumes = OrderedDict()
-        if "volumes" in output_content["services"][key]:
-            for volume in output_content["services"][key]["volumes"]:
-                # Ignore empty volumes
-                if volume == "":
-                    continue
-
-                volume_object = volume_extract_from_line(volume)
-                if volume_object.is_named:
-                    if volume_object.host_path in shared_volumes:
-                        continue
-
-                    volume_object.host_path = "{0}_{1}_{2}".format(
-                        namespace, environment, volume_object.host_path)
-
-                    new_volumes[volume] = str(volume_object)
-
-            # Apply new volumes/Remove old volumes
-            for volume in new_volumes:
-                new_v = new_volumes[volume]
-
-                Logger.debug("Namespacing volume '{0}' to '{1}'...".format(volume, new_v))
-                output_content["services"][key]["volumes"].append(new_v)
-                output_content["services"][key]["volumes"].remove(volume)
-
-    # Apply new services/Remove old services
-    for key in new_keys_repl:
-        old_s = new_keys_repl[key]
-
-        Logger.debug("Namespacing service '{0}' to '{1}'...".format(old_s, key))
-        output_content["services"][key] = output_content["services"][new_keys_repl[key]]
-        del output_content["services"][new_keys_repl[key]]
-
-    return output_content
-
-
 def composefile_handle_service_tags(compose_content, registry_url):
     """
     Handle service tags.
@@ -263,7 +178,7 @@ def composefile_handle_service_tags(compose_content, registry_url):
     return output_content
 
 
-def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default", environment="default",
+def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default",
                                 environment_data=None):
     """
     Resolve volumes and Jinja templates path using namespacing.
@@ -272,7 +187,6 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     :param compose_content:  Compose content (dict)
     :param project_name:     Project name (str)
     :param namespace:        Namespace name (str) (default: default)
-    :param environment:      Environment file name (str) (default: default)
     :param environment_data: Environment data (str?) (default: None)
     :rtype: dict
     """
@@ -321,6 +235,50 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
             _composefile_resolve_networks(service_data, namespace)
 
     return output_content
+
+
+def composefile_process(
+        project_path, composefile_list, config_name, schema_config,
+        environment_name, environment_content, namespace, registry_url):
+    """
+    Process a composefile from multiple composefiles.
+
+    :param project_path:            Project path (str)
+    :param composefile_list:        Composefile list (list)
+    :param config_name:             Configuration name (str)
+    :param schema_config:           Schema configuration (dict)
+    :param environment_name:        Environment name (str)
+    :param environment_content:     Environment content (dict)
+    :param namespace:               Namespace (str)
+    :param registry_url:            Registry URL (str)
+
+    :rtype: Processed composefile (str)
+    """
+    # List linked composefiles
+    compose_files_content = composefile_multiple_read(project_path, composefile_list)
+
+    # Merge and filter using schema
+    merged_content = composefile_filter(
+        yaml_merge(compose_files_content),
+        schema_config)
+
+    # Resolve compose content
+    resolved_content = renderer_render_compose_template(merged_content, environment_content)
+
+    # Generate volumes declared in composefiles
+    rendered_content = composefile_resolve_volumes(project_path, resolved_content, config_name, namespace,
+                                                   environment_content)
+
+    # Handle services tags
+    rendered_content = composefile_handle_service_tags(rendered_content, registry_url)
+
+    # Apply namespace
+    namespaced_content = composefile_apply_namespace(rendered_content, namespace, environment_name)
+
+    return namespaced_content
+
+
+###################
 
 
 def _get_files_to_copy(data_path, output_path):
@@ -403,7 +361,6 @@ def _composefile_resolve_shared_volumes(project_path, volumes_data, output_volum
 
 
 def _composefile_resolve_template_volumes(project_path, config_name, environment_data, volumes_data, output_volumes):
-
     # Jinja templates
     if "templates" in volumes_data:
         for template_def in volumes_data["templates"]:
@@ -453,3 +410,88 @@ def _composefile_resolve_networks(service_data, namespace):
                     new_aliases.append(new_alias)
 
                 network["aliases"] = new_aliases
+
+
+def _composefile_apply_namespace_replacement(output_content, namespace, environment, shared_volumes):
+    # Service replacement
+    new_keys_repl = OrderedDict()
+    for key in output_content["services"]:
+        new_key = "{0}_{1}".format(namespace, key)
+        new_keys_repl[new_key] = key
+
+        # Find volumes
+        new_volumes = OrderedDict()
+        if "volumes" in output_content["services"][key]:
+            for volume in output_content["services"][key]["volumes"]:
+                # Ignore empty volumes
+                if volume == "":
+                    continue
+
+                volume_object = volume_extract_from_line(volume)
+                if volume_object.is_named:
+                    if volume_object.host_path in shared_volumes:
+                        continue
+
+                    volume_object.host_path = "{0}_{1}_{2}".format(
+                        namespace, environment, volume_object.host_path)
+
+                    new_volumes[volume] = str(volume_object)
+
+            # Apply new volumes/Remove old volumes
+            for volume in new_volumes:
+                new_v = new_volumes[volume]
+
+                Logger.debug("Namespacing volume '{0}' to '{1}'...".format(volume, new_v))
+                output_content["services"][key]["volumes"].append(new_v)
+                output_content["services"][key]["volumes"].remove(volume)
+
+    # Apply new services/Remove old services
+    for key in new_keys_repl:
+        old_s = new_keys_repl[key]
+
+        Logger.debug("Namespacing service '{0}' to '{1}'...".format(old_s, key))
+        output_content["services"][key] = output_content["services"][new_keys_repl[key]]
+        del output_content["services"][new_keys_repl[key]]
+
+    return output_content
+
+
+def _composefile_filter_volumes(content, needed):
+    to_remove = []
+    if "volumes" in content:
+        for volume_name in content["volumes"]:
+            if volume_name not in needed:
+                to_remove.append(volume_name)
+
+    for value in to_remove:
+        Logger.debug("- Removing volume {0}...".format(value))
+        del content["volumes"][value]
+
+    return content
+
+
+def _composefile_filter_services(content, needed):
+    to_remove = []
+    for service_name in content["services"]:
+        if service_name not in needed:
+            to_remove.append(service_name)
+
+    for value in to_remove:
+        Logger.debug("- Removing service {0}...".format(value))
+        del content["services"][value]
+
+    return content
+
+
+def _composefile_filter_networks(content, needed):
+    to_remove = []
+    if "networks" in content:
+        for network_name in content["networks"]:
+            if network_name not in needed:
+                to_remove.append(network_name)
+
+    for value in to_remove:
+        Logger.debug("- Removing network {0}...".format(value))
+        del content["networks"][value]
+
+    return content
