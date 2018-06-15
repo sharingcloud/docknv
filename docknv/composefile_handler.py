@@ -9,7 +9,7 @@ from collections import OrderedDict
 from slugify import slugify
 
 from docknv.logger import Logger
-from docknv.utils.paths import create_path_or_replace, create_path_tree, get_lower_basename
+from docknv.utils.paths import create_path_or_replace, create_path_tree
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.ioutils import io_open
 
@@ -273,23 +273,20 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
     Logger.debug("Resolving volumes...")
     output_content = copy.deepcopy(compose_content)
 
-    project_name = get_lower_basename(project_path)
-
     # Cleaning static files
     create_path_or_replace(
         volume_generate_namespaced_path(
-            "static", project_name, config_name)
+            project_path, "static", config_name)
     )
 
     if "services" in output_content:
         for service_name in output_content["services"]:
-
             service_data = output_content["services"][service_name]
 
             # Set environment
             if "env_file" not in service_data:
                 service_data["env_file"] = [
-                    user_get_file_from_project(project_name, 'environment.env', config_name)
+                    user_get_file_from_project(project_path, 'environment.env', config_name)
                 ]
 
             Logger.debug(
@@ -304,7 +301,7 @@ def composefile_resolve_volumes(project_path, compose_content, config_name, name
                                                                       volumes_data, final_volumes)
 
                 # Static files
-                final_volumes = _composefile_resolve_static_volumes(project_path, project_name, config_name,
+                final_volumes = _composefile_resolve_static_volumes(project_path, config_name,
                                                                     volumes_data, final_volumes)
 
                 # Shared files
@@ -336,8 +333,10 @@ def _get_files_to_copy(data_path, output_path):
                 full_output_path = os.path.normpath(os.path.join(output_path, sub_part, filename))
                 files_to_copy.append((full_path, full_output_path))
 
+    return files_to_copy
 
-def _composefile_resolve_static_volumes(project_path, project_name, config_name, volumes_data, final_volumes):
+
+def _composefile_resolve_static_volumes(project_path, config_name, volumes_data, output_volumes):
     if "static" in volumes_data:
         for static_def in volumes_data["static"]:
             # Ignore empty volumes
@@ -348,7 +347,7 @@ def _composefile_resolve_static_volumes(project_path, project_name, config_name,
 
             # Create dirs & copy
             output_path = volume_object.generate_namespaced_volume_path("static", volume_object.host_path,
-                                                                        project_name, config_name)
+                                                                        project_path, config_name)
 
             data_path = os.path.normpath(os.path.join(project_path, "data", "files", volume_object.host_path))
 
@@ -370,14 +369,14 @@ def _composefile_resolve_static_volumes(project_path, project_name, config_name,
                     shutil.copy2(file_to_copy, output_path_to_copy)
 
             volume_object.host_path = output_path
-            final_volumes.append(str(volume_object))
+            output_volumes.append(str(volume_object))
 
         del volumes_data["static"]
 
-    return final_volumes
+    return output_volumes
 
 
-def _composefile_resolve_shared_volumes(project_path, volumes_data, final_volumes):
+def _composefile_resolve_shared_volumes(project_path, volumes_data, output_volumes):
     if "shared" in volumes_data:
         for shared_def in volumes_data["shared"]:
             # Ignore empty volumes
@@ -390,14 +389,14 @@ def _composefile_resolve_shared_volumes(project_path, volumes_data, final_volume
             Logger.debug("Detecting shared content at `{0}`...".format(data_path))
 
             volume_object.host_path = data_path
-            final_volumes.append(str(volume_object))
+            output_volumes.append(str(volume_object))
 
         del volumes_data["shared"]
 
-    return final_volumes
+    return output_volumes
 
 
-def _composefile_resolve_template_volumes(project_path, config_name, environment_data, volumes_data, final_volumes):
+def _composefile_resolve_template_volumes(project_path, config_name, environment_data, volumes_data, output_volumes):
 
     # Jinja templates
     if "templates" in volumes_data:
@@ -412,25 +411,25 @@ def _composefile_resolve_template_volumes(project_path, config_name, environment
             # Render template
             rendered_path = renderer_render_template(project_path, template_path, config_name, environment_data)
             volume_object.host_path = rendered_path
-            final_volumes.append(str(volume_object))
+            output_volumes.append(str(volume_object))
 
         del volumes_data["templates"]
 
-    return final_volumes
+    return output_volumes
 
 
-def _composefile_resolve_standard_volumes(volumes_data, final_volumes):
+def _composefile_resolve_standard_volumes(volumes_data, output_volumes):
     if "standard" in volumes_data:
         for standard_def in volumes_data["standard"]:
             # Ignore empty volumes
             if standard_def == "":
                 continue
 
-            final_volumes.append(standard_def)
+            output_volumes.append(standard_def)
 
         del volumes_data["standard"]
 
-    return final_volumes
+    return output_volumes
 
 
 def _composefile_resolve_networks(service_data, namespace):
