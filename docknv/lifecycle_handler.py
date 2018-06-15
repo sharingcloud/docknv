@@ -54,7 +54,7 @@ def lifecycle_schema_build(project_path, no_cache=False, push_to_registry=False)
 
     config_data = project_read(project_path)
     schema_config = schema_get_configuration(config_data, current_config_data["schema"])
-    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+    config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
     dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
 
     commands = []
@@ -87,9 +87,8 @@ def lifecycle_schema_start(project_path):
 
     :param project_path:     Project path (str)
     """
-    config_data = project_read(project_path)
     current_config = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+    config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
 
     command = ["up", "-d"]
     return exec_compose(project_path, config_filename, command, pretty=True)
@@ -101,9 +100,8 @@ def lifecycle_schema_stop(project_path):
 
     :param project_path:     Project path (str)
     """
-    config_data = project_read(project_path)
     current_config = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+    config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
 
     return exec_compose(project_path, config_filename, ["down"], pretty=True)
 
@@ -138,9 +136,8 @@ def lifecycle_schema_restart(project_path, force=False):
     :param force:            Force restart (bool) (default: False)
     """
     if not force:
-        config_data = project_read(project_path)
         current_config = project_get_active_configuration(project_path)
-        config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+        config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
         return exec_compose(project_path, config_filename, ["restart"], pretty=True)
     else:
         dry_run = os.environ.get('DOCKNV_FAKE_WRAPPER', '')
@@ -280,9 +277,8 @@ def lifecycle_machine_build(project_path, machine_name, no_cache=False, push_to_
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
 
-    config_data = project_read(project_path)
     current_config = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+    config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
 
     if no_cache:
         args = ["build", "--no-cache", machine_name]
@@ -310,9 +306,8 @@ def lifecycle_machine_stop(project_path, machine_name, namespace_name=None):
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-    config_data = project_read(project_path)
     current_config = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+    config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
 
     return exec_compose(project_path, config_filename, ["stop", machine_name], pretty=True)
 
@@ -326,9 +321,8 @@ def lifecycle_machine_start(project_path, machine_name, namespace_name=None):
     :param namespace_name:       Namespace name (str?) (default: None)
     """
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-    config_data = project_read(project_path)
     current_config = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+    config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
 
     return exec_compose(project_path, config_filename, ["start", machine_name], pretty=True)
 
@@ -363,18 +357,16 @@ def lifecycle_machine_restart(project_path, machine_name, force=False,
     """
     if force:
         machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-        config_data = project_read(project_path)
         current_config = project_get_active_configuration(project_path)
-        config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+        config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
 
         exec_compose(project_path, config_filename, ["rm", "-s", "-f", machine_name], pretty=True)
         return lifecycle_schema_start(project_path)
 
     else:
         machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
-        config_data = project_read(project_path)
         current_config = project_get_active_configuration(project_path)
-        config_filename = user_get_file_from_project(config_data.project_name, "docker-compose.yml", current_config)
+        config_filename = user_get_file_from_project(project_path, "docker-compose.yml", current_config)
 
         return exec_compose(project_path, config_filename, ["restart", machine_name], pretty=True)
 
@@ -392,9 +384,8 @@ def lifecycle_machine_run(project_path, machine_name, command, daemon=False, nam
     machine_name = lifecycle_get_machine_name(machine_name, namespace_name)
     d_cmd = "-d" if daemon else ""
 
-    config = project_read(project_path)
     config_name = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
+    config_filename = user_get_file_from_project(project_path, "docker-compose.yml", config_name)
 
     return exec_compose(
         project_path,
