@@ -6,7 +6,6 @@ from contextlib import contextmanager
 
 from docknv.logger import Logger
 from docknv.utils.serialization import yaml_ordered_load, yaml_merge
-from docknv.utils.words import generate_config_name
 from docknv.utils.paths import create_path_tree, get_lower_basename
 from docknv.utils.ioutils import io_open
 
@@ -213,12 +212,14 @@ def project_generate_compose_from_configuration(project_path, config_name):
         Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
 
     project_generate_compose(
-        ".", config["schema"], config["namespace"], config["environment"], config_name, update=True)
+        ".", config_name, config["schema"], config["environment"], config["namespace"], update=True)
 
 
 def project_check_config_name(project_path, config_name):
     """
     Check config name, generate a new one if not valid.
+
+    :raise LoggerError
 
     :param project_path:    Project path (str)
     :param config_name:     Config name (str)
@@ -233,21 +234,20 @@ def project_check_config_name(project_path, config_name):
         return config_name
 
     if config_name is not None:
-        Logger.info(
-            "Already existing configuration name: {0}. Generating a new configuration name...".format(config_name))
-    return generate_config_name(config_names)
+        Logger.error(
+            "Already existing configuration name: {0}.".format(config_name))
 
 
-def project_generate_compose(project_path, schema_name="all", namespace="default", environment="default",
-                             config_name=None, update=False):
+def project_generate_compose(project_path, config_name, schema_name="all", environment="default", namespace="default",
+                             update=False):
     """
     Generate a valid Docker Compose file.
 
     :param project_path:     Project path (str)
+    :param config_name:      Config name (str)
     :param schema_name:      Schema name (str) (default: all)
-    :param namespace:        Namespace name (str) (default: default)
     :param environment:      Environment config (str) (default: default)
-    :param config_name:      Config name (str?) (default: None)
+    :param namespace:        Namespace name (str) (default: default)
     :param update:           Update configuration (bool) (default: False)
     :rtype: Config name (str)
     """
@@ -341,6 +341,8 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 def project_validate(project_file_path, config_data):
     """
     Validate project file structure.
+
+    :raise LoggerError
 
     :param project_file_path:    Project path (str)
     :param config_data:          Config data (dict)

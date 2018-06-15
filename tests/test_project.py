@@ -36,7 +36,7 @@ def test_project_generate_compose():
         os.environ["DOCKNV_USER_PATH"] = project_path
         session_path = session_get_config_path(project_path)
 
-        project_generate_compose(project_path, "hello", "test", "default", "test")
+        project_generate_compose(project_path, "test", "hello", "default", "test")
         user_path = os.path.join(project_path, '.docknv', uname)
 
         assert os.path.isdir(session_path)

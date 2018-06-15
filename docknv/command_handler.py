@@ -3,6 +3,7 @@
 import os
 import pprint
 
+from docknv.logger import Logger
 from docknv.utils.prompt import prompt_yes_no
 
 from docknv.project_handler import project_read, project_get_active_configuration, project_is_valid
@@ -89,6 +90,8 @@ def command_get_context(project_path):
     """
     Get current context from active configuration.
 
+    :raise LoggerError
+
     :param project_path: Project path (str)
     :rtype: Context data (dict)
     """
@@ -110,7 +113,7 @@ def command_get_context(project_path):
         print("Project named `{0}` already exist at location `{1}`.".format(project_name, user_project_path))
         choice = prompt_yes_no("/!\\ Are you sure to overwrite the configuration ?")
         if not choice:
-            raise RuntimeError("No configuration overwrite.")
+            Logger.error("No configuration overwrite.")
         else:
             docknv_config["project_path"] = os.path.realpath(project_path)
             user_write_docknv_config(project_path, docknv_config)

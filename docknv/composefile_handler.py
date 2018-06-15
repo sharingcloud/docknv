@@ -26,6 +26,8 @@ def composefile_read(project_path, compose_file_path):
     """
     Read a compose file.
 
+    :raise LoggerError
+
     :param project_path:         Project path (str)
     :param compose_file_path:    Compose file path (str)
 
@@ -46,6 +48,8 @@ def composefile_read(project_path, compose_file_path):
 def composefile_multiple_read(project_path, compose_file_paths):
     """
     Read multiple compose files.
+
+    :raise LoggerError
 
     :param project_path:         Project path (str)
     :param compose_file_paths:   Compose file paths (str)
@@ -249,8 +253,10 @@ def composefile_handle_service_tags(compose_content, registry_url):
             if "tag" in service_data:
                 Logger.debug("Handling tag for service `{0}`...".format(service_name))
                 service_tag = service_data["tag"]
+
                 # TODO
                 # service_data["image"] = "/".join([registry_url, service_tag])
+
                 service_data["image"] = service_tag
                 del service_data["tag"]
 
