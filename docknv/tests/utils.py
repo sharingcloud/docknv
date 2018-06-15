@@ -8,15 +8,19 @@ from docknv.logger import Logger
 
 
 @contextmanager
-def using_temporary_directory():
+def using_temporary_directory(preserve=False):
     """
     Create a temporary directory.
 
     **Context manager**
     """
     directory = tempfile.mkdtemp()
-    yield directory
-    shutil.rmtree(directory)
+
+    try:
+        yield directory
+    finally:
+        if not preserve:
+            shutil.rmtree(directory)
 
 
 @contextmanager
@@ -28,8 +32,11 @@ def disable_logger():
     """
     lvl = Logger.get_log_level()
     Logger.set_log_level("NONE")
-    yield
-    Logger.set_log_level(lvl)
+
+    try:
+        yield
+    finally:
+        Logger.set_log_level(lvl)
 
 
 def copy_sample(sample, destination):

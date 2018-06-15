@@ -23,6 +23,7 @@ def _init(subparsers):
     edit_cmd.add_argument("-e", "--editor", nargs="?", default=None, help="editor to use (default: auto-detect)")
 
     subs.add_parser("rm-lock", help="remove the user lockfile")
+    subs.add_parser("migrate", help="migrate old configuration")
 
 
 def _handle(args):
@@ -35,10 +36,15 @@ def _handle_clean(args):
 
 def _handle_edit(args):
     editor = get_editor_executable(args.editor)
-    config_data = project_handler.project_read(".")
-    path = user_handler.user_get_project_path(config_data.project_name, args.config)
+    path = user_handler.user_get_project_path(".", args.config)
     return subprocess.call([editor, path], shell=True)
 
 
 def _handle_rm_lock(args):
     return user_handler.user_disable_lock(".")
+
+
+def _handle_migrate(args):
+    config_data = project_handler.project_read(".")
+    project_name = config_data.project_name
+    return user_handler.user_migrate_config(".", project_name)

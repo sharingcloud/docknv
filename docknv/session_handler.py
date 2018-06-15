@@ -5,7 +5,7 @@ import os
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.ioutils import io_open
-from docknv.utils.paths import get_lower_basename
+from docknv.utils.paths import create_path_tree
 from docknv.utils.diff_system import read_last_modification_time, save_last_modification_time
 
 from docknv.logger import Logger, Fore
@@ -20,6 +20,36 @@ from docknv.schema_handler import schema_check
 SESSION_FILE_NAME = ".docknv.yml"
 
 
+def _ensure_config_path_exists(project_path):
+    conf_path = session_get_config_path(project_path)
+    if not os.path.exists(conf_path):
+        create_path_tree(conf_path)
+
+
+def session_get_config_path(project_path):
+    """
+    Get configuration path from project path.
+
+    :param project_path:    Project path
+    :rtype: Configuration path
+    """
+    return os.path.join(
+        project_path, ".docknv"
+    )
+
+
+def session_get_session_path(project_path):
+    """
+    Get session path from project path.
+
+    :param project_path:    Project path
+    :rtype: Path to session file.
+    """
+    return os.path.join(
+        session_get_config_path(project_path), SESSION_FILE_NAME
+    )
+
+
 def session_read_configuration(project_path):
     """
     Read a session config file.
@@ -29,14 +59,15 @@ def session_read_configuration(project_path):
     :param project_path:     Project path (str)
     :rtype: Session configuration (dict)
     """
-    project_file_path = os.path.join(project_path, SESSION_FILE_NAME)
+    _ensure_config_path_exists(project_path)
+    project_file_path = session_get_session_path(project_path)
 
     if os.path.isfile(project_file_path):
         with io_open(project_file_path, encoding="utf-8", mode="r") as handle:
             config_data = yaml_ordered_load(handle.read())
         return config_data
 
-    return {"values": {}, "project_path": None}
+    return {"values": {}}
 
 
 def session_write_configuration(project_path, content):
@@ -46,7 +77,8 @@ def session_write_configuration(project_path, content):
     :param project_path:     Project path (str)
     :param content:          Content (dict)
     """
-    project_file_path = os.path.join(project_path, SESSION_FILE_NAME)
+    _ensure_config_path_exists(project_path)
+    project_file_path = session_get_session_path(project_path)
 
     with io_open(project_file_path, encoding="utf-8", mode="w") as handle:
         handle.write(yaml_ordered_dump(content))
@@ -114,7 +146,6 @@ def session_remove_configuration(project_path, config_name):
     )
 
     config = session_read_configuration(project_path)
-    project_name = get_lower_basename(project_path)
     if config_name not in config["values"]:
         Logger.error("Missing configuration `{0}`.".format(config_name))
 
@@ -140,7 +171,7 @@ def session_remove_configuration(project_path, config_name):
             project_unset_configuration(project_path)
 
         session_write_configuration(project_path, config)
-        user_clean_config_path(project_name, config_name)
+        user_clean_config_path(project_path, config_name)
 
         Logger.info("Configuration `{0}` removed.".format(config_name))
 
@@ -246,15 +277,15 @@ def session_validate_user(session_data, user_id):
     return session_data["user"] == user_id or user_id == 0
 
 
-def session_read_timestamps(project_name, config_name):
+def session_read_timestamps(project_path, config_name):
     """
-    Read timestamps for a project name and a config name.
+    Read timestamps for a project path and a config name.
 
-    :param project_name:    Project name (str)
+    :param project_path:    Project path (str)
     :param config_name:     Config name (str)
     :rtype: Timestamp data (dict)
     """
-    timestamps_path = user_get_file_from_project(project_name, "timestamps.json", config_name)
+    timestamps_path = user_get_file_from_project(project_path, "timestamps.json", config_name)
     original_timestamps = {}
     if os.path.exists(timestamps_path):
         with io_open(timestamps_path, mode="r") as stream:
@@ -263,14 +294,14 @@ def session_read_timestamps(project_name, config_name):
     return original_timestamps
 
 
-def session_save_timestamps(project_name, config_name, timestamps):
+def session_save_timestamps(project_path, config_name, timestamps):
     """
-    Save timestamps for a project name and a config name.
+    Save timestamps for a project path and a config name.
 
-    :param project_name:    Project name (str)
+    :param project_path:    Project path (str)
     :param config_name:     Config name (str)
     :param timestamps:      Timestamp data (dict)
     """
-    timestamps_path = user_get_file_from_project(project_name, "timestamps.json", config_name)
+    timestamps_path = user_get_file_from_project(project_path, "timestamps.json", config_name)
     with io_open(timestamps_path, mode="w") as stream:
         save_last_modification_time(stream, timestamps)
