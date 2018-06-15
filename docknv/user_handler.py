@@ -24,69 +24,75 @@ def user_get_id():
         return getpass.getuser()
 
 
-def user_get_username():
+def user_get_project_path(project_name, config_name=None):
     """
-    Return the user username.
+    Get a user project path.
 
-    :rtype: Username (str)
-    """
-    import getpass
-    return getpass.getuser()
-
-
-def user_get_config_path(project_path, config_name):
-    """
-    Get a user configuration path for a project.
-
-    :param project_path:    Project path (str)
-    :param config_name:     Config name (str)
+    :param project_name:    Project name (str)
+    :param config_name:     Config name (str?) (default: None)
     :rtype: Config path (str)
     """
-    return os.path.join(
-        user_get_local_docknv_path(project_path),
-        config_name)
+    if config_name:
+        return os.path.join(_get_docknv_path(), project_name, config_name)
+    return os.path.join(_get_docknv_path(), project_name)
 
 
-def user_get_docknv_config_file(project_path):
+def user_get_docknv_config_file(project_name):
     """
     Get project config file from user path.
 
-    :param project_path:     Project path (str)
+    :param project_name:     Project name (str)
     :rtype: Config path (str)
     """
-    config_file_path = os.path.join(
-        user_get_local_docknv_path(project_path),
-        "docknv.yml")
-    return config_file_path
+    config_path = os.path.join(user_get_project_path(project_name), "docknv.yml")
+    user_ensure_config_path_exists(project_name)
+    return config_path
 
 
-def user_get_file_from_project(project_path, path_to_file, config_name=None):
+def user_get_file_from_project(project_name, path_to_file, config_name=None):
     """
     Get file from user project path.
 
-    :param project_path:    Project path (str)
+    :param project_name:    Project name (str)
     :param path_to_file:    Path to file (str)
     :param config_name:     Config name (str?) (default: None)
     :rtype: File path (str)
     """
     if not config_name:
-        return os.path.join(
-            user_get_local_docknv_path(project_path), path_to_file)
+        return os.path.join(user_get_project_path(project_name), path_to_file)
     else:
-        return os.path.join(
-            user_get_local_docknv_path(project_path), config_name, path_to_file)
+        return os.path.join(user_get_project_path(project_name), config_name, path_to_file)
 
 
-def user_read_docknv_config(project_path):
+def user_ensure_config_path_exists(project_name, config_name=None):
+    """
+    Ensure the config path existence.
+
+    :param project_name:     Project name (str)
+    """
+    user_config_path = _get_docknv_path()
+    user_project_config_path = user_get_project_path(project_name)
+
+    if not os.path.exists(user_config_path):
+        os.makedirs(user_config_path)
+    if not os.path.exists(user_project_config_path):
+        os.makedirs(user_project_config_path)
+
+    if config_name:
+        user_project_config2_path = user_get_project_path(project_name, config_name)
+        if not os.path.exists(user_project_config2_path):
+            os.makedirs(user_project_config2_path)
+
+
+def user_read_docknv_config(project_name):
     """
     Read the docknv.yml config file for a project.
 
-    :param project_path:    Project path (str)
+    :param project_name:    Project name (str)
     :rtype: YAML content (dict)
     """
-    user_ensure_config_path_exists(project_path)
-
-    docknv_config_path = user_get_docknv_config_file(project_path)
+    user_ensure_config_path_exists(project_name)
+    docknv_config_path = user_get_docknv_config_file(project_name)
     if not os.path.exists(docknv_config_path):
         return {}
 
@@ -95,40 +101,32 @@ def user_read_docknv_config(project_path):
             return yaml_ordered_load(handle.read())
 
 
-def user_write_docknv_config(project_path, docknv_config):
+def user_write_docknv_config(project_name, docknv_config):
     """
     Write docknv.yml config content for a project.
 
-    :param project_path:    Project path (str)
+    :param project_name:    Project name (str)
     :param docknv_config:   docknv config (dict)
     """
-    user_ensure_config_path_exists(project_path)
-
-    docknv_config_path = user_get_docknv_config_file(project_path)
+    user_ensure_config_path_exists(project_name)
+    docknv_config_path = user_get_docknv_config_file(project_name)
     with io_open(docknv_config_path, mode="wt") as handle:
         handle.write(yaml_ordered_dump(docknv_config))
 
 
-def user_copy_file_to_config(project_path, path_to_file, config_name=None):
+def user_copy_file_to_config(project_name, path_to_file):
     """
-    Copy file to the user session path.
+    Copy file to the user config path.
 
-    :param project_path:     Project path (str)
+    :param project_name:     Project name (str)
     :param path_to_file:     Path to file (str)
-    :param config_name:      Config name (str?)
     """
-    user_ensure_config_path_exists(project_path, config_name)
+    user_ensure_config_path_exists(project_name)
 
-    if config_name:
-        user_path = user_get_config_path(project_path, config_name)
-    else:
-        user_path = user_get_local_docknv_path(project_path)
-
+    config_path = user_get_project_path(project_name)
     file_name = os.path.basename(path_to_file)
-    dest_path = os.path.join(user_path, file_name)
 
-    Logger.debug('Copying {src} to {dst}'.format(src=file_name, dst=dest_path))
-    shutil.copyfile(path_to_file, dest_path)
+    shutil.copyfile(path_to_file, os.path.join(config_path, file_name))
 
 
 ############
@@ -205,17 +203,17 @@ def user_try_lock(project_path):
 
 
 @contextmanager
-def user_temporary_copy_file(project_path, path_to_file, config_name=None):
+def user_temporary_copy_file(project_name, path_to_file, config_name=None):
     """
     Make a temporary copy of a user config file.
 
-    :param project_path:     Project path (str)
+    :param project_name:     Project name (str)
     :param path_to_file:     Path to file (str)
     :param config_name:      Config name (str?) (default: None)
 
     **Context manager**
     """
-    path = user_get_file_from_project(project_path, path_to_file, config_name)
+    path = user_get_file_from_project(project_name, path_to_file, config_name)
 
     generated_file_name = ".{0}.{1}".format(user_get_id(), os.path.basename(path))
     shutil.copyfile(path, generated_file_name)
@@ -226,111 +224,30 @@ def user_temporary_copy_file(project_path, path_to_file, config_name=None):
         os.remove(generated_file_name)
 
 
-def user_clean_config_path(project_path, config_name=None):
+def user_clean_config_path(project_name, config_name=None):
     """
     Clean a user config path, with an optional config name.
 
-    :param project_path:     Project path (str)
+    :param project_name:     Project name (str)
     :param config_name:      Config name (str?) (default: None)
     """
-    if config_name:
-        user_config_path = user_get_config_path(project_path, config_name)
+    folder_path = user_get_project_path(project_name, config_name)
+
+    if not os.path.exists(folder_path):
+        Logger.info("User configuration folder {0} does not exist.".format(folder_path))
     else:
-        user_config_path = user_get_local_docknv_path(project_path)
+        if prompt_yes_no("/!\\ Are you sure you want to remove the user folder {0} ?".format(folder_path)):
+            shutil.rmtree(folder_path)
+            Logger.info("User configuration folder `{0}` removed".format(folder_path))
 
-    if not os.path.exists(user_config_path):
-        Logger.info("User configuration folder {0} does not exist.".format(user_config_path))
-    else:
-        if prompt_yes_no("/!\\ Are you sure you want to remove the user folder {0} ?".format(user_config_path)):
-            shutil.rmtree(user_config_path)
-            Logger.info("User configuration folder `{0}` removed".format(user_config_path))
+##################
 
 
-def user_get_local_docknv_path(project_path):
+def _get_docknv_path():
     """
-    Get local docknv path for a user.
+    Get the docknv path.
 
-    :param project_path:    Project path (str)
-    :rtype: Local docknv path.
+    :rtype: Config path (str)
     """
-    from docknv.session_handler import session_get_config_path
-
-    uname = user_get_username()
-    config_path = session_get_config_path(project_path)
-
-    return os.path.join(
-        config_path,
-        uname
-    )
-
-
-def user_get_old_docknv_path(project_name):
-    """
-    Get old docknv path for a user.
-
-    :param project_name:    Project name (str)
-    :rtype: Old docknv path.
-    """
-    return os.path.realpath(
-        os.path.join(
-            os.environ.get("DOCKNV_USER_PATH_OLD", os.path.expanduser("~/.docknv")),
-            project_name
-        )
-    )
-
-
-def user_migrate_config(project_path, project_name, force=False):
-    """
-    Migrate user configuration.
-
-    :param project_path:    Project path
-    """
-    old_path = user_get_old_docknv_path(project_name)
-    new_path = user_get_local_docknv_path(project_path)
-
-    if not os.path.exists(old_path):
-        Logger.error(
-            "Old configuration path `{0}` does not exist.".format(old_path))
-
-    choice = prompt_yes_no(
-        "/!\\ Are you sure to migrate old configuration `{0}` to `{1}`?".format(
-            old_path, new_path
-        ),
-        force)
-
-    if not choice:
-        return
-
-    if os.path.exists(new_path):
-        choice = prompt_yes_no(
-            "/!\\ Path `{0}` will be removed. Are you sure to continue?".format(
-                new_path), force)
-        if not choice:
-            return
-
-        shutil.rmtree(new_path)
-
-    shutil.copytree(old_path, new_path)
-    shutil.rmtree(old_path)
-
-
-def user_ensure_config_path_exists(project_path, config_name=None):
-    """
-    Ensure that the user config path exists.
-
-    :param project_path:    Project path (str)
-    :param config_name:     Config name (str)
-    """
-    from docknv.session_handler import session_get_config_path
-    global_session_path = session_get_config_path(project_path)
-    user_session_path = user_get_local_docknv_path(project_path)
-
-    if not os.path.exists(global_session_path):
-        os.makedirs(global_session_path)
-    if not os.path.exists(user_session_path):
-        os.makedirs(user_session_path)
-
-    if config_name:
-        user_config_path = user_get_config_path(project_path, config_name)
-        if not os.path.exists(user_config_path):
-            os.makedirs(user_config_path)
+    docknv_path = os.environ.get("DOCKNV_USER_PATH", "~/.docknv")
+    return os.path.normpath(os.path.expanduser(docknv_path))

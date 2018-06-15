@@ -16,10 +16,6 @@ VERBOSE = True
 colorama.init()
 
 
-class LoggerError(Exception):
-    """Logger error."""
-
-
 class Logger(object):
     """Simple logger."""
 
@@ -90,7 +86,7 @@ class Logger(object):
         """
         Logger.log("ERROR", message, color)
         if crash:
-            raise LoggerError(message)
+            raise RuntimeError(message)
 
     @staticmethod
     def debug(message, color=Fore.CYAN):

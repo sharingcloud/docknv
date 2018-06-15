@@ -2,10 +2,9 @@
 
 from __future__ import unicode_literals
 
-import os
+import mock
 
 from docknv.tests.mocking import mock_input
-from docknv.tests.utils import using_temporary_directory
 
 from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.paths import create_path_tree, get_lower_basename
@@ -24,21 +23,9 @@ def test_prompt_yes_no():
 
 def test_create_path_tree():
     """Test create_path_tree function."""
-    with using_temporary_directory() as tempdir:
-        path_to_create_local = os.path.join(tempdir, "toto/tutu/titi")
-        create_path_tree(path_to_create_local)
-
-        assert os.path.isdir(
-            os.path.join(tempdir, "toto")
-        )
-
-        assert os.path.isdir(
-            os.path.join(tempdir, "toto", "tutu")
-        )
-
-        assert os.path.isdir(
-            os.path.join(tempdir, "toto", "tutu", "titi")
-        )
+    with mock.patch("os.path.exists", return_value=False):
+        with mock.patch("os.makedirs"):
+            create_path_tree("./pouet")
 
 
 def test_get_lower_basename():

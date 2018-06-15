@@ -5,7 +5,7 @@ import subprocess
 import six
 
 from docknv.logger import Logger
-from docknv.project_handler import project_get_active_configuration
+from docknv.project_handler import project_read, project_get_active_configuration
 from docknv.user_handler import user_get_file_from_project
 
 
@@ -17,8 +17,9 @@ def get_docker_container(project_path, machine):
     :param machine:          Machine name (str)
     :rtype: Container name (str)
     """
+    config = project_read(project_path)
     config_name = project_get_active_configuration(project_path)
-    config_filename = user_get_file_from_project(project_path, "docker-compose.yml", config_name)
+    config_filename = user_get_file_from_project(config.project_name, "docker-compose.yml", config_name)
 
     cmd = "docker-compose -f {0} --project-directory . ps -q {1}".format(config_filename, machine)
     proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE, shell=True)

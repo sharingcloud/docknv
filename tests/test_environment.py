@@ -5,8 +5,6 @@ from __future__ import unicode_literals
 import os
 import pytest
 
-from docknv.logger import LoggerError
-
 from docknv.environment_handler import (
     env_yaml_load_in_memory,
     env_yaml_resolve_variables,
@@ -138,7 +136,7 @@ def test_yaml_list():
 
         # Non existing test
         toto_path = os.path.join(project_path, 'toto')
-        with pytest.raises(LoggerError):
+        with pytest.raises(RuntimeError):
             env_yaml_list(toto_path)
 
         # Empty test

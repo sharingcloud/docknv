@@ -3,6 +3,8 @@
 import os
 import platform
 
+from docknv.user_handler import user_get_project_path
+
 
 class VolumeObject(object):
     """Volume object entry."""
@@ -32,20 +34,20 @@ class VolumeObject(object):
         self.is_relative = not self.is_absolute and any(character in self.host_path for character in "/\\")
         self.is_named = not self.is_absolute and not self.is_relative
 
-    def generate_namespaced_volume_path(self, file_type, path, project_path, config_name):
+    def generate_namespaced_volume_path(self, file_type, path, project_name, config_name):
         """
         Generate a namespaced volume path.
 
         :param file_type:        Type of file (str) (static/shared)
         :param path:             File path (str)
-        :param project_path:     Project path (str)
+        :param project_name:     Project name (str)
         :param config_name:      Config name (str)
 
         :rtype: Volume path (str)
         """
         return os.path.normpath(
             "{0}/{1}".format(
-                volume_generate_namespaced_path(project_path, file_type, config_name),
+                volume_generate_namespaced_path(file_type, project_name, config_name),
                 path
             )
         )
@@ -55,19 +57,17 @@ class VolumeObject(object):
         return ":".join((self.host_path, self.container_path, self.mode))
 
 
-def volume_generate_namespaced_path(project_path, file_type, config_name):
+def volume_generate_namespaced_path(file_type, project_name, config_name):
     """
     Generate a namespaced volume path.
 
-    :param project_path:     Project path (path)
     :param file_type:        Type of file (str) (static/shared)
+    :param project_name:     Project name (str)
     :param config_name:      Config name (str)
 
     :rtype: Volume path (str)
     """
-    from docknv.user_handler import user_get_config_path
-
-    user_config_path = user_get_config_path(project_path, config_name)
+    user_config_path = user_get_project_path(project_name, config_name)
 
     if file_type == "static":
         return os.path.normpath("{0}/data/static".format(user_config_path))

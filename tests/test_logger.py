@@ -3,7 +3,7 @@
 import pytest
 
 from docknv.tests.mocking import using_temporary_stdout
-from docknv.logger import Logger, Fore, LoggerError
+from docknv.logger import Logger, Fore
 
 import six
 
@@ -51,5 +51,5 @@ def test_log():
     with using_temporary_stdout() as stdout:
         # Error
         Logger.error("Pouet", crash=False)
-        with pytest.raises(LoggerError):
+        with pytest.raises(RuntimeError):
             Logger.error("Pouet", crash=True)
