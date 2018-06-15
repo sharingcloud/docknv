@@ -16,13 +16,12 @@ from docknv.project_handler import project_generate_compose, project_use_configu
 
 
 def _prepare_project(tempdir):
-    user_path = os.path.join(tempdir, "user")
-    os.makedirs(user_path)
-    os.environ["DOCKNV_USER_PATH"] = user_path
+    project_path = tempdir
+    os.environ["DOCKNV_USER_PATH"] = project_path
 
     project_path = copy_sample("sample01", tempdir)
-    project_generate_compose(project_path, "hello", "test", "default", "test")
-    project_generate_compose(project_path, "hello", "test2", "default", "test2")
+    project_generate_compose(project_path, "test", "hello", "default", "test")
+    project_generate_compose(project_path, "test2", "hello", "default", "test2")
     project_use_configuration(project_path, "test")
     return project_path
 
@@ -31,7 +30,7 @@ def test_lifecycle_schema_build():
     """Test lifecycle schema build."""
     with using_temporary_directory() as tempdir:
         project_path = _prepare_project(tempdir)
-        config_filename = user_get_file_from_project("sample01", "docker-compose.yml", "test")
+        config_filename = user_get_file_from_project(project_path, "docker-compose.yml", "test")
 
         # Schema build no-cache, push
         build_cmd, push_cmd = lifecycle_handler.lifecycle_schema_build(
@@ -63,7 +62,7 @@ def test_lifecycle_schema_start():
     """Test lifecycle schema start."""
     with using_temporary_directory() as tempdir:
         project_path = _prepare_project(tempdir)
-        config_filename = user_get_file_from_project("sample01", "docker-compose.yml", "test")
+        config_filename = user_get_file_from_project(project_path, "docker-compose.yml", "test")
 
         # Schema start
         cmd = lifecycle_handler.lifecycle_schema_start(project_path)
@@ -80,7 +79,7 @@ def test_lifecycle_schema_stop():
     """Test lifecycle schema stop."""
     with using_temporary_directory() as tempdir:
         project_path = _prepare_project(tempdir)
-        config_filename = user_get_file_from_project("sample01", "docker-compose.yml", "test")
+        config_filename = user_get_file_from_project(project_path, "docker-compose.yml", "test")
 
         # Schema stop
         cmd = lifecycle_handler.lifecycle_schema_stop(project_path)
@@ -97,7 +96,7 @@ def test_lifecycle_schema_restart():
     """Test lifecycle schema restart."""
     with using_temporary_directory() as tempdir:
         project_path = _prepare_project(tempdir)
-        config_filename = user_get_file_from_project("sample01", "docker-compose.yml", "test")
+        config_filename = user_get_file_from_project(project_path, "docker-compose.yml", "test")
 
         # Schema restart
         cmd = lifecycle_handler.lifecycle_schema_restart(project_path, force=False)
@@ -130,8 +129,8 @@ def test_lifecycle_bundle_start():
     """Test lifecycle bundle start."""
     with using_temporary_directory() as tempdir:
         project_path = _prepare_project(tempdir)
-        config_filename1 = user_get_file_from_project("sample01", "docker-compose.yml", "test")
-        config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
+        config_filename1 = user_get_file_from_project(project_path, "docker-compose.yml", "test")
+        config_filename2 = user_get_file_from_project(project_path, "docker-compose.yml", "test2")
 
         # Bundle start
         cmds = lifecycle_handler.lifecycle_bundle_start(project_path, ["test", "test2"])
@@ -151,8 +150,8 @@ def test_lifecycle_bundle_stop():
     """Test lifecycle bundle stop."""
     with using_temporary_directory() as tempdir:
         project_path = _prepare_project(tempdir)
-        config_filename1 = user_get_file_from_project("sample01", "docker-compose.yml", "test")
-        config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
+        config_filename1 = user_get_file_from_project(project_path, "docker-compose.yml", "test")
+        config_filename2 = user_get_file_from_project(project_path, "docker-compose.yml", "test2")
 
         # Bundle start
         cmds = lifecycle_handler.lifecycle_bundle_stop(project_path, ["test", "test2"])
@@ -172,8 +171,8 @@ def test_lifecycle_bundle_restart():
     """Test lifecycle bundle restart."""
     with using_temporary_directory() as tempdir:
         project_path = _prepare_project(tempdir)
-        config_filename1 = user_get_file_from_project("sample01", "docker-compose.yml", "test")
-        config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
+        config_filename1 = user_get_file_from_project(project_path, "docker-compose.yml", "test")
+        config_filename2 = user_get_file_from_project(project_path, "docker-compose.yml", "test2")
 
         # Bundle restart force
         cmds = lifecycle_handler.lifecycle_bundle_restart(project_path, ["test", "test2"], force=True)
@@ -213,8 +212,8 @@ def test_lifecycle_bundle_build():
     """Test lifecycle bundle build."""
     with using_temporary_directory() as tempdir:
         project_path = _prepare_project(tempdir)
-        config_filename1 = user_get_file_from_project("sample01", "docker-compose.yml", "test")
-        config_filename2 = user_get_file_from_project("sample01", "docker-compose.yml", "test2")
+        config_filename1 = user_get_file_from_project(project_path, "docker-compose.yml", "test")
+        config_filename2 = user_get_file_from_project(project_path, "docker-compose.yml", "test2")
 
         # Bundle start
         cmds = lifecycle_handler.lifecycle_bundle_build(project_path, ["test", "test2"], push_to_registry=True)

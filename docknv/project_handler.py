@@ -5,8 +5,7 @@ import os
 from contextlib import contextmanager
 
 from docknv.logger import Logger
-from docknv.utils.serialization import yaml_ordered_load, yaml_merge
-from docknv.utils.words import generate_config_name
+from docknv.utils.serialization import yaml_ordered_load
 from docknv.utils.paths import create_path_tree, get_lower_basename
 from docknv.utils.ioutils import io_open
 
@@ -87,11 +86,10 @@ def project_set_active_configuration(project_path, config_name, quiet=False):
         user_read_docknv_config, user_write_docknv_config
     )
 
-    config = project_read(project_path)
-    docknv_config = user_read_docknv_config(config.project_name)
+    docknv_config = user_read_docknv_config(project_path)
     docknv_config["current"] = config_name
 
-    user_write_docknv_config(config.project_name, docknv_config)
+    user_write_docknv_config(project_path, docknv_config)
 
     if not quiet:
         Logger.info("Configuration `{0}` set as current configuration.".format(config_name))
@@ -106,9 +104,7 @@ def project_get_active_configuration(project_path):
     """
     from docknv.user_handler import user_read_docknv_config
 
-    config = project_read(project_path)
-    content = user_read_docknv_config(config.project_name)
-
+    content = user_read_docknv_config(project_path)
     return content.get("current", None)
 
 
@@ -133,27 +129,27 @@ def project_use_configuration(project_path, config_name, quiet=False):
     Set it at .docker-compose.yml.
 
     :param project_path:     Project path (str)
-    :param config_name:      Config name (str)
+    :param config_name:      Config name (str?)
     :param quiet:            Be quiet (bool) (default: False)
     """
     from docknv.session_handler import (
-        session_get_configuration, session_validate_user
-    )
-    from docknv.user_handler import user_get_id, user_copy_file_to_config
+        session_get_configuration, session_validate_user)
+    from docknv.user_handler import user_get_id
 
-    config_content = project_read(project_path)
-    config = session_get_configuration(project_path, config_name)
+    # No config name
+    if config_name is None:
+        project_unset_configuration(project_path)
 
-    if not session_validate_user(config, user_get_id()):
-        Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
+    else:
+        config = session_get_configuration(project_path, config_name)
+        if not session_validate_user(config, user_get_id()):
+            Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
 
-    path = project_get_composefile(project_path, config_name)
+        path = project_get_composefile(project_path, config_name)
+        if not os.path.exists(path):
+            Logger.error("Missing composefile for configuration `{0}`".format(config_name))
 
-    if not os.path.exists(path):
-        Logger.error("Missing composefile for configuration `{0}`".format(config_name))
-
-    user_copy_file_to_config(config_content.project_name, path)
-    project_set_active_configuration(project_path, config_name, quiet)
+        project_set_active_configuration(project_path, config_name, quiet)
 
 
 def project_unset_configuration(project_path):
@@ -164,9 +160,7 @@ def project_unset_configuration(project_path):
     """
     from docknv.user_handler import user_get_docknv_config_file
 
-    config = project_read(project_path)
-    config_path = user_get_docknv_config_file(config.project_name)
-
+    config_path = user_get_docknv_config_file(project_path)
     if os.path.exists(config_path):
         os.remove(config_path)
 
@@ -184,8 +178,6 @@ def project_use_temporary_configuration(project_path, config_name):
     **Context manager**
     """
     old_config = project_get_active_configuration(project_path)
-    if old_config is None:
-        Logger.error("You should already use one config before using this tool")
 
     project_use_configuration(project_path, config_name, quiet=True)
     yield
@@ -200,9 +192,7 @@ def project_get_composefile(project_path, config_name):
     :param config_name:      Config name (str)
     """
     from docknv.user_handler import user_get_file_from_project
-
-    project_name = get_lower_basename(project_path)
-    return user_get_file_from_project(project_name, "docker-compose.yml", config_name)
+    return user_get_file_from_project(project_path, "docker-compose.yml", config_name)
 
 
 def project_generate_compose_from_configuration(project_path, config_name):
@@ -221,13 +211,15 @@ def project_generate_compose_from_configuration(project_path, config_name):
     if not session_validate_user(config, user_get_id()):
         Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
 
-    project_generate_compose(".", config["schema"], config["namespace"], config["environment"],
-                             config_name, update=True)
+    project_generate_compose(
+        ".", config_name, config["schema"], config["environment"], config["namespace"], update=True)
 
 
 def project_check_config_name(project_path, config_name):
     """
     Check config name, generate a new one if not valid.
+
+    :raise LoggerError
 
     :param project_path:    Project path (str)
     :param config_name:     Config name (str)
@@ -242,43 +234,37 @@ def project_check_config_name(project_path, config_name):
         return config_name
 
     if config_name is not None:
-        Logger.info(
-            "Already existing configuration name: {0}. Generating a new configuration name...".format(config_name))
-    return generate_config_name(config_names)
+        Logger.error(
+            "Already existing configuration name: {0}.".format(config_name))
 
 
-def project_generate_compose(project_path, schema_name="all", namespace="default", environment="default",
-                             config_name=None, update=False):
+def project_generate_compose(project_path, config_name, schema_name="all", environment="default", namespace="default",
+                             update=False):
     """
     Generate a valid Docker Compose file.
 
     :param project_path:     Project path (str)
+    :param config_name:      Config name (str)
     :param schema_name:      Schema name (str) (default: all)
-    :param namespace:        Namespace name (str) (default: default)
     :param environment:      Environment config (str) (default: default)
-    :param config_name:      Config name (str?) (default: None)
+    :param namespace:        Namespace name (str) (default: default)
     :param update:           Update configuration (bool) (default: False)
     :rtype: Config name (str)
     """
     from docknv.schema_handler import schema_get_configuration
-    from docknv.template_renderer import renderer_render_compose_template
     from docknv.environment_handler import (
         env_yaml_check_file, env_yaml_load_in_memory,
-        env_yaml_resolve_variables, env_yaml_key_value_export
-    )
+        env_yaml_resolve_variables, env_yaml_key_value_export)
+
     from docknv.user_handler import (
         user_get_id, user_get_file_from_project,
-        user_ensure_config_path_exists
-    )
+        user_ensure_config_path_exists)
 
     from docknv.session_handler import (
-        session_read_configuration, session_write_configuration, session_insert_configuration
-    )
+        session_read_configuration, session_write_configuration, session_insert_configuration)
 
     from docknv.composefile_handler import (
-        composefile_multiple_read, composefile_filter, composefile_resolve_volumes,
-        composefile_apply_namespace, composefile_write, composefile_handle_service_tags
-    )
+        composefile_write, composefile_process)
 
     ####################
     # Configuration name
@@ -290,8 +276,6 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 
         new_session = session_insert_configuration(session, config_name, schema_name,
                                                    environment, namespace, user_get_id())
-
-        # Set project path
     else:
         Logger.info("Updating configuration: `{0}`".format(config_name))
 
@@ -311,39 +295,22 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
     env_content = env_yaml_resolve_variables(env_content)
 
     # Save environment
-    user_ensure_config_path_exists(config_data.project_name, config_name)
-    env_kv_path = user_get_file_from_project(config_data.project_name, 'environment.env', config_name)
+    user_ensure_config_path_exists(project_path, config_name)
+    env_kv_path = user_get_file_from_project(project_path, 'environment.env', config_name)
     with io_open(env_kv_path, encoding="utf-8", mode="wt+") as handle:
         handle.write(env_yaml_key_value_export(env_content))
 
     # Get schema configuration
     schema_config = schema_get_configuration(config_data, schema_name)
 
-    # List linked composefiles
-    compose_files_content = composefile_multiple_read(project_path, config_data.composefiles)
-
-    # Merge and filter using schema
-    merged_content = composefile_filter(yaml_merge(compose_files_content), schema_config)
-
-    # Resolve compose content
-    resolved_content = renderer_render_compose_template(merged_content, env_content)
-
-    # Generate volumes declared in composefiles
-    rendered_content = composefile_resolve_volumes(project_path, resolved_content, config_name, namespace,
-                                                   environment, env_content)
-
-    # Handle services tags
-    rendered_content = composefile_handle_service_tags(rendered_content, registry_url)
-
-    # Apply namespace
-    namespaced_content = composefile_apply_namespace(rendered_content, namespace, environment)
-
-    # Generate main compose file
+    # Process composefile
+    processed_composefile = composefile_process(
+        project_path, config_data.composefiles, config_name, schema_config,
+        environment, env_content, namespace, registry_url)
     output_compose_file = project_get_composefile(project_path, config_name)
     if not os.path.exists(output_compose_file):
         create_path_tree(os.path.dirname(output_compose_file))
-
-    composefile_write(namespaced_content, output_compose_file)
+    composefile_write(processed_composefile, output_compose_file)
 
     if not update:
         # Write new session configuration
@@ -355,6 +322,8 @@ def project_generate_compose(project_path, schema_name="all", namespace="default
 def project_validate(project_file_path, config_data):
     """
     Validate project file structure.
+
+    :raise LoggerError
 
     :param project_file_path:    Project path (str)
     :param config_data:          Config data (dict)
@@ -382,4 +351,4 @@ def project_clean_user_config_path(project_path, config_name=None):
         Logger.info("Attempting to clean user configuration for project `{0}` and config `{1}`".format(
             project_name, config_name))
 
-    user_clean_config_path(project_name, config_name)
+    user_clean_config_path(project_path, config_name)
