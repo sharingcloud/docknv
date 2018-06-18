@@ -66,8 +66,6 @@ class Shell(object):
 
         :param args:    Arguments (iterable)
         """
-        exit_code = 0
-
         # Verbose mode activation
         if args.verbose:
             Logger.set_log_level("DEBUG")
@@ -89,30 +87,44 @@ class Shell(object):
                     subpar.print_help()
                     sys.exit(1)
 
-        # Absolute path
-        args.context = os.path.abspath(args.context)
+        return handle_parsers(self, args)
 
-        if args.command in STANDARD_COMMANDS:
-            module = importlib.import_module("docknv.shell.handlers." + args.command)
-            exit_code = getattr(module, "_handle")(args)
-        else:
-            for parser, cfg, ctx in self.post_parsers:
-                try:
-                    # New args passing
-                    result = parser(self, args, cfg, ctx)
-                except TypeError:
-                    # Old args passing
-                    result = parser(self, args)
 
-                try:
-                    ok, exit_code = result
-                except TypeError:
-                    ok, exit_code = result, 0
+def handle_parsers(shell, args):
+    """
+    Handle parsers.
 
-                if ok:
-                    break
+    :param shell:   Shell
+    :param args:    Arguments
+    :rtype: Exit code (int)
+    """
+    # Exit code
+    exit_code = 0
 
-        return exit_code
+    # Absolute path
+    args.context = os.path.abspath(args.context)
+
+    if args.command in STANDARD_COMMANDS:
+        module = importlib.import_module("docknv.shell.handlers." + args.command)
+        exit_code = getattr(module, "_handle")(args)
+    else:
+        for parser, cfg, ctx in shell.post_parsers:
+            try:
+                # New args passing
+                result = parser(shell, args, cfg, ctx)
+            except TypeError:
+                # Old args passing
+                result = parser(shell, args)
+
+            try:
+                ok, exit_code = result
+            except TypeError:
+                ok, exit_code = result, 0
+
+            if ok:
+                break
+
+    return exit_code
 
 
 def register_handlers(shell, current_dir, commands_dir, commands_context):
