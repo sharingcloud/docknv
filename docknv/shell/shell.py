@@ -79,6 +79,16 @@ class Shell(object):
             self.parser.print_help()
             sys.exit(1)
 
+        # Command help detection
+        if args.command is not None:
+            cmd = args.command
+            subcmd_name = "{0}_cmd".format(cmd)
+            if cmd in self.subparsers.choices:
+                subpar = self.subparsers.choices[cmd]
+                if getattr(args, subcmd_name) is None:
+                    subpar.print_help()
+                    sys.exit(1)
+
         # Absolute path
         args.context = os.path.abspath(args.context)
 
