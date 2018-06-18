@@ -24,6 +24,7 @@ class Shell(object):
         self.parser = argparse.ArgumentParser(description="Docker w/ environments (docknv {0})".format(__version__))
         self.parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
         self.parser.add_argument('-v', '--verbose', action='store_true', help='verbose mode')
+        self.parser.add_argument('-C', '--context', help='context folder', default='.')
 
         self.subparsers = self.parser.add_subparsers(dest="command", metavar="")
         self.post_parsers = []
@@ -51,10 +52,6 @@ class Shell(object):
             self.parser.print_help()
             sys.exit(1)
 
-        elif args_count == 1:
-            self.parser.parse_args(args + ["-h"])
-            sys.exit(1)
-
         return self.parse_args(self.parser.parse_args(args))
 
     def init_parsers(self):
@@ -76,6 +73,14 @@ class Shell(object):
             Logger.set_log_level("DEBUG")
         else:
             Logger.set_log_level("INFO")
+
+        # Command detection
+        if args.command is None:
+            self.parser.print_help()
+            sys.exit(1)
+
+        # Absolute path
+        args.context = os.path.abspath(args.context)
 
         if args.command in STANDARD_COMMANDS:
             module = importlib.import_module("docknv.shell.handlers." + args.command)

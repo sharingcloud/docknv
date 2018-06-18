@@ -20,7 +20,7 @@ def get_docker_container(project_path, machine):
     config_name = project_get_active_configuration(project_path)
     config_filename = user_get_file_from_project(project_path, "docker-compose.yml", config_name)
 
-    cmd = "docker-compose -f {0} --project-directory . ps -q {1}".format(config_filename, machine)
+    cmd = "docker-compose -f {0} --project-directory {1} ps -q {2}".format(config_filename, project_path, machine)
     proc = subprocess.Popen(cmd, cwd=project_path, stdout=subprocess.PIPE, shell=True)
     (out, _) = proc.communicate()
 
