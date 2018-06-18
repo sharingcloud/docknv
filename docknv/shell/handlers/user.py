@@ -31,20 +31,20 @@ def _handle(args):
 
 
 def _handle_clean(args):
-    return project_handler.project_clean_user_config_path(".", args.config)
+    return project_handler.project_clean_user_config_path(args.context, args.config)
 
 
 def _handle_edit(args):
     editor = get_editor_executable(args.editor)
-    path = user_handler.user_get_project_path(".", args.config)
+    path = user_handler.user_get_project_path(args.context, args.config)
     return subprocess.call([editor, path], shell=True)
 
 
 def _handle_rm_lock(args):
-    return user_handler.user_disable_lock(".")
+    return user_handler.user_disable_lock(args.context)
 
 
 def _handle_migrate(args):
-    config_data = project_handler.project_read(".")
+    config_data = project_handler.project_read(args.context)
     project_name = config_data.project_name
-    return user_handler.user_migrate_config(".", project_name)
+    return user_handler.user_migrate_config(args.context, project_name)

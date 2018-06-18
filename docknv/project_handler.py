@@ -212,7 +212,7 @@ def project_generate_compose_from_configuration(project_path, config_name):
         Logger.error("Can not access to `{0}` configuration. Access denied.".format(config_name))
 
     project_generate_compose(
-        ".", config_name, config["schema"], config["environment"], config["namespace"], update=True)
+        project_path, config_name, config["schema"], config["environment"], config["namespace"], update=True)
 
 
 def project_check_config_name(project_path, config_name):

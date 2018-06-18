@@ -34,27 +34,27 @@ def _handle(args):
 
 
 def _handle_ls(args):
-    environment_handler.env_yaml_list(".")
+    environment_handler.env_yaml_list(args.context)
 
 
 def _handle_show(args):
-    environment_handler.env_yaml_show(".", args.env_name)
+    environment_handler.env_yaml_show(args.context, args.env_name)
 
 
 def _handle_edit(args):
     editor = get_editor_executable(args.editor)
-    path = environment_handler.env_get_yaml_path(".", args.env_name)
+    path = environment_handler.env_get_yaml_path(args.context, args.env_name)
     return subprocess.call([editor, path], shell=True)
 
 
 def _handle_convert(args):
-    environment_handler.env_yaml_convert(".", args.env_name)
+    environment_handler.env_yaml_convert(args.context, args.env_name)
 
 
 def _handle_create_from(args):
-    if not environment_handler.env_yaml_check_file(".", args.from_env):
+    if not environment_handler.env_yaml_check_file(args.context, args.from_env):
         Logger.error("Missing environment file `{0}`".format(args.from_env))
 
     inherited = environment_handler.env_yaml_inherits(args.from_env)
-    dest_env = environment_handler.env_get_yaml_path(".", args.env_name)
+    dest_env = environment_handler.env_get_yaml_path(args.context, args.env_name)
     environment_handler.env_yaml_write_to_file(inherited, dest_env)

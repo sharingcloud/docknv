@@ -217,7 +217,7 @@ def user_temporary_copy_file(project_path, path_to_file, config_name=None):
     """
     path = user_get_file_from_project(project_path, path_to_file, config_name)
 
-    generated_file_name = ".{0}.{1}".format(user_get_id(), os.path.basename(path))
+    generated_file_name = "{0}/.{1}.{2}".format(project_path, user_get_id(), os.path.basename(path))
     shutil.copyfile(path, generated_file_name)
 
     yield generated_file_name

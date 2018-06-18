@@ -40,7 +40,7 @@ def post_parse(shell, args, config, context):
         if args.notebook_cmd == "password":
             Logger.info("Generating notebook password...")
             cmd = 'python -c "from IPython.lib import passwd; print(passwd())"'
-            lifecycle_machine_run(".", machine_name, cmd)
+            lifecycle_machine_run(args.context, machine_name, cmd)
             return True
 
     return False

@@ -29,8 +29,8 @@ def _handle(args):
 
 
 def _handle_ls(args):
-    return lifecycle_handler.lifecycle_volume_list(".")
+    return lifecycle_handler.lifecycle_volume_list(args.context)
 
 
 def _handle_rm(args):
-    return lifecycle_handler.lifecycle_volume_remove(".", args.name)
+    return lifecycle_handler.lifecycle_volume_remove(args.context, args.name)

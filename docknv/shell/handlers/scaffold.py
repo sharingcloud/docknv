@@ -34,11 +34,11 @@ def _handle_project(args):
 
 
 def _handle_image(args):
-    return scaffolder.scaffold_image(".", args.image_name, args.image_url, args.image_tag)
+    return scaffolder.scaffold_image(args.context, args.image_name, args.image_url, args.image_tag)
 
 
 def _handle_env(args):
     if args.inherit:
-        return scaffolder.scaffold_environment_copy(".", args.inherit, args.name)
+        return scaffolder.scaffold_environment_copy(args.context, args.inherit, args.name)
     else:
-        return scaffolder.scaffold_environment(".", args.name)
+        return scaffolder.scaffold_environment(args.context, args.name)
