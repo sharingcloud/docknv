@@ -36,26 +36,26 @@ def _handle(args):
 
 
 def _handle_start(args):
-    with user_handler.user_try_lock("."):
-        return lifecycle_handler.lifecycle_bundle_start(".", args.configs)
+    with user_handler.user_try_lock(args.context):
+        return lifecycle_handler.lifecycle_bundle_start(args.context, args.configs)
 
 
 def _handle_stop(args):
-    with user_handler.user_try_lock("."):
-        return lifecycle_handler.lifecycle_bundle_stop(".", args.configs)
+    with user_handler.user_try_lock(args.context):
+        return lifecycle_handler.lifecycle_bundle_stop(args.context, args.configs)
 
 
 def _handle_restart(args):
-    with user_handler.user_try_lock("."):
+    with user_handler.user_try_lock(args.context):
         return lifecycle_handler.lifecycle_bundle_restart(
-            ".", args.configs, force=args.force)
+            args.context, args.configs, force=args.force)
 
 
 def _handle_ps(args):
-    return lifecycle_handler.lifecycle_bundle_ps(".", args.configs)
+    return lifecycle_handler.lifecycle_bundle_ps(args.context, args.configs)
 
 
 def _handle_build(args):
     return lifecycle_handler.lifecycle_bundle_build(
-        ".", args.configs,
+        args.context, args.configs,
         no_cache=args.no_cache, push_to_registry=args.push)

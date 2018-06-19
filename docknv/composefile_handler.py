@@ -9,22 +9,24 @@ from collections import OrderedDict
 from slugify import slugify
 
 from docknv.logger import Logger
-from docknv.utils.paths import create_path_or_replace, create_path_tree, get_lower_basename
-from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
+from docknv.utils.paths import create_path_or_replace, create_path_tree
+from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump, yaml_merge
 from docknv.utils.ioutils import io_open
 
+
 from docknv.user_handler import (
-    user_get_file_from_project
-)
-from docknv.template_renderer import renderer_render_template
+    user_get_file_from_project)
+from docknv.template_renderer import (
+    renderer_render_template, renderer_render_compose_template)
 from docknv.volume_handler import (
-    volume_extract_from_line, volume_generate_namespaced_path
-)
+    volume_extract_from_line, volume_generate_namespaced_path)
 
 
 def composefile_read(project_path, compose_file_path):
     """
     Read a compose file.
+
+    :raise LoggerError
 
     :param project_path:         Project path (str)
     :param compose_file_path:    Compose file path (str)
@@ -46,6 +48,8 @@ def composefile_read(project_path, compose_file_path):
 def composefile_multiple_read(project_path, compose_file_paths):
     """
     Read multiple compose files.
+
+    :raise LoggerError
 
     :param project_path:         Project path (str)
     :param compose_file_paths:   Compose file paths (str)
@@ -100,47 +104,6 @@ def composefile_filter(merged_content, schema_configuration):
         return new_merged
 
 
-def _composefile_filter_volumes(content, needed):
-    to_remove = []
-    if "volumes" in content:
-        for volume_name in content["volumes"]:
-            if volume_name not in needed:
-                to_remove.append(volume_name)
-
-    for value in to_remove:
-        Logger.debug("- Removing volume {0}...".format(value))
-        del content["volumes"][value]
-
-    return content
-
-
-def _composefile_filter_services(content, needed):
-    to_remove = []
-    for service_name in content["services"]:
-        if service_name not in needed:
-            to_remove.append(service_name)
-
-    for value in to_remove:
-        Logger.debug("- Removing service {0}...".format(value))
-        del content["services"][value]
-
-    return content
-
-
-def _composefile_filter_networks(content, needed):
-    to_remove = []
-    if "networks" in content:
-        for network_name in content["networks"]:
-            if network_name not in needed:
-                to_remove.append(network_name)
-
-    for value in to_remove:
-        Logger.debug("- Removing network {0}...".format(value))
-        del content["networks"][value]
-
-    return content
-
-
 def composefile_apply_namespace(compose_content, namespace="default", environment="default"):
     """
     Apply namespace to compose content.
@@ -184,6 +147,269 @@ def composefile_apply_namespace(compose_content, namespace="default", environmen
 
     # Service replacement
     return _composefile_apply_namespace_replacement(output_content, namespace, environment, shared_volumes)
+
+
+def composefile_handle_service_tags(compose_content, registry_url):
+    """
+    Handle service tags.
+
+    :param project_path:        Project path (str)
+    :param compose_content:     Compose content (dict)
+    :param registry_url:        Registry URL (str)
+    :rtype dict
+    """
+    Logger.debug("Handling service tags...")
+    output_content = copy.deepcopy(compose_content)
+
+    if "services" in output_content:
+        for service_name in output_content["services"]:
+            service_data = output_content["services"][service_name]
+
+            if "tag" in service_data:
+                Logger.debug("Handling tag for service `{0}`...".format(service_name))
+                service_tag = service_data["tag"]
+
+                # TODO
+                # service_data["image"] = "/".join([registry_url, service_tag])
+
+                service_data["image"] = service_tag
+                del service_data["tag"]
+
+    return output_content
+
+
+def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default",
+                                environment_data=None):
+    """
+    Resolve volumes and Jinja templates path using namespacing.
+
+    :param project_path:     Project path (str)
+    :param compose_content:  Compose content (dict)
+    :param project_name:     Project name (str)
+    :param namespace:        Namespace name (str) (default: default)
+    :param environment_data: Environment data (str?) (default: None)
+    :rtype: dict
+    """
+    Logger.debug("Resolving volumes...")
+    output_content = copy.deepcopy(compose_content)
+
+    # Cleaning static files
+    create_path_or_replace(
+        volume_generate_namespaced_path(
+            project_path, "static", config_name)
+    )
+
+    if "services" in output_content:
+        for service_name in output_content["services"]:
+            service_data = output_content["services"][service_name]
+
+            # Set environment
+            if "env_file" not in service_data:
+                service_data["env_file"] = [
+                    user_get_file_from_project(project_path, 'environment.env', config_name)
+                ]
+
+            Logger.debug(
+                "Resolving volumes for service `{0}`...".format(service_name))
+
+            final_volumes = []
+            if "volumes" in service_data and isinstance(service_data["volumes"], dict):
+                volumes_data = service_data["volumes"]
+
+                # Templates
+                final_volumes = _composefile_resolve_template_volumes(project_path, config_name, environment_data,
+                                                                      volumes_data, final_volumes)
+
+                # Static files
+                final_volumes = _composefile_resolve_static_volumes(project_path, config_name,
+                                                                    volumes_data, final_volumes)
+
+                # Shared files
+                final_volumes = _composefile_resolve_shared_volumes(project_path, volumes_data, final_volumes)
+
+                # Standard volumes
+                final_volumes = _composefile_resolve_standard_volumes(volumes_data, final_volumes)
+
+            service_data["volumes"] = final_volumes
+
+            _composefile_resolve_networks(service_data, namespace)
+
+    return output_content
+
+
+def composefile_process(
+        project_path, composefile_list, config_name, schema_config,
+        environment_name, environment_content, namespace, registry_url):
+    """
+    Process a composefile from multiple composefiles.
+
+    :param project_path:            Project path (str)
+    :param composefile_list:        Composefile list (list)
+    :param config_name:             Configuration name (str)
+    :param schema_config:           Schema configuration (dict)
+    :param environment_name:        Environment name (str)
+    :param environment_content:     Environment content (dict)
+    :param namespace:               Namespace (str)
+    :param registry_url:            Registry URL (str)
+
+    :rtype: Processed composefile (str)
+    """
+    # List linked composefiles
+    compose_files_content = composefile_multiple_read(project_path, composefile_list)
+
+    # Merge and filter using schema
+    merged_content = composefile_filter(
+        yaml_merge(compose_files_content),
+        schema_config)
+
+    # Resolve compose content
+    resolved_content = renderer_render_compose_template(merged_content, environment_content)
+
+    # Generate volumes declared in composefiles
+    rendered_content = composefile_resolve_volumes(project_path, resolved_content, config_name, namespace,
+                                                   environment_content)
+
+    # Handle services tags
+    rendered_content = composefile_handle_service_tags(rendered_content, registry_url)
+
+    # Apply namespace
+    namespaced_content = composefile_apply_namespace(rendered_content, namespace, environment_name)
+
+    return namespaced_content
+
+
+###################
+
+
+def _get_files_to_copy(data_path, output_path):
+    files_to_copy = []
+    if os.path.isfile(data_path):
+        files_to_copy.append((data_path, output_path))
+    else:
+        base_root = data_path
+        for root, folders, filenames in os.walk(data_path):
+            sub_part = root.replace(base_root, "")
+            if len(sub_part) > 0:
+                sub_part = sub_part[1:]
+
+            for filename in filenames:
+                full_path = os.path.normpath(os.path.join(root, filename))
+                full_output_path = os.path.normpath(os.path.join(output_path, sub_part, filename))
+                files_to_copy.append((full_path, full_output_path))
+
+    return files_to_copy
+
+
+def _composefile_resolve_static_volumes(project_path, config_name, volumes_data, output_volumes):
+    if "static" in volumes_data:
+        for static_def in volumes_data["static"]:
+            # Ignore empty volumes
+            if static_def == "":
+                continue
+
+            volume_object = volume_extract_from_line(static_def)
+
+            # Create dirs & copy
+            output_path = volume_object.generate_namespaced_volume_path("static", volume_object.host_path,
+                                                                        project_path, config_name)
+
+            data_path = os.path.normpath(os.path.join(project_path, "data", "files", volume_object.host_path))
+
+            # Get files to copy
+            files_to_copy = _get_files_to_copy(data_path, output_path)
+
+            # Copy !
+            for file_to_copy, output_path_to_copy in files_to_copy:
+                Logger.debug(
+                    "Copying static content from `{0}` to `{1}`...".format(file_to_copy, output_path_to_copy))
+                create_path_tree(os.path.dirname(output_path_to_copy))
+
+                if os.path.isdir(file_to_copy):
+                    try:
+                        os.mkdir(file_to_copy)
+                    except Exception:
+                        pass
+                else:
+                    shutil.copy2(file_to_copy, output_path_to_copy)
+
+            volume_object.host_path = output_path
+            output_volumes.append(str(volume_object))
+
+        del volumes_data["static"]
+
+    return output_volumes
+
+
+def _composefile_resolve_shared_volumes(project_path, volumes_data, output_volumes):
+    if "shared" in volumes_data:
+        for shared_def in volumes_data["shared"]:
+            # Ignore empty volumes
+            if shared_def == "":
+                continue
+
+            volume_object = volume_extract_from_line(shared_def)
+
+            data_path = os.path.join(project_path, "data", "files", volume_object.host_path)
+            Logger.debug("Detecting shared content at `{0}`...".format(data_path))
+
+            volume_object.host_path = data_path
+            output_volumes.append(str(volume_object))
+
+        del volumes_data["shared"]
+
+    return output_volumes
+
+
+def _composefile_resolve_template_volumes(project_path, config_name, environment_data, volumes_data, output_volumes):
+    # Jinja templates
+    if "templates" in volumes_data:
+        for template_def in volumes_data["templates"]:
+            # Ignore empty volumes
+            if template_def == "":
+                continue
+
+            volume_object = volume_extract_from_line(template_def)
+            template_path = volume_object.host_path
+
+            # Render template
+            rendered_path = renderer_render_template(project_path, template_path, config_name, environment_data)
+            volume_object.host_path = rendered_path
+            output_volumes.append(str(volume_object))
+
+        del volumes_data["templates"]
+
+    return output_volumes
+
+
+def _composefile_resolve_standard_volumes(volumes_data, output_volumes):
+    if "standard" in volumes_data:
+        for standard_def in volumes_data["standard"]:
+            # Ignore empty volumes
+            if standard_def == "":
+                continue
+
+            output_volumes.append(standard_def)
+
+        del volumes_data["standard"]
+
+    return output_volumes
+
+
+def _composefile_resolve_networks(service_data, namespace):
+    if "networks" in service_data:
+        for network_name in service_data["networks"]:
+            network = service_data["networks"][network_name]
+            if isinstance(network, dict) and "aliases" in network:
+                new_aliases = []
+                for alias in network["aliases"]:
+                    if namespace == "default":
+                        new_alias = slugify(alias)
+                    else:
+                        new_alias = slugify("-".join([namespace, alias]))
+
+                    new_aliases.append(new_alias)
+
+                network["aliases"] = new_aliases
 
 
 def _composefile_apply_namespace_replacement(output_content, namespace, environment, shared_volumes):
@@ -230,221 +456,42 @@ def _composefile_apply_namespace_replacement(output_content, namespace, environm
     return output_content
 
 
-def composefile_handle_service_tags(compose_content, registry_url):
-    """
-    Handle service tags.
+def _composefile_filter_volumes(content, needed):
+    to_remove = []
+    if "volumes" in content:
+        for volume_name in content["volumes"]:
+            if volume_name not in needed:
+                to_remove.append(volume_name)
 
-    :param project_path:        Project path (str)
-    :param compose_content:     Compose content (dict)
-    :param registry_url:        Registry URL (str)
-    :rtype dict
-    """
-    Logger.debug("Handling service tags...")
-    output_content = copy.deepcopy(compose_content)
+    for value in to_remove:
+        Logger.debug("- Removing volume {0}...".format(value))
+        del content["volumes"][value]
 
-    if "services" in output_content:
-        for service_name in output_content["services"]:
-            service_data = output_content["services"][service_name]
-
-            if "tag" in service_data:
-                Logger.debug("Handling tag for service `{0}`...".format(service_name))
-                service_tag = service_data["tag"]
-                # TODO
-                # service_data["image"] = "/".join([registry_url, service_tag])
-                service_data["image"] = service_tag
-                del service_data["tag"]
-
-    return output_content
+    return content
 
 
-def composefile_resolve_volumes(project_path, compose_content, config_name, namespace="default", environment="default",
-                                environment_data=None):
-    """
-    Resolve volumes and Jinja templates path using namespacing.
+def _composefile_filter_services(content, needed):
+    to_remove = []
+    for service_name in content["services"]:
+        if service_name not in needed:
+            to_remove.append(service_name)
 
-    :param project_path:     Project path (str)
-    :param compose_content:  Compose content (dict)
-    :param project_name:     Project name (str)
-    :param namespace:        Namespace name (str) (default: default)
-    :param environment:      Environment file name (str) (default: default)
-    :param environment_data: Environment data (str?) (default: None)
-    :rtype: dict
-    """
-    Logger.debug("Resolving volumes...")
-    output_content = copy.deepcopy(compose_content)
+    for value in to_remove:
+        Logger.debug("- Removing service {0}...".format(value))
+        del content["services"][value]
 
-    project_name = get_lower_basename(project_path)
-
-    # Cleaning static files
-    create_path_or_replace(
-        volume_generate_namespaced_path(
-            "static", project_name, config_name)
-    )
-
-    if "services" in output_content:
-        for service_name in output_content["services"]:
-
-            service_data = output_content["services"][service_name]
-
-            # Set environment
-            if "env_file" not in service_data:
-                service_data["env_file"] = [
-                    user_get_file_from_project(project_name, 'environment.env', config_name)
-                ]
-
-            Logger.debug(
-                "Resolving volumes for service `{0}`...".format(service_name))
-
-            final_volumes = []
-            if "volumes" in service_data and isinstance(service_data["volumes"], dict):
-                volumes_data = service_data["volumes"]
-
-                # Templates
-                final_volumes = _composefile_resolve_template_volumes(project_path, config_name, environment_data,
-                                                                      volumes_data, final_volumes)
-
-                # Static files
-                final_volumes = _composefile_resolve_static_volumes(project_path, project_name, config_name,
-                                                                    volumes_data, final_volumes)
-
-                # Shared files
-                final_volumes = _composefile_resolve_shared_volumes(project_path, volumes_data, final_volumes)
-
-                # Standard volumes
-                final_volumes = _composefile_resolve_standard_volumes(volumes_data, final_volumes)
-
-            service_data["volumes"] = final_volumes
-
-            _composefile_resolve_networks(service_data, namespace)
-
-    return output_content
+    return content
 
 
-def _get_files_to_copy(data_path, output_path):
-    files_to_copy = []
-    if os.path.isfile(data_path):
-        files_to_copy.append((data_path, output_path))
-    else:
-        base_root = data_path
-        for root, folders, filenames in os.walk(data_path):
-            sub_part = root.replace(base_root, "")
-            if len(sub_part) > 0:
-                sub_part = sub_part[1:]
+def _composefile_filter_networks(content, needed):
+    to_remove = []
+    if "networks" in content:
+        for network_name in content["networks"]:
+            if network_name not in needed:
+                to_remove.append(network_name)
 
-            for filename in filenames:
-                full_path = os.path.normpath(os.path.join(root, filename))
-                full_output_path = os.path.normpath(os.path.join(output_path, sub_part, filename))
-                files_to_copy.append((full_path, full_output_path))
+    for value in to_remove:
+        Logger.debug("- Removing network {0}...".format(value))
+        del content["networks"][value]
 
-
-def _composefile_resolve_static_volumes(project_path, project_name, config_name, volumes_data, final_volumes):
-    if "static" in volumes_data:
-        for static_def in volumes_data["static"]:
-            # Ignore empty volumes
-            if static_def == "":
-                continue
-
-            volume_object = volume_extract_from_line(static_def)
-
-            # Create dirs & copy
-            output_path = volume_object.generate_namespaced_volume_path("static", volume_object.host_path,
-                                                                        project_name, config_name)
-
-            data_path = os.path.normpath(os.path.join(project_path, "data", "files", volume_object.host_path))
-
-            # Get files to copy
-            files_to_copy = _get_files_to_copy(data_path, output_path)
-
-            # Copy !
-            for file_to_copy, output_path_to_copy in files_to_copy:
-                Logger.debug(
-                    "Copying static content from `{0}` to `{1}`...".format(file_to_copy, output_path_to_copy))
-                create_path_tree(os.path.dirname(output_path_to_copy))
-
-                if os.path.isdir(file_to_copy):
-                    try:
-                        os.mkdir(file_to_copy)
-                    except Exception:
-                        pass
-                else:
-                    shutil.copy2(file_to_copy, output_path_to_copy)
-
-            volume_object.host_path = output_path
-            final_volumes.append(str(volume_object))
-
-        del volumes_data["static"]
-
-    return final_volumes
-
-
-def _composefile_resolve_shared_volumes(project_path, volumes_data, final_volumes):
-    if "shared" in volumes_data:
-        for shared_def in volumes_data["shared"]:
-            # Ignore empty volumes
-            if shared_def == "":
-                continue
-
-            volume_object = volume_extract_from_line(shared_def)
-
-            data_path = os.path.join(project_path, "data", "files", volume_object.host_path)
-            Logger.debug("Detecting shared content at `{0}`...".format(data_path))
-
-            volume_object.host_path = data_path
-            final_volumes.append(str(volume_object))
-
-        del volumes_data["shared"]
-
-    return final_volumes
-
-
-def _composefile_resolve_template_volumes(project_path, config_name, environment_data, volumes_data, final_volumes):
-
-    # Jinja templates
-    if "templates" in volumes_data:
-        for template_def in volumes_data["templates"]:
-            # Ignore empty volumes
-            if template_def == "":
-                continue
-
-            volume_object = volume_extract_from_line(template_def)
-            template_path = volume_object.host_path
-
-            # Render template
-            rendered_path = renderer_render_template(project_path, template_path, config_name, environment_data)
-            volume_object.host_path = rendered_path
-            final_volumes.append(str(volume_object))
-
-        del volumes_data["templates"]
-
-    return final_volumes
-
-
-def _composefile_resolve_standard_volumes(volumes_data, final_volumes):
-    if "standard" in volumes_data:
-        for standard_def in volumes_data["standard"]:
-            # Ignore empty volumes
-            if standard_def == "":
-                continue
-
-            final_volumes.append(standard_def)
-
-        del volumes_data["standard"]
-
-    return final_volumes
-
-
-def _composefile_resolve_networks(service_data, namespace):
-    if "networks" in service_data:
-        for network_name in service_data["networks"]:
-            network = service_data["networks"][network_name]
-            if isinstance(network, dict) and "aliases" in network:
-                new_aliases = []
-                for alias in network["aliases"]:
-                    if namespace == "default":
-                        new_alias = slugify(alias)
-                    else:
-                        new_alias = slugify("-".join([namespace, alias]))
-
-                    new_aliases.append(new_alias)
-
-                network["aliases"] = new_aliases
+    return content

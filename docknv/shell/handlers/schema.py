@@ -20,5 +20,5 @@ def _handle(args):
 
 
 def _handle_ls(args):
-    project_data = project_handler.project_read(".")
+    project_data = project_handler.project_read(args.context)
     return schema_handler.schema_list(project_data)

@@ -4,6 +4,9 @@ from __future__ import unicode_literals
 
 import os
 import pytest
+from collections import OrderedDict
+
+from docknv.logger import LoggerError
 
 from docknv.environment_handler import (
     env_yaml_load_in_memory,
@@ -13,7 +16,12 @@ from docknv.environment_handler import (
     env_get_py_path,
     env_yaml_convert,
     env_yaml_key_value_export,
-    env_yaml_list
+    env_yaml_list,
+    env_yaml_get_dependencies,
+    env_yaml_get_dependencies_str,
+    env_yaml_generate_depth_graph,
+
+    UnresolvableEnvironment
 )
 
 from docknv.tests.utils import (
@@ -136,7 +144,7 @@ def test_yaml_list():
 
         # Non existing test
         toto_path = os.path.join(project_path, 'toto')
-        with pytest.raises(RuntimeError):
+        with pytest.raises(LoggerError):
             env_yaml_list(toto_path)
 
         # Empty test
@@ -160,3 +168,96 @@ def test_yaml_key_value_export():
 
     assert "VAR_SUB_TEST=hi" in export
     assert "ARRAY_EXAMPLE=[\"coucou\", \"hi\", \"hi\"]" in export
+
+
+def test_yaml_generate_depth_graph():
+    """Generate depth graph."""
+    input_yml = OrderedDict([
+        ("A", 1),
+        ("B", "${A}"),
+        ("C", "${A}"),
+        ("D", "${C}"),
+        ("E", "${D}"),
+        ("F", "${C}"),
+        ("G", "${F}${A}")
+    ])
+
+    output = [
+        ("A", 1),
+        ("B", 2),
+        ("C", 2),
+        ("D", 3),
+        ("F", 3),
+        ("E", 4),
+        ("G", 4)
+    ]
+
+    pairs = env_yaml_generate_depth_graph(input_yml)
+    for x in output:
+        assert x in pairs
+    for x in pairs:
+        assert x in output
+
+
+def test_yaml_deep_resolution():
+    """YAML deep resolution."""
+    input_yml = OrderedDict([
+        ("A", 1),
+        ("B", "${A}"),
+        ("C", "${A}"),
+        ("D", "${C}"),
+        ("E", "${D}"),
+        ("F", "${C}"),
+        ("G", "${F}${A}")
+    ])
+
+    output_yml = [
+        ("A", 1),
+        ("B", "1"),
+        ("C", "1"),
+        ("D", "1"),
+        ("E", "1"),
+        ("F", "1"),
+        ("G", "11")
+    ]
+
+    resolved_yml = env_yaml_resolve_variables(input_yml)
+    for k, v in output_yml:
+        assert k in resolved_yml
+        assert resolved_yml[k] == v
+
+
+def test_yaml_get_dependencies_str():
+    """YAML get dependencies str."""
+    input_yml = "Toto ${A} ${tutu} + ${hello}"
+    result = ["A", "tutu", "hello"]
+
+    assert env_yaml_get_dependencies_str(input_yml) == result
+
+
+def test_yaml_get_dependencies():
+    """YAML get dependencies."""
+    input_yml = OrderedDict([
+        ("Toto ${A}", OrderedDict([
+            ("Tutu", ["A ${B}", "C", "D ${D}"]),
+            ("Tutu ${Tutu}", OrderedDict([
+                ("tutu", "${A}"),
+                ("toto ${to}", [])
+            ]))
+        ]))
+    ])
+
+    result = ["A", "B", "D", "Tutu", "to"]
+
+    assert env_yaml_get_dependencies(input_yml) == result
+
+
+def test_yaml_deep_resolution_fail():
+    """YAML deep resolution fail."""
+    input_yml = OrderedDict([
+        ("H", "${TOTO}"),
+        ("TOTO", 1)
+    ])
+
+    with pytest.raises(UnresolvableEnvironment):
+        env_yaml_resolve_variables(input_yml)
