@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.2
+
+- #1: Moving user configuration inside of project directory
+- #2: Manage docknv project inside of another folder
+- #3: Refactor project_generate_compose
+- #4: Force a unique config name in each project
+- #5: Better handling of environment variable inheritance
+
 ## 4.1
 
 - Removing `registry` command, tagging system added.
