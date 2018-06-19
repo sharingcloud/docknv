@@ -78,6 +78,15 @@ class Logger(object):
         Logger.log("INFO", message, color)
 
     @staticmethod
+    def exception(exc, crash=True):
+        """
+        Exception log.
+
+        :param exc:     Exception
+        """
+        Logger.error("{cls}: {msg}".format(cls=exc.__class__.__name__, msg=str(exc)), crash=crash)
+
+    @staticmethod
     def error(message, color=Fore.RED, crash=True):
         """
         Error log.

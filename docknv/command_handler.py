@@ -9,7 +9,7 @@ from docknv.utils.prompt import prompt_yes_no
 from docknv.project_handler import project_read, project_get_active_configuration, project_is_valid
 from docknv.session_handler import session_get_configuration
 from docknv.schema_handler import schema_get_configuration
-from docknv.environment_handler import env_yaml_load_in_memory, env_yaml_resolve_variables
+from docknv.environment_handler import env_yaml_load_in_memory, env_yaml_resolve_variables, UnresolvableEnvironment
 from docknv.user_handler import user_read_docknv_config, user_write_docknv_config
 
 
@@ -126,6 +126,10 @@ def command_get_context(project_path):
     session_data = session_get_configuration(project_path, config_name)
     schema_data = schema_get_configuration(project_data, session_data['schema'])
     env_data = env_yaml_load_in_memory(project_path, session_data['environment'])
-    env_data = env_yaml_resolve_variables(env_data)
+
+    try:
+        env_data = env_yaml_resolve_variables(env_data)
+    except UnresolvableEnvironment as exc:
+        Logger.exception(exc, crash=False)
 
     return command_get_context_from(project_data, config_name, session_data, schema_data, env_data)
