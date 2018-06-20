@@ -1,0 +1,14 @@
+image: python
+
+before_install:
+  - curl -O https://bootstrap.pypa.io/get-pip.py
+  - python get-pip.py
+  - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
+
+install:
+  - pip install -e . --upgrade
+
+script:
+  - tox -e py27
+  - tox -e py36
