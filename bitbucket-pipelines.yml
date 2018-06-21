@@ -8,7 +8,7 @@ image: sculpto/python2-and-3
 pipelines:
   default:
     - step:
-        name: Preparing and testing
+        name: Preparing and testing 2.7/3.6
         caches:
           - pip
         script:
