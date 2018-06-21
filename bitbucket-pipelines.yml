@@ -8,16 +8,19 @@ image: sculpto/python2-and-3
 pipelines:
   default:
     - step:
+        name: Preparing
         caches:
           - pip
-        script: # Modify the commands below to build your repository.
+        script:
           - pip install -r requirements.txt
           - pip install -r requirements-dev.txt
 
-    - parallel:
-      - step:
-          script:
-            - tox -e py27
-      - step:
-          script:
-            - tox -e py36
+    - step:
+        name: Python 2.7
+        script:
+          - tox -e py27
+
+    - step:
+        name: Python 3.6
+        script:
+          - tox -e py36
