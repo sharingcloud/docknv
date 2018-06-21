@@ -8,19 +8,11 @@ image: sculpto/python2-and-3
 pipelines:
   default:
     - step:
-        name: Preparing
+        name: Preparing and testing
         caches:
           - pip
         script:
           - pip install -r requirements.txt
           - pip install -r requirements-dev.txt
-
-    - step:
-        name: Python 2.7
-        script:
           - tox -e py27
-
-    - step:
-        name: Python 3.6
-        script:
           - tox -e py36
