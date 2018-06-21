@@ -13,5 +13,11 @@ pipelines:
         script: # Modify the commands below to build your repository.
           - pip install -r requirements.txt
           - pip install -r requirements-dev.txt
-          - tox -e py27
-          - tox -e py36
+
+    - parallel:
+      - step:
+          script:
+            - tox -e py27
+      - step:
+          script:
+            - tox -e py36
