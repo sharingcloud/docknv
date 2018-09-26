@@ -1,6 +1,6 @@
 """docknv."""
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from docknv.version import __version__
 
 dependencies = [
@@ -21,7 +21,7 @@ setup(
     author='Denis BOURGE',
     author_email='denis.bourge@sharingcloud.com',
     license='MIT',
-    packages=['docknv'],
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     install_requires=dependencies,
     zip_safe=False,
     entry_points={
