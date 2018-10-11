@@ -175,6 +175,21 @@ def composefile_handle_service_tags(compose_content, registry_url):
                 service_data["image"] = service_tag
                 del service_data["tag"]
 
+            # Handle ports
+            if "ports" in service_data:
+
+                # Remove empty ports
+                new_ports = []
+                for port in service_data["ports"]:
+                    if port != "":
+                        new_ports.append(port)
+
+                # If no port remain, clean 'ports' section
+                if len(new_ports) == 0:
+                    del service_data["ports"]
+                else:
+                    service_data["ports"] = new_ports
+
     return output_content
 
 
