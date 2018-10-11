@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.1
+
+- Handle empty ports in composefiles.
+
 ## 4.2
 
 - #1: Moving user configuration inside of project directory
