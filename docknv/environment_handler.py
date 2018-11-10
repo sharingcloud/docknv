@@ -129,6 +129,8 @@ def env_yaml_key_value_export(env_data):
         value = env_data[key]
         if isinstance(value, str):
             value = value.replace("\n", "\\n")
+        elif value is None:
+            value = ""
         else:
             value = json.dumps(value)
         export_string += key + "=" + value + "\n"
