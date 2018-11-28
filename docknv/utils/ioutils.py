@@ -22,10 +22,14 @@ def io_open(filename, mode="r", encoding="utf-8", newline=None):
     **Context manager**
     """
     if six.PY2:
-        with io.open(filename, mode, encoding=encoding, newline=newline) as handle:
+        with io.open(
+            filename, mode, encoding=encoding, newline=newline
+        ) as handle:
             yield handle
     else:
-        with open(filename, mode, encoding=encoding, newline=newline) as handle:
+        with open(
+            filename, mode, encoding=encoding, newline=newline
+        ) as handle:
             yield handle
 
 
@@ -56,6 +60,7 @@ def get_editor_executable(override=None):
             return editor
 
     raise RuntimeError(
-        "None of the known editors can be used. The following editors have been tested: {0}".format(
+        "None of the known editors can be used. "
+        "The following editors have been tested: {0}".format(
             ", ".join(editors_to_test)
         ))

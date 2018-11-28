@@ -1,18 +1,12 @@
 """Config sub commands."""
 
-from docknv import (
-    session_handler,
-    project_handler,
-    user_handler,
-    lifecycle_handler
-)
-
 from docknv.logger import Logger
-from docknv.shell.common import exec_handler
+from docknv.shell.common import exec_handler, load_project
 
 
 def _init(subparsers):
-    cmd = subparsers.add_parser("config", help="manage groups of machines at once (config mode)")
+    cmd = subparsers.add_parser(
+        "config", help="manage groups of machines at once (config mode)")
     subs = cmd.add_subparsers(dest="config_cmd", metavar="")
 
     # Status
@@ -21,56 +15,85 @@ def _init(subparsers):
     # Ls
     subs.add_parser("ls", help="list known configurations")
 
-    # Use
-    use_cmd = subs.add_parser("use", help="use configuration")
-    use_cmd.add_argument("name", help="configuration name")
+    # Set
+    set_cmd = subs.add_parser("set", help="set configuration")
+    set_cmd.add_argument("name", help="configuration name")
 
     # Start
-    subs.add_parser("start", help="boot machines from schema")
+    start_cmd = subs.add_parser("start", help="boot machines from schema")
+    start_cmd.add_argument("configs", nargs="*", help="configurations")
 
     # Restart
-    restart_cmd = subs.add_parser("restart", help="restart machines from schema")
-    restart_cmd.add_argument("-f", "--force", action="store_true", help="force restart")
+    restart_cmd = subs.add_parser(
+        "restart", help="restart machines from schema")
+    restart_cmd.add_argument("configs", nargs="*", help="configurations")
+    restart_cmd.add_argument(
+        "-f", "--force", action="store_true", help="force restart")
 
     # Stop
-    subs.add_parser("stop", help="shutdown machines from schema")
+    stop_cmd = subs.add_parser("stop", help="shutdown machines from schema")
+    stop_cmd.add_argument("configs", nargs="*", help="configurations")
 
     # Ps
-    subs.add_parser("ps", help="list schema processes")
+    ps_cmd = subs.add_parser("ps", help="list schema processes")
+    ps_cmd.add_argument("configs", nargs="*", help="configurations")
 
     # Unset
     subs.add_parser("unset", help="unset configuration")
 
     # Build
     build_cmd = subs.add_parser("build", help="build machines from schema")
+    build_cmd.add_argument("configs", nargs="*", help="configurations")
+    build_cmd.add_argument(
+        "-b", "--build-args", nargs="*", help="build arguments")
     build_cmd.add_argument("--no-cache", help="no cache", action="store_true")
-    build_cmd.add_argument("--push", help="push to registry", action="store_true")
+    build_cmd.add_argument(
+        "--push", help="push to registry", action="store_true")
 
     # Create
-    create_cmd = subs.add_parser("create", help="create a docknv configuration")
-    create_cmd.add_argument("config_name", help="configuration name")
-    create_cmd.add_argument("schema_name", help="schema name")
-    create_cmd.add_argument("environment_name", help="environment name")
-    create_cmd.add_argument("-n", "--namespace", help="namespace name", nargs="?", default="default")
+    create_cmd = subs.add_parser(
+        "create", help="create a docknv configuration")
+    create_cmd.add_argument("name", help="configuration name")
+    create_cmd.add_argument(
+        "-e", "--environment", required=True, help="environment name")
+    create_cmd.add_argument(
+        "-s", "--schemas", nargs="*", help="schemas to use")
+    create_cmd.add_argument(
+        "-S", "--services", nargs="*", help="services to use")
+    create_cmd.add_argument(
+        "-V", "--volumes", nargs="*", help="volumes to use")
+    create_cmd.add_argument(
+        "-N", "--networks", nargs="*", help="networks to use")
+    create_cmd.add_argument(
+        "-n", "--namespace", help="namespace name", nargs="?",
+        default=None)
 
     # Update
     update_cmd = subs.add_parser("update", help="update a known configuration")
-    update_cmd.add_argument("name", help="configuration name", nargs="?", default=None)
-    update_cmd.add_argument("-r", "--restart", action="store_true", help="automatically stop, update, and start")
-
-    # Set schema
-    set_schema_cmd = subs.add_parser("set-schema", help="change a configuration schema")
-    set_schema_cmd.add_argument("config_name", help="configuration name")
-    set_schema_cmd.add_argument("schema_name", help="schema name")
-
-    # Set environment
-    set_env_cmd = subs.add_parser("set-env", help="change a configuration environment file")
-    set_env_cmd.add_argument("config_name", help="configuration name")
-    set_env_cmd.add_argument("environment", help="environment name")
+    update_cmd.add_argument(
+        "name", help="configuration name", nargs="?", default=None)
+    update_cmd.add_argument(
+        "-e", "--environment", help="environment name")
+    update_cmd.add_argument(
+        "-s", "--schemas", nargs="*", help="schemas to use")
+    update_cmd.add_argument(
+        "-S", "--services", nargs="*", help="services to use")
+    update_cmd.add_argument(
+        "-V", "--volumes", nargs="*", help="volumes to use")
+    update_cmd.add_argument(
+        "-N", "--networks", nargs="*", help="networks to use")
+    update_cmd.add_argument(
+        "-n", "--namespace", help="namespace name", nargs="?",
+        default=None)
+    update_cmd.add_argument(
+        "--no-namespace", help="remove namespace", action="store_true")
+    update_cmd.add_argument(
+        "-r", "--restart", action="store_true",
+        help="restart after update")
 
     # Remove
-    remove_cmd = subs.add_parser("rm", help="remove a known configuration")
-    remove_cmd.add_argument("name", help="configuration name")
+    remove_cmd = subs.add_parser("rm", help="remove known configurations")
+    remove_cmd.add_argument("configs", nargs="+", help="configurations")
 
 
 def _handle(args):
@@ -78,85 +101,88 @@ def _handle(args):
 
 
 def _handle_build(args):
-    return lifecycle_handler.lifecycle_schema_build(
-        args.context, no_cache=args.no_cache, push_to_registry=args.push)
+    project = load_project(args.project)
+    project.lifecycle.config.build(
+        args.configs, args.build_args, args.no_cache, dry_run=args.dry_run)
 
 
 def _handle_ls(args):
-    return session_handler.session_show_configuration_list(args.context)
+    project = load_project(args.project)
+    project.database.show_configuration_list()
 
 
 def _handle_start(args):
-    with user_handler.user_try_lock(args.context):
-        return lifecycle_handler.lifecycle_schema_start(args.context)
+    project = load_project(args.project)
+    with project.session.get_lock().try_lock():
+        project.lifecycle.config.start(args.configs, dry_run=args.dry_run)
 
 
 def _handle_stop(args):
-    with user_handler.user_try_lock(args.context):
-        return lifecycle_handler.lifecycle_schema_stop(args.context)
+    project = load_project(args.project)
+    with project.session.get_lock().try_lock():
+        project.lifecycle.config.stop(args.configs, dry_run=args.dry_run)
 
 
 def _handle_restart(args):
-    with user_handler.user_try_lock(args.context):
-        return lifecycle_handler.lifecycle_schema_restart(args.context, force=args.force)
+    project = load_project(args.project)
+    with project.session.get_lock().try_lock():
+        project.lifecycle.config.restart(
+            args.configs, force=args.force, dry_run=args.dry_run)
 
 
 def _handle_ps(args):
-    return lifecycle_handler.lifecycle_schema_ps(args.context)
+    project = load_project(args.project)
+    project.lifecycle.config.ps(
+        args.configs, dry_run=args.dry_run)
 
 
 def _handle_rm(args):
-    return session_handler.session_remove_configuration(args.context, args.name)
+    project = load_project(args.project)
+
+    # Check configs
+    for config in args.configs:
+        project.database.get_configuration(config)
+
+    # Remove configs
+    for config in args.configs:
+        project.database.remove_configuration(config)
 
 
 def _handle_create(args):
-    config_name = project_handler.project_generate_compose(
-        args.context, args.config_name, args.schema_name, args.environment_name, args.namespace)
-    project_handler.project_use_configuration(args.context, config_name)
+    project = load_project(args.project)
+    project.lifecycle.config.create(
+        args.name, args.environment, args.services, args.volumes,
+        args.networks, args.namespace)
 
 
-def _handle_use(args):
-    return project_handler.project_use_configuration(args.context, args.name)
+def _handle_set(args):
+    project = load_project(args.project)
+    project.set_current_configuration(args.name)
 
 
 def _handle_unset(args):
-    return project_handler.project_unset_configuration(args.context)
-
-
-def _handle_set_schema(args):
-    project_handler.project_update_configuration_schema(args.context, args.config_name, args.schema_name)
-    project_handler.project_generate_compose_from_configuration(args.context, args.config_name)
-    return project_handler.project_use_configuration(args.context, args.config_name)
-
-
-def _handle_set_env(args):
-    session_handler.session_update_environment(args.context, args.config_name, args.environment)
-    project_handler.project_generate_compose_from_configuration(args.context, args.config_name)
-    return project_handler.project_use_configuration(args.context, args.config_name)
+    project = load_project(args.project)
+    project.unset_current_configuration()
 
 
 def _handle_update(args):
-    config_name = args.name
-    if config_name is None:
-        config_name = project_handler.project_get_active_configuration(args.context)
-        if not config_name:
-            Logger.error(
-                "No configuration selected. Use 'docknv config use [configuration]' to select a configuration.",
-                crash=True)
-
-    if args.restart:
-        with user_handler.user_try_lock(args.context):
-            lifecycle_handler.lifecycle_schema_stop(args.context)
-            project_handler.project_generate_compose_from_configuration(args.context, config_name)
-            lifecycle_handler.lifecycle_schema_start(args.context)
-    else:
-        return project_handler.project_generate_compose_from_configuration(args.context, config_name)
+    project = load_project(args.project)
+    project.lifecycle.config.update(
+        args.name, args.environment, args.services, args.volumes,
+        args.networks, args.namespace, restart=args.restart)
 
 
 def _handle_status(args):
-    config = project_handler.project_get_active_configuration(args.context)
-    if not config:
-        Logger.warn(
-            "No configuration selected. Use 'docknv config use [configuration]' to select a configuration.")
+    project = load_project(args.project)
+    config_name = project.get_current_configuration()
+
+    if config_name:
+        config = project.database.get_configuration(config_name)
+
+        Logger.info("current configuration: ")
+        config.show()
     else:
-        Logger.info("Current configuration: `{0}`".format(config))
+        Logger.warn(
+            "no configuration selected. "
+            "use 'docknv config set [configuration]' "
+            "to select a configuration.")

@@ -18,3 +18,13 @@ pip install -r requirements-win.txt
 
 You can build the documentation in the `docs/` folder, or read
 it online on my GitHub Pages: [docknv](https://srynetix.github.io/docknv/)
+
+## Tests
+
+To execute test, install required libs:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Then, execute `tox`.

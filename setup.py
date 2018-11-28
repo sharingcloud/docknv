@@ -21,7 +21,8 @@ setup(
     author='Denis BOURGE',
     author_email='denis.bourge@sharingcloud.com',
     license='MIT',
-    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    packages=find_packages(
+        exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     install_requires=dependencies,
     zip_safe=False,
     entry_points={

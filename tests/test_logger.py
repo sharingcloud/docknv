@@ -32,11 +32,13 @@ def test_log():
 
     with using_temporary_stdout() as stdout:
         Logger.raw("Pouet", color=Fore.BLUE)
-        assert stdout.getvalue().startswith("\x1b[34m"), "Should start with blue color"
+        assert stdout.getvalue().startswith("\x1b[34m"), \
+            "Should start with blue color"
 
     with using_temporary_stdout() as stdout:
         Logger.raw("Pouet pouet", linebreak=False)
-        assert not stdout.getvalue().endswith("\n"), "Should not end with a newline"
+        assert not stdout.getvalue().endswith("\n"), \
+            "Should not end with a newline"
 
     with using_temporary_stdout() as stdout:
         Logger.info("H\x82h\x82 hoho")

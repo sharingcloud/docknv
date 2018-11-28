@@ -2,17 +2,15 @@
 
 import os
 import sys
-import imp
 import argparse
 import importlib
 
 from docknv.logger import Logger
 from docknv.version import __version__
-from docknv.project_handler import project_read
 
 STANDARD_COMMANDS = (
-    "machine", "config", "bundle", "env", "schema",
-    "volume", "user", "scaffold"
+    "config", "service", "env", "schema",
+    "user", "scaffold", "custom"
 )
 
 
@@ -21,12 +19,20 @@ class Shell(object):
 
     def __init__(self):
         """Init."""
-        self.parser = argparse.ArgumentParser(description="Docker w/ environments (docknv {0})".format(__version__))
-        self.parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
-        self.parser.add_argument('-v', '--verbose', action='store_true', help='verbose mode')
-        self.parser.add_argument('-C', '--context', help='context folder', default='.')
+        self.parser = argparse.ArgumentParser(
+            description="Docker w/ environments (docknv v.{0})".format(
+                __version__))
+        self.parser.add_argument(
+            '--version', action='version', version='%(prog)s ' + __version__)
+        self.parser.add_argument(
+            '-v', '--verbose', action='store_true', help='verbose mode')
+        self.parser.add_argument(
+            '-p', '--project', help='project path', default='.')
+        self.parser.add_argument(
+            '--dry-run', help='dry run', action="store_true")
 
-        self.subparsers = self.parser.add_subparsers(dest="command", metavar="")
+        self.subparsers = self.parser.add_subparsers(
+            dest="command", metavar="")
         self.post_parsers = []
 
         self.init_parsers()
@@ -83,9 +89,10 @@ class Shell(object):
             subcmd_name = "{0}_cmd".format(cmd)
             if cmd in self.subparsers.choices:
                 subpar = self.subparsers.choices[cmd]
-                if getattr(args, subcmd_name) is None:
-                    subpar.print_help()
-                    sys.exit(1)
+                if hasattr(args, subcmd_name):
+                    if getattr(args, subcmd_name) is None:
+                        subpar.print_help()
+                        sys.exit(1)
 
         return handle_parsers(self, args)
 
@@ -102,69 +109,10 @@ def handle_parsers(shell, args):
     exit_code = 0
 
     # Absolute path
-    args.context = os.path.abspath(args.context)
+    args.project = os.path.abspath(args.project)
 
-    if args.command in STANDARD_COMMANDS:
-        module = importlib.import_module("docknv.shell.handlers." + args.command)
-        exit_code = getattr(module, "_handle")(args)
-    else:
-        for parser, cfg, ctx in shell.post_parsers:
-            try:
-                # New args passing
-                result = parser(shell, args, cfg, ctx)
-            except TypeError:
-                # Old args passing
-                result = parser(shell, args)
-
-            try:
-                ok, exit_code = result
-            except TypeError:
-                ok, exit_code = result, 0
-
-            if ok:
-                break
+    module = importlib.import_module(
+        "docknv.shell.handlers." + args.command)
+    exit_code = getattr(module, "_handle")(args)
 
     return exit_code
-
-
-def register_handlers(shell, current_dir, commands_dir, commands_context):
-    """
-    Register handlers.
-
-    :param shell:               Shell
-    :param current_dir:         Current directory
-    :param commands_dir:        Commands directory
-    :param commands_context:    Commands context
-    """
-    from docknv import command_handler
-
-    project_data = project_read(current_dir)
-    config_data = project_data.config_data
-
-    for root, _, files in os.walk(commands_dir):
-        for filename in files:
-            if filename.endswith(".py"):
-                # Ignore __init__.py
-                if filename == "__init__.py":
-                    continue
-
-                base_filename, ext = os.path.splitext(filename)
-                abs_f = os.path.join(root, filename)
-
-                # Ignore __pycache__
-                if "__pycache__" in abs_f:
-                    continue
-
-                src = imp.load_source("commands", abs_f)
-                if hasattr(src, "pre_parse") and hasattr(src, "post_parse"):
-                    pre_parse = getattr(src, "pre_parse")
-                    post_parse = getattr(src, "post_parse")
-
-                    command_config = command_handler.command_get_config(config_data, base_filename)
-
-                    try:
-                        pre_parse(shell, command_config, commands_context)
-                    except TypeError:
-                        pre_parse(shell)
-
-                    shell.register_post_parser(post_parse, command_config, commands_context)

@@ -15,15 +15,15 @@ parser.add_argument("output_path")
 args = parser.parse_args()
 
 if not os.path.exists(html_docs):
-    Logger.error("You must build the HTML docs.")
+    Logger.error("you must build the HTML docs.")
 
 if not os.path.exists(args.output_path):
-    Logger.error("Output path {0} does not exist.".format(args.output_path))
+    Logger.error("output path {0} does not exist.".format(args.output_path))
 else:
     choice = prompt_yes_no(
-        "/!\ The folder {0} will be removed and recreated. Are you sure you want to install?".format(
-            args.output_path)
-        )
+        "/!\\ the folder {0} will be removed and recreated. "
+        "are you sure you want to install?".format(
+            args.output_path))
 
     if choice:
         shutil.rmtree(args.output_path)

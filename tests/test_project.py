@@ -1,52 +1,72 @@
 """Project tests."""
 
-from __future__ import unicode_literals
 import os
+
+import pytest
 
 from docknv.tests.utils import (
     using_temporary_directory,
     copy_sample
 )
 
+from docknv.project import Project, MissingProject
+from docknv.database import MissingActiveConfiguration
 
-def test_project_read():
-    """Test project read."""
-    from docknv.project_handler import project_read
 
+def test_project():
+    """Test project."""
     with using_temporary_directory() as tempdir:
-        # Copy playground
         project_path = copy_sample("sample01", tempdir)
-        config = project_read(project_path)
 
-        assert "composefiles/sample.yml" in config.composefiles
-        assert "standard" in config.schemas
-        assert "portainer" in config.schemas["standard"]["services"]
+        # Path validation
+        assert Project.validate_path(project_path)
+        assert not Project.validate_path(os.path.join(project_path, "toto"))
+
+        # Project load
+        proj = Project.load_from_path(project_path)
+        repr(proj)
+        assert len(proj.schemas) == 2
+
+        # Ensure current config
+        with pytest.raises(MissingActiveConfiguration):
+            proj.ensure_current_configuration()
+
+        # Project load error
+        with pytest.raises(MissingProject):
+            Project.load_from_path(os.path.join(project_path, "toto"))
+
+        # Get current config
+        assert proj.get_current_configuration() is None
+
+        # Create config
+        proj.lifecycle.config.create("toto")
+
+        # Set current config
+        proj.set_current_configuration("toto")
+        assert proj.get_current_configuration() == "toto"
+
+        # Unset
+        proj.unset_current_configuration()
+        assert proj.get_current_configuration() is None
+
+        # Temporary set
+        with proj.using_temporary_configuration("toto"):
+            assert proj.get_current_configuration() == "toto"
+        assert proj.get_current_configuration() is None
+
+        # Command config
+        assert proj.get_command_parameters() == {}
 
 
-def test_project_generate_compose():
-    """Test generate compose."""
-    from docknv.project_handler import project_generate_compose
-    from docknv.user_handler import user_get_username
-    from docknv.session_handler import session_get_config_path
-
+def test_project2():
+    """Test project2."""
     with using_temporary_directory() as tempdir:
-        # Copy playground
-        uname = user_get_username()
-        project_path = copy_sample("sample01", tempdir)
-        os.environ["DOCKNV_USER_PATH"] = project_path
-        session_path = session_get_config_path(project_path)
+        project_path = copy_sample("sample02", tempdir)
+        proj = Project.load_from_path(project_path)
 
-        project_generate_compose(project_path, "test", "hello", "default", "test")
-        user_path = os.path.join(project_path, '.docknv', uname)
-
-        assert os.path.isdir(session_path)
-        assert os.path.isdir(user_path)
-
-        assert os.path.isfile(
-            os.path.join(user_path, "test", "environment.env"))
-        assert os.path.isfile(
-            os.path.join(user_path, "test", "docker-compose.yml"))
-        assert os.path.isfile(
-            os.path.join(session_path, ".docknv.yml"))
-        assert not os.path.exists(
-            os.path.join(user_path, "docker-compose.yml"))
+        # Command config
+        assert proj.get_command_parameters() == \
+            {"notebook": {"service": "ipython"}}
+        assert proj.get_command_parameters("notebook") == \
+            {"service": "ipython"}
+        assert proj.get_command_parameters("tutu") == {}

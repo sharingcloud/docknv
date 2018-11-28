@@ -1,0 +1,27 @@
+version: "3"
+
+# Services
+services:
+
+  # IPython service
+  ipython:
+    build: images/ipython/
+    # Image tag
+    image: localhost:5000/sample02_ipython
+    volumes:
+      static:
+        - ipython/startup:/root/.ipython/profile_nbserver/startup
+      templates:
+        - ipython/ipython_config.py.j2:/root/.ipython/profile_nbserver/ipython_config.py
+        - ipython/ipython_notebook_config.py.j2:/root/.ipython/profile_nbserver/ipython_notebook_config.py
+      shared:
+        - shared/notebooks:/notebooks
+    ports:
+      - "{{ IPYTHON_OUTPUT_PORT }}:8888"
+    networks:
+      net:
+
+    restart: on-failure
+
+networks:
+  net:

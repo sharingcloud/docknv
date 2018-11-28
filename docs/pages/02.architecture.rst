@@ -1,21 +1,23 @@
 Architecture
 ============
 
-The docknv architecture is composed of four superposed layers.
+The docknv architecture is composed of three superposed layers.
 Each layer allows special commands and behaviors.
 
-  - Machine
+  - Service
   - Schema
   - Configuration
-  - Bundle
 
-1. Machine layer
+1. Service layer
 ~~~~~~~~~~~~~~~~
 
-The **machine** layer can be considered as a **service entry** in a Docker Compose file.
-It contains **one service, one image**, and it can be linked to **volumes** and **networks**.
+The **service** layer can be considered as a **service entry** in a Docker
+Compose file.
+It contains **one service, one image**, and it can be linked to **volumes**
+and **networks**.
 
-You can define machines by inserting service entries in your *composefiles (Docker Compose YML files)*.
+You can define machines by inserting service entries in your *composefiles
+(Docker Compose YML files)*.
 
 Definition example:
 
@@ -30,13 +32,16 @@ Definition example:
         net:
 
 
-From the command-line, with the ``machine`` command, you can directly manipulate one service: *start*, *stop*, *restart*, *execute a custom command*, *drop a shell*, *view logs*, *pushing and pulling a file*, *etc.*
+From the command-line, with the ``service`` command, you can directly
+manipulate one service: *start*, *stop*, *restart*, *execute a custom command*,
+*drop a shell*, *view logs*, *pushing and pulling a file*, *etc.*
 
 2. Schema layer
 ~~~~~~~~~~~~~~~
 
-The **schema** layer is composed of multiple machines together.
-It can actually be considered as a group of service entries in multiple Docker Compose files.
+The **schema** layer is composed of multiple services together.
+It can actually be considered as a group of service entries in multiple Docker
+Compose files.
 So, in a schema, there are one or more services, images, volumes and networks.
 
 You can define schemas in the *config.yml* at your project root.
@@ -54,37 +59,29 @@ Definition example:
         - net
 
 
-From the command-line, with the ``schema`` command, you can *list* available schemas.
+From the command-line, with the ``schema`` command, you can *list* available
+schemas.
 
 3. Configuration layer
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The **configuration** layer is the link between three components: the **schema**, the **environment**, and the **namespace**.
+The **configuration** layer is the link between three components: the
+**schema**, the **environment**, and the **namespace**.
 
-The environment contains a variable list, used in template files and injected in your services.
-You can see more about environments in the **Environment** section of the documentation.
+The environment contains a variable list, used in template files and injected
+in your services.
+You can see more about environments in the **Environment** section of the
+documentation.
 
-The namespace allow *configuration separation*: you can deploy two schemas in parallel, without conflicting by prefixing every service by a chosen namespace.
+The namespace allow *configuration separation*: you can deploy two schemas in
+parallel, without conflicting by prefixing every service by a chosen namespace.
 
-To create a configuration, you have to execute the ``docknv config create`` command.
+To create a configuration, you have to execute the ``docknv config create``
+command.
 
-From the command-line, with the ``config`` command, you can manipulate configurations: *start*, *stop*, *restart*, *view processes status*, *update*, *etc.*
-
-4. Bundle layer
-~~~~~~~~~~~~~~~
-
-The **bundle** layer is above of the **configuration** layer, a bundle manipulate multiple configurations.
-
-You do not create bundles, it is just an abstraction over multiple configurations, and this distinction is only relevant in the command-line.
-
-To manipulate *bundles*, you use the ``bundle`` command, followed by the configuration names you want to manipulate.
-
-**Example**: starting two configurations, *base* and *app*
-
-.. code-block:: bash
-
-    docknv bundle start base app
-
+From the command-line, with the ``config`` command, you can manipulate
+configurations: *start*, *stop*, *restart*, *view processes status*, *update*,
+*etc.*
 
 Project structure
 ~~~~~~~~~~~~~~~~~
@@ -106,4 +103,4 @@ To use **docknv**, you need to respect the following structure:
    container. You should always use the "building" way (instead of the
    direct fetching) when including new Docker images in your Compose
    files.
--  **config.yml**: The main Docknv configuration file for your project.
+-  **config.yml**: The main docknv configuration file for your project.

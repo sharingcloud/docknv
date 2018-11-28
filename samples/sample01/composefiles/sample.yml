@@ -13,14 +13,23 @@ services:
       standard:
         - portainer:/data
         - /var/run/docker.sock:/var/run/docker.sock
+        - ""
       static:
         - portainer/test.txt:/test.txt
+        - ""
+      shared:
+        - toto:/toto
+        - ""
       templates:
         - portainer/template-test.txt.j2:/template-test.txt
+        - portainer/bash-test.sh.j2:/bash.sh
+        - ""
     ports:
       - "{{ PORTAINER_OUTPUT_PORT }}:9000"
     networks:
       net:
+        aliases:
+          - portainer
 
     restart: on-failure
 

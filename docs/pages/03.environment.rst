@@ -4,7 +4,10 @@ Environment
 What is it?
 ~~~~~~~~~~~~
 
-Environment files allow you to **parameterize your deployment** as you want, by **substituting values in Jinja template files**, often used for configuration for your services, or to directly **inject environment variables** in your containers.
+Environment files allow you to **parameterize your deployment** as you want,
+by **substituting values in Jinja template files**, often used for
+configuration for your services,or to directly **inject environment variables**
+in your containers.
 
 How does it work?
 ~~~~~~~~~~~~~~~~~~
@@ -16,7 +19,8 @@ It allows some useful features.
 Environment files **inheritance**
 ---------------------------------
 
-For example, you can make a **default** environment file for all your deployments and only override the required  variables.
+For example, you can make a **default** environment file for all your
+deployments and only override the required variables.
 
 .. code-block:: yaml
 
@@ -49,8 +53,10 @@ For example, you can make a **default** environment file for all your deployment
 Variable **interpolation**
 ----------------------------
 
-Thanks to a simple string interpolation system, you can define variables containing other variables.
-But these variables **can be overriden** over the imported files, for easy reuse of the existing variables.
+Thanks to a simple string interpolation system, you can define variables
+containing other variables.
+But these variables **can be overriden** over the imported files,
+for easy reuse of the existing variables.
 
 Here is an example:
 

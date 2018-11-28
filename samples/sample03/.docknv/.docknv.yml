@@ -1,0 +1,3 @@
+values:
+  base: {environment: default, namespace: default, schema: standard, user: test}
+  test: {environment: default, namespace: test, schema: standard, user: test}

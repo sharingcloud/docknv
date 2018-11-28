@@ -1,5 +1,7 @@
 """Common handler code."""
 
+from docknv.project import Project
+
 
 def exec_handler(cmd_name, args, handlers):
     """
@@ -14,3 +16,13 @@ def exec_handler(cmd_name, args, handlers):
     handler = "_handle_" + command
     if handler in handlers:
         return handlers[handler](args)
+
+
+def load_project(project_path):
+    """
+    Load project.
+
+    :param project_path:    Project path (str)
+    """
+    project = Project.load_from_path(project_path)
+    return project

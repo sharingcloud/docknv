@@ -43,3 +43,17 @@ def mock_input(value):
     else:
         with mock.patch("builtins.input", return_value=value):
             yield
+
+
+@contextmanager
+def patch(attr, value):
+    """
+    Patch.
+
+    :param attr:    Attribute
+    :param value:   Value
+
+    **Context manager**
+    """
+    with mock.patch(attr, value):
+        yield

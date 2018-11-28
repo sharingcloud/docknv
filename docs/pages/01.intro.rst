@@ -2,7 +2,7 @@ Introduction
 ------------
 
 **docknv** (for *Docker with environments*) is a wrapper around
-*Docker*, *Docker Compose* and *Docker Swarm*.
+*Docker* and *Docker Compose*.
 
 Here are the features:
 

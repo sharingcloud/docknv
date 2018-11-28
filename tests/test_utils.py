@@ -1,7 +1,5 @@
 """Utils tests."""
 
-from __future__ import unicode_literals
-
 import os
 
 from docknv.tests.mocking import mock_input
@@ -45,6 +43,7 @@ def test_get_lower_basename():
     """Test get_lower_basename."""
     import platform
     if platform.system() == 'Windows':
-        assert get_lower_basename("C:\\Users\\Pouet\\MyFolderName") == "myfoldername"
+        assert get_lower_basename("C:\\Users\\Pouet\\MyFolderName") == \
+            "myfoldername"
     else:
         assert get_lower_basename("/hello/Folder/FolderName") == "foldername"

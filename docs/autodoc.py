@@ -6,7 +6,9 @@ import shutil
 
 # Update docknv modules .rst
 print("Updating modules...")
-subprocess.call(["sphinx-apidoc", "-f", "-T", "-M", "-d", "4", "--ext-viewcode", "-o", ".", "../docknv"])
+subprocess.call(
+    ["sphinx-apidoc", "-f", "-T", "-M", "-d", "4", "--ext-viewcode", "-o", ".",
+     "../docknv"])
 
 # Clean build
 build_path = os.path.join("_build", "html")
@@ -17,6 +19,6 @@ if os.path.exists(build_path):
 # Build
 print("Building HTML docs...")
 if os.name == "nt":
-    subprocess.call([".\make.bat", "html"])
+    subprocess.call([".\\make.bat", "html"])
 else:
     subprocess.call(["make", "html"])

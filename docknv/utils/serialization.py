@@ -26,7 +26,8 @@ def yaml_merge(contents):
         return src1
 
 
-def yaml_ordered_load(stream, loader_class=yaml.Loader, object_pairs_hook=OrderedDict):
+def yaml_ordered_load(stream, loader_class=yaml.Loader,
+                      object_pairs_hook=OrderedDict):
     """
     Load ordered YAML content.
 
@@ -65,10 +66,12 @@ def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
             data.items())
 
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
-    OrderedDumper.add_representer(str, yaml.representer.SafeRepresenter.represent_str)
+    OrderedDumper.add_representer(
+        str, yaml.representer.SafeRepresenter.represent_str)
 
     if six.PY2:
-        OrderedDumper.add_representer(unicode, yaml.representer.SafeRepresenter.represent_unicode) # noqa
+        OrderedDumper.add_representer(
+            unicode, yaml.representer.SafeRepresenter.represent_unicode) # noqa
 
     out = yaml.dump(data, stream, OrderedDumper, **kwds)
 

@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'docknv'
-copyright = '2017, Denis BOURGE'
+copyright = '2017-2018 Denis BOURGE'
 author = 'Denis BOURGE'
 
 # The version info for the project you're documenting, acts as replacement for

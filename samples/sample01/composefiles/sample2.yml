@@ -1,0 +1,16 @@
+version: "3"
+
+# Services
+services:
+
+  # Pouet service
+  pouet:
+    # Image tag
+    tag: hello
+    image: hello-world
+    restart: on-failure
+    ports:
+      - "{% if TOTO_PORT %}5000:5000{% endif %}"
+
+networks:
+  net:

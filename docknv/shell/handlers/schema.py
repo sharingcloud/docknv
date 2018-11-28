@@ -1,17 +1,13 @@
 """Schema sub commands."""
 
-from docknv import (
-    schema_handler,
-    project_handler
-)
-
-from docknv.shell.common import exec_handler
+from docknv.shell.common import exec_handler, load_project
 
 
 def _init(subparsers):
     cmd = subparsers.add_parser("schema", help="manage schemas")
     subs = cmd.add_subparsers(dest="schema_cmd", metavar="")
 
+    # Ls
     subs.add_parser("ls", help="list schemas")
 
 
@@ -20,5 +16,6 @@ def _handle(args):
 
 
 def _handle_ls(args):
-    project_data = project_handler.project_read(args.context)
-    return schema_handler.schema_list(project_data)
+    project = load_project(args.project)
+    schemas = project.schemas
+    schemas.show()

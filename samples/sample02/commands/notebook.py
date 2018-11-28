@@ -1,13 +1,9 @@
 """Notebook commands helper."""
 
-from docknv.lifecycle_handler import (
-    lifecycle_machine_run
-)
-
 from docknv.logger import Logger
 
 
-def pre_parse(shell, config, context):
+def pre_parse(shell):
     """
     Pre-parse.
 
@@ -23,24 +19,17 @@ def pre_parse(shell, config, context):
     subs.add_parser("password", help="generate a IPython notebook passwd")
 
 
-def post_parse(shell, args, config, context):
-    """
-    Post-parse.
-
-    :param shell    Shell (shell)
-    :param args     Arguments (*)
-    :param config   Command config (dict)
-    :param context  Current context (dict)
-    """
+def post_parse(shell, args, project, context):
+    """Post parse."""
     if args.command == "notebook":
-        machine_name = config.get('machine', None)
-        if machine_name is None:
-            Logger.error('IPython machine name is not configured in `config.yml`.')
+        config = project.get_command_parameters("notebook")
+        service_name = config.get('service', None)
+        if service_name is None:
+            Logger.error(
+                'ipython machine name is not configured in `config.yml`.')
 
         if args.notebook_cmd == "password":
-            Logger.info("Generating notebook password...")
+            Logger.info("generating notebook password...")
             cmd = 'python -c "from IPython.lib import passwd; print(passwd())"'
-            lifecycle_machine_run(args.context, machine_name, cmd)
-            return True
-
-    return False
+            project.lifecycle.service.run(
+                service_name, cmd, dry_run=args.dry_run)

@@ -1,6 +1,3 @@
-composefiles:
-  - composefiles/sample.yml
-
 schemas:
   standard:
     volumes:
