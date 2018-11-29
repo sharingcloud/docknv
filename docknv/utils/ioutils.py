@@ -10,6 +10,17 @@ import six
 EDITORS = ["code", "atom", "vim", "emacs", "nano"]
 
 
+class NoEditorFound(Exception):
+    """No editor found."""
+
+    def __init__(self, editors):
+        """Init."""
+        editors_str = " ".join(editors)
+        message = \
+            f"none of the following editors has been found: {editors_str}"
+        super(NoEditorFound, self).__init__(message)
+
+
 @contextmanager
 def io_open(filename, mode="r", encoding="utf-8", newline=None):
     """
@@ -55,12 +66,11 @@ def get_editor_executable(override=None):
     if override:
         editors_to_test = [override] + editors_to_test
 
+    # Filtering
+    editors_to_test = [e for e in editors_to_test if e != ""]
+
     for editor in editors_to_test:
         if check_for_command(editor):
             return editor
 
-    raise RuntimeError(
-        "None of the known editors can be used. "
-        "The following editors have been tested: {0}".format(
-            ", ".join(editors_to_test)
-        ))
+    raise NoEditorFound(editors_to_test)

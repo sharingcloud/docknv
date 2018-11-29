@@ -5,6 +5,8 @@ import pytest
 from docknv.shell import Shell
 from docknv.shell.main import docknv_entry_point
 
+from docknv.utils.ioutils import NoEditorFound
+
 from docknv.tests.mocking import mock_input
 from docknv.tests.utils import (
     using_temporary_directory,
@@ -85,8 +87,12 @@ def test_shell():
 
         run_shell(["env", "ls"])
         run_shell(["env", "show", "default"])
-        run_shell(["env", "edit", "default"])
-        run_shell(["env", "edit", "default", "-e", "vim"])
+
+        try:
+            run_shell(["env", "edit", "default"])
+            run_shell(["env", "edit", "default", "-e", "vim"])
+        except NoEditorFound:
+            pass
 
         #########
         # Schemas
@@ -104,9 +110,13 @@ def test_shell():
         ######
         # User
 
-        run_shell(["user", "edit"])
-        run_shell(["user", "edit", "-e", "vim"])
-        run_shell(["user", "edit", "toto"])
+        try:
+            run_shell(["user", "edit"])
+            run_shell(["user", "edit", "-e", "vim"])
+            run_shell(["user", "edit", "toto"])
+        except NoEditorFound:
+            pass
+
         run_shell(["user", "rm-lock"])
 
         with mock_input("y"):
