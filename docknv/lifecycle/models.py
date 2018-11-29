@@ -12,6 +12,7 @@ from .methods import (
     lifecycle_docker_command_on_service,
     lifecycle_get_container_from_service,
     lifecycle_get_config,
+    lifecycle_get_service_name,
 )
 
 
@@ -29,6 +30,7 @@ class ServiceLifecycle(object):
         :param service_name:    Service name (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
         lifecycle_compose_command_on_current_config(
             self.project, ["start", service_name],
             dry_run=dry_run)
@@ -40,6 +42,7 @@ class ServiceLifecycle(object):
         :param service_name:    Service name (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
         lifecycle_compose_command_on_current_config(
             self.project, ["stop", service_name],
             dry_run=dry_run)
@@ -52,6 +55,7 @@ class ServiceLifecycle(object):
         :param force:           Force? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
         if force:
             lifecycle_compose_command_on_current_config(
                 self.project, ["stop", service_name],
@@ -73,6 +77,7 @@ class ServiceLifecycle(object):
         :param daemon:          Daemon mode? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
         more_args = []
         if daemon:
             more_args += ["-d"]
@@ -89,6 +94,7 @@ class ServiceLifecycle(object):
         :param cmds:            Commands (list?)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
         cmds = cmds or []
         for cmd in cmds:
             lifecycle_compose_command_on_current_config(
@@ -114,6 +120,7 @@ class ServiceLifecycle(object):
         :param follow:          Follow logs (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
         lifecycle_compose_command_on_current_config(
             self.project, ["logs", service_name],
             dry_run=dry_run)
@@ -125,6 +132,7 @@ class ServiceLifecycle(object):
         :param service_name:    Service name (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
         lifecycle_compose_command_on_current_config(
             self.project, ["attach", service_name],
             dry_run=dry_run)
@@ -139,6 +147,7 @@ class ServiceLifecycle(object):
         :param no_cache:        No cache? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
         build_args = build_args or []
         lifecycle_compose_command_on_current_config(
             self.project, ["build", service_name, *build_args],
@@ -153,6 +162,8 @@ class ServiceLifecycle(object):
         :param container_path:  Container path (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
+
         # Get active config and container from service
         active_config = lifecycle_get_config(self.project)
         container = lifecycle_get_container_from_service(
@@ -172,6 +183,8 @@ class ServiceLifecycle(object):
         :param host_path:       Host path (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        service_name = lifecycle_get_service_name(self.project, service_name)
+
         # Get active config and container from service
         active_config = lifecycle_get_config(self.project)
         container = lifecycle_get_container_from_service(
