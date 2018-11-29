@@ -10,7 +10,7 @@ from docknv.version import __version__
 
 STANDARD_COMMANDS = (
     "config", "service", "env", "schema",
-    "user", "scaffold", "custom"
+    "user", "scaffold", "custom", "machine"
 )
 
 

@@ -113,10 +113,19 @@ def test_shell():
             run_shell(["user", "clean", "toto"])
             run_shell(["user", "clean"])
 
+        ########
         # Custom
 
         with pytest.raises(SystemExit):
             run_shell(["custom"])
+
+        ########
+        # Machine
+
+        with pytest.raises(SystemExit):
+            run_shell(["machine"])
+        with pytest.raises(SystemExit):
+            run_shell(["machine", "restart", "portainer"])
 
 
 def test_commands():
