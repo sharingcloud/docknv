@@ -83,7 +83,7 @@ class ServiceLifecycle(object):
             more_args += ["-d"]
 
         lifecycle_compose_command_on_current_config(
-            self.project, ["run", service_name, *more_args, command],
+            self.project, ["run", *more_args, service_name, command],
             dry_run=dry_run)
 
     def execute(self, service_name, cmds=None, dry_run=False):
@@ -120,9 +120,15 @@ class ServiceLifecycle(object):
         :param follow:          Follow logs (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        args = []
+        if tail != 0:
+            args += ["--tail", tail]
+        if follow:
+            args += ["-f"]
+
         service_name = lifecycle_get_service_name(self.project, service_name)
         lifecycle_compose_command_on_current_config(
-            self.project, ["logs", service_name],
+            self.project, ["logs", *args, service_name],
             dry_run=dry_run)
 
     def attach(self, service_name, dry_run=False):
