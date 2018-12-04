@@ -86,19 +86,25 @@ class ServiceLifecycle(object):
             self.project, ["run", *more_args, service_name, command],
             dry_run=dry_run)
 
-    def execute(self, service_name, cmds=None, dry_run=False):
+    def execute(self, service_name, cmds=None, no_tty=False, dry_run=False):
         """
         Execute command on service.
 
         :param service_name:    Service name (str)
         :param cmds:            Commands (list?)
+        :param no_tty:          Disable TTY? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
         service_name = lifecycle_get_service_name(self.project, service_name)
         cmds = cmds or []
+
+        args = []
+        if no_tty:
+            args += ["-T"]
+
         for cmd in cmds:
             lifecycle_compose_command_on_current_config(
-                self.project, ["exec", service_name, *shlex.split(cmd)],
+                self.project, ["exec", *args, service_name, *shlex.split(cmd)],
                 dry_run=dry_run)
 
     def shell(self, service_name, shell="/bin/bash", dry_run=False):
