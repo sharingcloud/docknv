@@ -151,7 +151,7 @@ def _handle_rm(args):
 def _handle_create(args):
     project = load_project(args.project)
     project.lifecycle.config.create(
-        args.name, args.environment, args.services, args.volumes,
+        args.name, args.environment, args.schemas, args.services, args.volumes,
         args.networks, args.namespace)
 
 
@@ -168,7 +168,7 @@ def _handle_unset(args):
 def _handle_update(args):
     project = load_project(args.project)
     project.lifecycle.config.update(
-        args.name, args.environment, args.services, args.volumes,
+        args.name, args.environment, args.schemas, args.services, args.volumes,
         args.networks, args.namespace, restart=args.restart)
 
 

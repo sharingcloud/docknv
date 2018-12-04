@@ -248,19 +248,27 @@ class ConfigLifecycle(object):
             lifecycle_compose_command_on_configs(
                 self.project, config_names, ["restart"], dry_run=dry_run)
 
-    def create(self, name, environment="default", services=None, volumes=None,
-               networks=None, namespace=None):
+    def create(self, name, environment="default", schemas=None,
+               services=None, volumes=None, networks=None, namespace=None):
         """
         Create configuration.
 
         :param name:        Name (str)
         :param environment: Environment name (str)
+        :param schemas:     Schemas (list)
         :param services:    Services (list)
         :param volumes:     Volumes (list)
         :param networks:    Networks (list)
         :param namespace:   Namespace (str?)
         """
         database = self.project.database
+
+        # Resolve schemas
+        schemas = schemas or []
+        services, volumes, networks = self.project.schemas.resolve_schemas(
+            schemas, services, volumes, networks)
+
+        # Create configuration
         config = Configuration(
             database, name, user_get_username(), environment, services,
             volumes, networks, namespace)
@@ -270,7 +278,7 @@ class ConfigLifecycle(object):
         self.project.session.set_current_configuration(name)
         self.project.session.save()
 
-    def update(self, name=None, environment=None, services=None,
+    def update(self, name=None, environment=None, schemas=None, services=None,
                volumes=None, networks=None, namespace=None, restart=False,
                dry_run=False):
         """
@@ -278,6 +286,7 @@ class ConfigLifecycle(object):
 
         :param name:        Name (str?)
         :param environment: Environment name (str)
+        :param schemas:     Schemas (list)
         :param services:    Services (list)
         :param volumes:     Volumes (list)
         :param networks:    Networks (list)
@@ -288,22 +297,38 @@ class ConfigLifecycle(object):
         database = self.project.database
         config = lifecycle_get_config(self.project, name)
 
+        # New elements
+        new_services = None
+        new_volumes = None
+        new_networks = None
+
         if restart:
             self.stop(name, dry_run=dry_run)
 
         if environment is not None:
             config.environment = environment
         if services is not None:
-            config.services = copy.deepcopy(services)
+            new_services = copy.deepcopy(services)
         if volumes is not None:
-            config.volumes = copy.deepcopy(volumes)
+            new_volumes = copy.deepcopy(volumes)
         if networks is not None:
-            config.networks = copy.deepcopy(networks)
+            new_networks = copy.deepcopy(networks)
+        if schemas is not None:
+            new_services, new_volumes, new_networks = \
+                self.project.schemas.resolve_schemas(
+                    schemas, new_services, new_volumes, new_networks)
         if namespace is not None:
             if namespace == '':
                 config.namespace = None
             else:
                 config.namespace = namespace
+
+        if new_services is not None:
+            config.services = new_services
+        if new_volumes is not None:
+            config.volumes = new_volumes
+        if new_networks is not None:
+            config.networks = new_networks
 
         database.update_configuration(config)
         database.save()

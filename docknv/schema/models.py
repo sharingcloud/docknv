@@ -83,6 +83,30 @@ class SchemaCollection(object):
         """
         return schema in self.schemas
 
+    def resolve_schemas(self, schemas, services=None, volumes=None,
+                        networks=None):
+        """
+        Resolve schemas.
+
+        :param schemas:     Schema list (list)
+        :param services:    Existing services (list?)
+        :param volumes:     Existing volumes (list?)
+        :param networks:    Networks (list?)
+
+        :rtype: (Services, Volumes, Networks)
+        """
+        out_services = set(services if services else [])
+        out_volumes = set(volumes if volumes else [])
+        out_networks = set(networks if networks else [])
+
+        for schema_name in schemas:
+            schema = self.get_schema(schema_name)
+            out_services.update(schema.services)
+            out_volumes.update(schema.volumes)
+            out_networks.update(schema.networks)
+
+        return list(out_services), list(out_volumes), list(out_networks)
+
     @classmethod
     def load_from_data(cls, data):
         """
