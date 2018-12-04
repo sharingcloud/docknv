@@ -4,7 +4,7 @@ import copy
 import os
 import shutil
 
-from docknv.environment import Environment, MissingEnvironment
+from docknv.environment import Environment
 
 from docknv.logger import Logger, Fore
 
@@ -43,11 +43,8 @@ class Configuration(object):
         self.networks = [x for x in networks] if networks else []
         self.namespace = namespace
 
-        try:
-            self.environment_data = Environment.load_from_project(
-                database.project_path, environment)
-        except MissingEnvironment:
-            self.environment_data = Environment(None)
+        self.environment_data = Environment.load_from_project(
+            database.project_path, environment)
 
         self.session = UserSession.load_from_path(
             user, database.project.project_path)

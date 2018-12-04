@@ -50,7 +50,7 @@ first:
         - net1
     volumes:
         - vol1
-    environment: toto
+    environment: default
     user: test
     namespace:
 second:
@@ -58,7 +58,7 @@ second:
         - ser3
     networks: []
     volumes: []
-    environment: toto
+    environment: default
     user: tost
     namespace: hello\
     """
