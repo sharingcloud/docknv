@@ -95,6 +95,11 @@ class Configuration(object):
         return self.session.get_paths().get_file_path(
             "docker-compose.yml", self.name)
 
+    def get_environment_path(self):
+        """Get environment path."""
+        return self.session.get_paths().get_file_path(
+            "environment.env", self.name)
+
     def generate_composefile(self):
         """Generate composefile."""
         project_path = self.database.project.project_path
@@ -102,6 +107,12 @@ class Configuration(object):
         compose_def = ComposeDefinition.load_from_project(project_path)
         compose_def.apply_configuration(self)
         compose_def.save_to_path(self.get_composefile_path())
+
+    def generate_environment_file(self):
+        """Generate environment file."""
+        environment = Environment.load_from_project(
+            self.database.project_path, self.environment)
+        environment.save_key_values_to_path(self.get_environment_path())
 
     def has_permission(self, user=None):
         """
@@ -213,6 +224,8 @@ class Database(object):
         """
         # Generate composefile
         config.generate_composefile()
+        # Generate environment file
+        config.generate_environment_file()
 
         self.configurations[config.name] = config
 
@@ -233,6 +246,8 @@ class Database(object):
 
         # Generate composefile
         config.generate_composefile()
+        # Generate environment file
+        config.generate_environment_file()
 
     def remove_configuration(self, config_name, force=False):
         """

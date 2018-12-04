@@ -104,7 +104,7 @@ second:
         assert not database.includes_configuration("pouet")
 
         first = database.get_configuration("first")
-        first.environment = "test1"
+        first.environment = "inclusion"
         database.update_configuration(first)
 
         # Unknown name should fail
@@ -115,7 +115,7 @@ second:
 
         # Second edit should fail
         second = database.get_configuration("second")
-        second.environment = "erg"
+        second.environment = "inclusion"
         with pytest.raises(PermissionDenied):
             database.update_configuration(second)
 
@@ -130,11 +130,18 @@ second:
         # Save test
         database.save()
 
+        assert os.path.exists(first.get_composefile_path())
+        assert os.path.exists(first.get_environment_path())
+
         # Paths test
         assert first.get_path() == os.path.join(
             project_path, ".docknv", "test", "first")
         assert second.get_path() == os.path.join(
             project_path, ".docknv", "tost", "second")
+        assert first.get_environment_path() == os.path.join(
+            project_path, ".docknv", "test", "first", "environment.env")
+        assert second.get_environment_path() == os.path.join(
+            project_path, ".docknv", "tost", "second", "environment.env")
         assert first.get_composefile_path() == os.path.join(
             project_path, ".docknv", "test", "first", "docker-compose.yml")
         assert second.get_composefile_path() == os.path.join(

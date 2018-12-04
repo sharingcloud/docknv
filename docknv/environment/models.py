@@ -223,6 +223,15 @@ class Environment(object):
 
         return export_string
 
+    def save_key_values_to_path(self, path):
+        """
+        Save export to path.
+
+        :param path:    Path (str)
+        """
+        with io_open(path, mode="w") as handle:
+            handle.write(self.export_as_key_values())
+
     def show(self):
         """Show."""
         Logger.raw(f"- Environment: {self.name}")
