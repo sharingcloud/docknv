@@ -189,6 +189,8 @@ def env_set_env_value(env_path, key, value):
     with io_open(env_path, mode="r") as handle:
         content = yaml_ordered_load(handle)
 
+    if content["environment"] is None:
+        content["environment"] = {}
     content["environment"][key] = value
 
     with io_open(env_path, mode="w") as handle:
