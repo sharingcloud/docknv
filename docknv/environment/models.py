@@ -194,16 +194,19 @@ class Environment(object):
                 for key in env_content["environment"]:
                     loaded_env[key] = env_content["environment"][key]
 
-            # Resolve environment
-            try:
-                loaded_env = env_yaml_resolve_variables(loaded_env)
-            except UnresolvableEnvironment as exc:
-                Logger.warn(f"unresolvable environment: {name}")
-                Logger.warn(f"  details: {str(exc)}")
-
             return Environment(name, loaded_env)
 
-        return _load(project_path, name)
+        env = _load(project_path, name)
+
+        # Resolve environment
+        try:
+            loaded_env = env_yaml_resolve_variables(env.data)
+            env.data = loaded_env
+        except UnresolvableEnvironment as exc:
+            Logger.warn(f"unresolvable environment: {name}")
+            Logger.warn(f"  details: {str(exc)}")
+
+        return env
 
     def export_as_key_values(self):
         """

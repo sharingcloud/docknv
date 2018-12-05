@@ -39,6 +39,14 @@ def test_environment():
         # Import
         env = Environment.load_from_project(project_path, "inclusion")
         assert env["TEST_VALUE"] == "inclusion"
+        assert env["TEST_ONE"] == 1
+        assert env["TEST_ONE_2"] == "toto:1"
+
+        # Inheritance
+        env = Environment.load_from_project(project_path, "inclusion2")
+        assert env["TEST_VALUE"] == "inclusion2"
+        assert env["TEST_ONE"] == 2
+        assert env["TEST_ONE_2"] == "toto:2"
 
         # Loop test
         env = Environment.load_from_project(project_path, "inclusion-loop")
