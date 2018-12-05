@@ -5,7 +5,6 @@ import json
 import os
 
 from docknv.logger import Logger, Fore
-from docknv.project.exceptions import MalformedProject
 
 from docknv.utils.serialization import yaml_ordered_load
 from docknv.utils.ioutils import (
@@ -50,6 +49,8 @@ class EnvironmentCollection(object):
 
         :param project_path:    Project path (str)
         """
+        from docknv.project.exceptions import MalformedProject
+
         env_path = os.path.join(project_path, "envs")
         if not os.path.isdir(env_path):
             raise MalformedProject("missing envs folder")
