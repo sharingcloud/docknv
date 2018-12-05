@@ -25,5 +25,7 @@ def docknv_entry_point():
             isinstance(e, MalformedCommand)
         ):
             Logger.error(str(e), crash=False)
+            sys.exit(1)
         else:
             Logger.error(traceback.format_exc(), crash=False)
+            sys.exit(1)
