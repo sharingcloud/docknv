@@ -7,6 +7,9 @@ import six
 
 from .exceptions import UnresolvableEnvironment
 
+from docknv.utils.ioutils import io_open
+from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
+
 VARIABLE_DETECTION_RGX = re.compile(r'\${([a-zA-Z0-9_-]+)}')
 
 
@@ -173,3 +176,20 @@ def env_get_yaml_path(project_path, name):
     :rtype: Absolute path to environment file (str)
     """
     return os.path.join(project_path, "envs", "".join((name, ".env.yml")))
+
+
+def env_set_env_value(env_path, key, value):
+    """
+    Set environment value from file at `env_path`.
+
+    :param env_path:    Environment path (str)
+    :param key:         Key (str)
+    :param value:       Value (any)
+    """
+    with io_open(env_path, mode="r") as handle:
+        content = yaml_ordered_load(handle)
+
+    content["environment"][key] = value
+
+    with io_open(env_path, mode="w") as handle:
+        handle.write(yaml_ordered_dump(content))

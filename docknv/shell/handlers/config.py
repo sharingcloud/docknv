@@ -94,6 +94,8 @@ def _init(subparsers):
     # Remove
     remove_cmd = subs.add_parser("rm", help="remove known configurations")
     remove_cmd.add_argument("configs", nargs="+", help="configurations")
+    remove_cmd.add_argument(
+        "-f", "--force", help="force remove", action="store_true")
 
 
 def _handle(args):
@@ -145,7 +147,7 @@ def _handle_rm(args):
 
     # Remove configs
     for config in args.configs:
-        project.database.remove_configuration(config)
+        project.database.remove_configuration(config, force=args.force)
 
 
 def _handle_create(args):
