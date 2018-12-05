@@ -179,10 +179,9 @@ class ServiceLifecycle(object):
         """
         service_name = lifecycle_get_service_name(self.project, service_name)
 
-        # Get active config and container from service
-        active_config = lifecycle_get_config(self.project)
+        # Get container from service
         container = lifecycle_get_container_from_service(
-            self.project, active_config, service_name)
+            self.project, service_name)
 
         lifecycle_docker_command_on_service(
             self.project, service_name, [
@@ -200,10 +199,9 @@ class ServiceLifecycle(object):
         """
         service_name = lifecycle_get_service_name(self.project, service_name)
 
-        # Get active config and container from service
-        active_config = lifecycle_get_config(self.project)
+        # Get container from service
         container = lifecycle_get_container_from_service(
-            self.project, active_config, service_name)
+            self.project, service_name)
 
         lifecycle_docker_command_on_service(
             self.project, service_name, [

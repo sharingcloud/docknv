@@ -85,20 +85,15 @@ def lifecycle_compose_command_on_current_config(project, args, dry_run=False):
     exec_compose(project_path, composefile, args, dry_run=dry_run)
 
 
-def lifecycle_get_container_from_service(project, config, service):
+def lifecycle_get_container_from_service(project, service):
     """
     Get container from service.
 
     :param project: Project
-    :param config:  Configuration
     :param service: Service name (str)
     """
     name = project.project_name
-    namespace = config.namespace
-    if namespace:
-        return f"{name}_{namespace}_{service}_1"
-    else:
-        return f"{name}_{service}_1"
+    return f"{name}_{service}_1"
 
 
 def lifecycle_docker_command_on_service(project, service, args, add_name=True,
@@ -112,11 +107,9 @@ def lifecycle_docker_command_on_service(project, service, args, add_name=True,
     :param add_name:    Add name in command (bool) (default: True)
     :param dry_run: Dry run? (bool) (default: False)
     """
-    active_config = lifecycle_get_config(project)
-
     # Get container from service
     container = lifecycle_get_container_from_service(
-        project, active_config, service)
+        project, service)
 
     args = [x for x in args]
     if add_name:
