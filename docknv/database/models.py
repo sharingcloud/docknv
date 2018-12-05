@@ -276,7 +276,6 @@ class Database(object):
 
             # Remove configuration path.
             path = config.get_path()
-            print(path)
             if os.path.exists(path):
                 shutil.rmtree(path)
 
