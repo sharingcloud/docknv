@@ -61,7 +61,10 @@ class ServiceLifecycle(object):
                 self.project, ["stop", service_name],
                 dry_run=dry_run)
             lifecycle_compose_command_on_current_config(
-                self.project, ["start", service_name],
+                self.project, ["rm", "-f", service_name],
+                dry_run=dry_run)
+            lifecycle_compose_command_on_current_config(
+                self.project, ["up", "-d", service_name],
                 dry_run=dry_run)
         else:
             lifecycle_compose_command_on_current_config(
@@ -249,7 +252,9 @@ class ConfigLifecycle(object):
             lifecycle_compose_command_on_configs(
                 self.project, config_names, ["stop"], dry_run=dry_run)
             lifecycle_compose_command_on_configs(
-                self.project, config_names, ["start"], dry_run=dry_run)
+                self.project, config_names, ["rm", "-f"], dry_run=dry_run)
+            lifecycle_compose_command_on_configs(
+                self.project, config_names, ["up", "-d"], dry_run=dry_run)
         else:
             lifecycle_compose_command_on_configs(
                 self.project, config_names, ["restart"], dry_run=dry_run)
