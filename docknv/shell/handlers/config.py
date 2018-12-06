@@ -43,9 +43,9 @@ def _init(subparsers):
 
     # Build
     build_cmd = subs.add_parser("build", help="build machines from schema")
-    build_cmd.add_argument("configs", nargs="*", help="configurations")
+    build_cmd.add_argument("config", nargs="?", help="configuration")
     build_cmd.add_argument(
-        "-b", "--build-args", nargs="*", help="build arguments")
+        "-b", "--build-args", nargs="+", help="build arguments")
     build_cmd.add_argument("--no-cache", help="no cache", action="store_true")
     build_cmd.add_argument(
         "--push", help="push to registry", action="store_true")
@@ -105,7 +105,7 @@ def _handle(args):
 def _handle_build(args):
     project = load_project(args.project)
     project.lifecycle.config.build(
-        args.configs, args.build_args, args.no_cache, dry_run=args.dry_run)
+        args.config, args.build_args, args.no_cache, dry_run=args.dry_run)
 
 
 def _handle_ls(args):

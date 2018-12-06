@@ -65,7 +65,7 @@ def _init(subparsers):
     # Build
     build_cmd = subs.add_parser("build", help="build a service")
     build_cmd.add_argument("service", help="service name")
-    build_cmd.add_argument("-b", "--build-args", nargs="*", help="build args")
+    build_cmd.add_argument("-b", "--build-args", nargs="+", help="build args")
     build_cmd.add_argument(
         "--no-cache", help="build without cache", action="store_true")
 

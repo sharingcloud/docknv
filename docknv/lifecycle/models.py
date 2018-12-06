@@ -163,9 +163,14 @@ class ServiceLifecycle(object):
         :param dry_run:         Dry run? (bool) (default: False)
         """
         service_name = lifecycle_get_service_name(self.project, service_name)
+        args = []
         build_args = build_args or []
+        for x in build_args:
+            args.append("--build-arg")
+            args.append(x)
+
         lifecycle_compose_command_on_current_config(
-            self.project, ["build", service_name, *build_args],
+            self.project, ["build", service_name, *args],
             dry_run=dry_run)
 
     def push(self, service_name, host_path, container_path, dry_run=False):
@@ -345,19 +350,26 @@ class ConfigLifecycle(object):
         if restart:
             self.start(name, dry_run=dry_run)
 
-    def build(self, config_names=None, build_args=None, no_cache=False,
+    def build(self, name=None, build_args=None, no_cache=False,
               dry_run=False):
         """
         Build configurations.
 
-        :param config_names:    Config names (list)
+        :param name:            Config name (str?)
         :param build_args:      Build args (list)
         :param no_cache:        No cache? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
+        args = []
+        name = [name] if name else None
         build_args = build_args or []
+
+        for x in build_args:
+            args.append("--build-arg")
+            args.append(x)
+
         lifecycle_compose_command_on_configs(
-            self.project, config_names, ["build", *build_args],
+            self.project, name, ["build", *args],
             dry_run=dry_run)
 
     def ps(self, config_names=None, dry_run=False):
