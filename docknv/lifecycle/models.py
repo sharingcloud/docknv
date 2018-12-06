@@ -71,12 +71,12 @@ class ServiceLifecycle(object):
                 self.project, ["restart", service_name],
                 dry_run=dry_run)
 
-    def run(self, service_name, command, daemon=False, dry_run=False):
+    def run(self, service_name, cmd, daemon=False, dry_run=False):
         """
         Create container with command.
 
         :param service_name:    Service name (str)
-        :param command:         Command (str)
+        :param cmd:             Command (str)
         :param daemon:          Daemon mode? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
@@ -86,7 +86,7 @@ class ServiceLifecycle(object):
             more_args += ["-d"]
 
         lifecycle_compose_command_on_current_config(
-            self.project, ["run", *more_args, service_name, command],
+            self.project, ["run", *more_args, service_name, *shlex.split(cmd)],
             dry_run=dry_run)
 
     def execute(self, service_name, cmds=None, no_tty=False, dry_run=False):
