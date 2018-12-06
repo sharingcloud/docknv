@@ -169,8 +169,11 @@ class ServiceLifecycle(object):
             args.append("--build-arg")
             args.append(x)
 
+        if no_cache:
+            args.append("--no-cache")
+
         lifecycle_compose_command_on_current_config(
-            self.project, ["build", service_name, *args],
+            self.project, ["build", *args, service_name],
             dry_run=dry_run)
 
     def push(self, service_name, host_path, container_path, dry_run=False):
@@ -367,6 +370,9 @@ class ConfigLifecycle(object):
         for x in build_args:
             args.append("--build-arg")
             args.append(x)
+
+        if no_cache:
+            args.append("--no-cache")
 
         lifecycle_compose_command_on_configs(
             self.project, name, ["build", *args],

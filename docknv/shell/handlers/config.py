@@ -47,8 +47,6 @@ def _init(subparsers):
     build_cmd.add_argument(
         "-b", "--build-args", nargs="+", help="build arguments")
     build_cmd.add_argument("--no-cache", help="no cache", action="store_true")
-    build_cmd.add_argument(
-        "--push", help="push to registry", action="store_true")
 
     # Create
     create_cmd = subs.add_parser(
