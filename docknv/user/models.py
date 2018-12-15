@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 import os
 import shutil
+import time
 
 from docknv.logger import Logger
 
@@ -47,15 +48,44 @@ class UserLock(object):
         """Disable lock."""
         lockfile = self.get_file()
         if self.is_enabled:
-            os.remove(lockfile)
+            try:
+                os.remove(lockfile)
+            except FileNotFoundError:
+                # Already removed
+                pass
 
         return True
 
     @contextmanager
-    def try_lock(self):
-        """Try to set the user lock."""
-        if not self.lock():
-            raise ProjectLocked(self.project_path)
+    def try_lock(self, timeout=0):
+        """
+        Try to set the user lock.
+
+        if timeout == 0:
+            - Do not wait, raise on lock failure
+        elif timeout > 0:
+            - Try to lock until timeout
+        else:
+            - Try to lock until it is possible
+
+        :param timeout: Timeout in seconds
+        """
+        start_time = time.time()
+
+        while True:
+            if self.lock():
+                # OK, go!
+                break
+            else:
+                if timeout == 0:
+                    raise ProjectLocked(self.project_path)
+                elif timeout > 0:
+                    elapsed_time = time.time() - start_time
+                    if elapsed_time > timeout:
+                        raise ProjectLocked(self.project_path)
+
+            # Sleep for 0.5 seconds
+            time.sleep(0.5)
 
         try:
             yield

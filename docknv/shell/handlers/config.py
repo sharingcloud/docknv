@@ -102,8 +102,9 @@ def _handle(args):
 
 def _handle_build(args):
     project = load_project(args.project)
-    project.lifecycle.config.build(
-        args.config, args.build_args, args.no_cache, dry_run=args.dry_run)
+    with project.session.get_lock().try_lock(timeout=-1):
+        project.lifecycle.config.build(
+            args.config, args.build_args, args.no_cache, dry_run=args.dry_run)
 
 
 def _handle_ls(args):
@@ -113,19 +114,19 @@ def _handle_ls(args):
 
 def _handle_start(args):
     project = load_project(args.project)
-    with project.session.get_lock().try_lock():
+    with project.session.get_lock().try_lock(timeout=-1):
         project.lifecycle.config.start(args.configs, dry_run=args.dry_run)
 
 
 def _handle_stop(args):
     project = load_project(args.project)
-    with project.session.get_lock().try_lock():
+    with project.session.get_lock().try_lock(timeout=-1):
         project.lifecycle.config.stop(args.configs, dry_run=args.dry_run)
 
 
 def _handle_restart(args):
     project = load_project(args.project)
-    with project.session.get_lock().try_lock():
+    with project.session.get_lock().try_lock(timeout=-1):
         project.lifecycle.config.restart(
             args.configs, force=args.force, dry_run=args.dry_run)
 
@@ -138,38 +139,42 @@ def _handle_ps(args):
 
 def _handle_rm(args):
     project = load_project(args.project)
+    with project.session.get_lock().try_lock(timeout=-1):
+        # Check configs
+        for config in args.configs:
+            project.database.get_configuration(config)
 
-    # Check configs
-    for config in args.configs:
-        project.database.get_configuration(config)
-
-    # Remove configs
-    for config in args.configs:
-        project.database.remove_configuration(config, force=args.force)
+        # Remove configs
+        for config in args.configs:
+            project.database.remove_configuration(config, force=args.force)
 
 
 def _handle_create(args):
     project = load_project(args.project)
-    project.lifecycle.config.create(
-        args.name, args.environment, args.schemas, args.services, args.volumes,
-        args.networks, args.namespace)
+    with project.session.get_lock().try_lock(timeout=-1):
+        project.lifecycle.config.create(
+            args.name, args.environment, args.schemas, args.services,
+            args.volumes, args.networks, args.namespace)
 
 
 def _handle_set(args):
     project = load_project(args.project)
-    project.set_current_configuration(args.name)
+    with project.session.get_lock().try_lock(timeout=-1):
+        project.set_current_configuration(args.name)
 
 
 def _handle_unset(args):
     project = load_project(args.project)
-    project.unset_current_configuration()
+    with project.session.get_lock().try_lock(timeout=-1):
+        project.unset_current_configuration()
 
 
 def _handle_update(args):
     project = load_project(args.project)
-    project.lifecycle.config.update(
-        args.name, args.environment, args.schemas, args.services, args.volumes,
-        args.networks, args.namespace, restart=args.restart)
+    with project.session.get_lock().try_lock(timeout=-1):
+        project.lifecycle.config.update(
+            args.name, args.environment, args.schemas, args.services,
+            args.volumes, args.networks, args.namespace, restart=args.restart)
 
 
 def _handle_status(args):

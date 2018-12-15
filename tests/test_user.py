@@ -1,6 +1,8 @@
 """User handler tests."""
 
 import os
+import threading
+import time
 
 import pytest
 
@@ -148,4 +150,36 @@ def test_session_lock():
                 raise RuntimeError("oops")
 
         # Should be unlocked
+        assert not lock.is_enabled
+
+        # Try-lock w/ timeout test
+        lock.lock()
+        with pytest.raises(ProjectLocked):
+            with lock.try_lock(timeout=2):
+                pass
+
+        # Try-lock w/ timeout, waiting for unlock
+        def unlock_thread():
+            time.sleep(2)
+            lock.unlock()
+
+        thr1 = threading.Thread(target=unlock_thread)
+        thr1.start()
+        assert lock.is_enabled
+        with lock.try_lock(timeout=2):
+            pass
+        thr1.join()
+        assert not lock.is_enabled
+
+        # Try-lock /w infinite timeout, waiting for unlock
+        def unlock_thread2():
+            time.sleep(3)
+            lock.unlock()
+
+        lock.lock()
+        thr1 = threading.Thread(target=unlock_thread2)
+        thr1.start()
+        with lock.try_lock(timeout=-1):
+            pass
+        thr1.join()
         assert not lock.is_enabled
