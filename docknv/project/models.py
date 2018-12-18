@@ -12,6 +12,7 @@ from docknv.utils.ioutils import io_open
 from docknv.utils.serialization import yaml_ordered_load
 
 from .methods import (
+    project_get_name_from_path,
     project_get_config_path,
     project_is_valid,
 )
@@ -32,8 +33,7 @@ class Project(object):
         :param config_data:      Config data (dict)
         """
         self.project_path = project_path
-        self.project_name = os.path.basename(
-            os.path.abspath(project_path)).lower()
+        self.project_name = project_get_name_from_path(project_path)
         self.schemas = SchemaCollection.load_from_data(
             config_data.get("schemas", []))
         self.config_data = config_data
