@@ -81,8 +81,9 @@ class ServiceLifecycle(object):
         :param dry_run:         Dry run? (bool) (default: False)
         """
         service_name = lifecycle_get_service_name(self.project, service_name)
-        more_args = []
+        more_args = ["--use-aliases", "--service-ports", "--rm"]
         if daemon:
+            more_args.remove("--rm")
             more_args += ["-d"]
 
         lifecycle_compose_command_on_current_config(
