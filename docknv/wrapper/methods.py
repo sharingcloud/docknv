@@ -4,7 +4,7 @@ import subprocess
 
 from docknv.logger import Logger
 
-from .exceptions import FailedCommandExecution
+from .exceptions import FailedCommandExecution, StoppedCommandExecution
 
 
 def exec_process(args, cwd=None, shell=False, dry_run=False):
@@ -23,6 +23,8 @@ def exec_process(args, cwd=None, shell=False, dry_run=False):
     try:
         Logger.debug(f"executing command {args}...")
         rc = subprocess.call(args, cwd=cwd, shell=shell)
+    except KeyboardInterrupt:
+        raise StoppedCommandExecution("CTRL+C")
     except BaseException as exc:
         raise FailedCommandExecution(str(exc))
 
@@ -59,6 +61,8 @@ def exec_process_with_output(args, cwd=None, outfilter=None, dry_run=False):
                     print(out)
 
         rc = proc.poll()
+    except KeyboardInterrupt:
+        raise StoppedCommandExecution("CTRL+C")
     except BaseException as exc:
         raise FailedCommandExecution(str(exc))
 

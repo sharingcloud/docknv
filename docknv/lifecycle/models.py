@@ -5,6 +5,7 @@ import shlex
 
 from docknv.database import Configuration
 from docknv.user import user_get_username
+from docknv.wrapper import StoppedCommandExecution
 
 from .methods import (
     lifecycle_compose_command_on_configs,
@@ -141,9 +142,13 @@ class ServiceLifecycle(object):
             args += ["-f"]
 
         service_name = lifecycle_get_service_name(self.project, service_name)
-        lifecycle_compose_command_on_current_config(
-            self.project, ["logs", *args, service_name],
-            dry_run=dry_run)
+
+        try:
+            lifecycle_compose_command_on_current_config(
+                self.project, ["logs", *args, service_name],
+                dry_run=dry_run)
+        except StoppedCommandExecution as exc:
+            print(exc)
 
     def attach(self, service_name, dry_run=False):
         """
