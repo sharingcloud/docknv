@@ -3,15 +3,11 @@
 import pytest
 
 from docknv.shell import Shell
-from docknv.shell.main import docknv_entry_point
 
 from docknv.utils.ioutils import NoEditorFound
 
 from docknv.tests.mocking import mock_input
-from docknv.tests.utils import (
-    using_temporary_directory,
-    copy_sample
-)
+from docknv.tests.utils import using_temporary_directory, copy_sample
 
 
 def test_shell():
@@ -29,10 +25,22 @@ def test_shell():
             run_shell([])
 
         # Config create
-        run_shell([
-            "config", "create", "toto",
-            "-e", "default", "-S", "portainer", "pouet",
-            "-V", "portainer", "-N", "net"])
+        run_shell(
+            [
+                "config",
+                "create",
+                "toto",
+                "-e",
+                "default",
+                "-S",
+                "portainer",
+                "pouet",
+                "-V",
+                "portainer",
+                "-N",
+                "net",
+            ]
+        )
 
         # Start config
         run_shell(["config", "start"])
@@ -55,10 +63,22 @@ def test_shell():
         run_shell(["config", "status"])
 
         # Toto
-        run_shell([
-            "config", "create", "toto",
-            "-e", "default", "-S", "portainer", "pouet",
-            "-V", "portainer", "-N", "net"])
+        run_shell(
+            [
+                "config",
+                "create",
+                "toto",
+                "-e",
+                "default",
+                "-S",
+                "portainer",
+                "pouet",
+                "-V",
+                "portainer",
+                "-N",
+                "net",
+            ]
+        )
 
         run_shell(["config", "status"])
         run_shell(["config", "update"])
@@ -155,14 +175,19 @@ def test_commands():
         with pytest.raises(SystemExit):
             run_shell(["custom", "notebook"])
 
-        run_shell([
-            "config", "create", "toto",
-            "-e", "default", "-S", "ipython", "pouet",
-            "-N", "net"])
+        run_shell(
+            [
+                "config",
+                "create",
+                "toto",
+                "-e",
+                "default",
+                "-S",
+                "ipython",
+                "pouet",
+                "-N",
+                "net",
+            ]
+        )
 
         run_shell(["custom", "notebook", "password"])
-
-
-def test_entry_point():
-    """Entry point."""
-    docknv_entry_point()

@@ -26,8 +26,9 @@ def yaml_merge(contents):
         return src1
 
 
-def yaml_ordered_load(stream, loader_class=yaml.Loader,
-                      object_pairs_hook=OrderedDict):
+def yaml_ordered_load(
+    stream, loader_class=yaml.Loader, object_pairs_hook=OrderedDict
+):
     """
     Load ordered YAML content.
 
@@ -35,6 +36,7 @@ def yaml_ordered_load(stream, loader_class=yaml.Loader,
     :param loader_class:         Loader class (Loader) (default: yaml.Loader)
     :param object_pairs_hook:    Hook type (any) (default: OrderedDict)
     """
+
     class OrderedLoader(loader_class):
         """Ordered loader."""
 
@@ -43,8 +45,8 @@ def yaml_ordered_load(stream, loader_class=yaml.Loader,
         return object_pairs_hook(loader.construct_pairs(node))
 
     OrderedLoader.add_constructor(
-        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-        _construct_mapping)
+        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_mapping
+    )
 
     return yaml.load(stream, OrderedLoader)
 
@@ -57,26 +59,29 @@ def yaml_ordered_dump(data, stream=None, dumper_class=yaml.Dumper, **kwds):
     :param dumper_class:     Dumper class (Dumper) (default: yaml.Dumper)
     :param kwds:             Keywords arguments
     """
+
     class OrderedDumper(dumper_class):
         """Ordered dumper."""
 
     def _dict_representer(dumper, data):
         return dumper.represent_mapping(
-            yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-            data.items())
+            yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, data.items()
+        )
 
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
     OrderedDumper.add_representer(
-        str, yaml.representer.SafeRepresenter.represent_str)
+        str, yaml.representer.SafeRepresenter.represent_str
+    )
 
     if six.PY2:
         OrderedDumper.add_representer(
-            unicode, yaml.representer.SafeRepresenter.represent_unicode) # noqa
+            unicode, yaml.representer.SafeRepresenter.represent_unicode
+        )  # noqa
 
     out = yaml.dump(data, stream, OrderedDumper, **kwds)
 
     if six.PY2:
-        out = unicode(out) # noqa
+        out = unicode(out)  # noqa
 
     return out
 

@@ -1,3 +1,3 @@
 """docknv shell init."""
 
-from .shell import *    # noqa
+from .shell import *  # noqa

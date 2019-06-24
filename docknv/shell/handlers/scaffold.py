@@ -16,25 +16,31 @@ def _init(subparsers):
 
     # Project
     project_cmd = subs.add_parser(
-        "project", help="scaffold a new docknv project")
+        "project", help="scaffold a new docknv project"
+    )
     project_cmd.add_argument("project_path", help="project path")
 
     # Image
     image_cmd = subs.add_parser("image", help="scaffold an image Dockerfile")
     image_cmd.add_argument("image_name", help="image name")
-    image_cmd.add_argument("image_url",
-                           help="image url (Docker style path)")
-    image_cmd.add_argument("image_tag",
-                           help="image tag (default: latest)",
-                           nargs="?",
-                           default="latest")
+    image_cmd.add_argument("image_url", help="image url (Docker style path)")
+    image_cmd.add_argument(
+        "image_tag",
+        help="image tag (default: latest)",
+        nargs="?",
+        default="latest",
+    )
 
     # Environment
     env_cmd = subs.add_parser("env", help="scaffold an environment file")
     env_cmd.add_argument("name", help="environment file name")
     env_cmd.add_argument(
-        "-i", "--inherit", nargs="?", default=None,
-        help="inherit from existing environment")
+        "-i",
+        "--inherit",
+        nargs="?",
+        default=None,
+        help="inherit from existing environment",
+    )
 
 
 def _handle(args):
@@ -47,7 +53,8 @@ def _handle_project(args):
 
 def _handle_image(args):
     scaffold_image(
-        args.project, args.image_name, args.image_url, args.image_tag)
+        args.project, args.image_name, args.image_url, args.image_tag
+    )
 
 
 def _handle_env(args):

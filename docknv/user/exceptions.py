@@ -6,7 +6,9 @@ class ProjectLocked(Exception):
 
     def __init__(self, project):
         """Init."""
-        message = f"current project {project} is currently locked " \
-                  f"by another execution."
+        message = (
+            f"current project {project} is currently locked "
+            f"by another execution."
+        )
 
         super(ProjectLocked, self).__init__(message)

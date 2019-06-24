@@ -1,4 +1,4 @@
 """Logger module."""
 
-from .models import *       # noqa
-from .exception import *    # noqa
+from .models import *  # noqa
+from .exception import *  # noqa

@@ -4,17 +4,15 @@ import os
 
 import pytest
 
-from docknv.tests.utils import (
-    using_temporary_directory,
-    copy_sample
-)
+from docknv.tests.utils import using_temporary_directory, copy_sample
 
 from docknv.utils.ioutils import io_open
 
 from docknv.project import Project
 from docknv.template import (
-    MissingTemplate, MalformedTemplate,
-    renderer_render_template
+    MissingTemplate,
+    MalformedTemplate,
+    renderer_render_template,
 )
 
 

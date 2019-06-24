@@ -56,7 +56,8 @@ def _handle(args):
 
                     if error:
                         raise MalformedCommand(
-                            f"{base_filename} - {str(error)}")
+                            f"{base_filename} - {str(error)}"
+                        )
 
                     shell.register_post_parser(post_parse)
 

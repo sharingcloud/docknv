@@ -13,26 +13,32 @@ from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
 
 from docknv.user import (
-    UserSession, user_get_username, user_get_username_from_id
+    UserSession,
+    user_get_username,
+    user_get_username_from_id,
 )
 
 from docknv.compose import ComposeDefinition
 
-from .methods import (
-    database_get_database_path
-)
+from .methods import database_get_database_path
 
-from .exceptions import (
-    MissingConfiguration,
-    PermissionDenied,
-)
+from .exceptions import MissingConfiguration, PermissionDenied
 
 
 class Configuration(object):
     """Configuration."""
 
-    def __init__(self, database, name, user, environment="default",
-                 services=None, volumes=None, networks=None, namespace=None):
+    def __init__(
+        self,
+        database,
+        name,
+        user,
+        environment="default",
+        services=None,
+        volumes=None,
+        networks=None,
+        namespace=None,
+    ):
         """Init."""
         self.database = database
         self.name = name
@@ -44,10 +50,12 @@ class Configuration(object):
         self.namespace = namespace
 
         self.environment_data = Environment.load_from_project(
-            database.project_path, environment)
+            database.project_path, environment
+        )
 
         self.session = UserSession.load_from_path(
-            user, database.project.project_path)
+            user, database.project.project_path
+        )
 
     @classmethod
     def load_from_data(cls, database, name, data):
@@ -84,7 +92,8 @@ class Configuration(object):
             services=data.get("services", []),
             volumes=data.get("volumes", []),
             networks=data.get("networks", []),
-            namespace=data.get("namespace", None))
+            namespace=data.get("namespace", None),
+        )
 
     def get_path(self):
         """Get configuration path."""
@@ -93,12 +102,14 @@ class Configuration(object):
     def get_composefile_path(self):
         """Get composefile path."""
         return self.session.get_paths().get_file_path(
-            "docker-compose.yml", self.name)
+            "docker-compose.yml", self.name
+        )
 
     def get_environment_path(self):
         """Get environment path."""
         return self.session.get_paths().get_file_path(
-            "environment.env", self.name)
+            "environment.env", self.name
+        )
 
     def generate_composefile(self):
         """Generate composefile."""
@@ -111,7 +122,8 @@ class Configuration(object):
     def generate_environment_file(self):
         """Generate environment file."""
         environment = Environment.load_from_project(
-            self.database.project_path, self.environment)
+            self.database.project_path, self.environment
+        )
         environment.save_key_values_to_path(self.get_environment_path())
 
     def has_permission(self, user=None):
@@ -132,7 +144,7 @@ class Configuration(object):
             "services": self.services,
             "volumes": self.volumes,
             "networks": self.networks,
-            "namespace": self.namespace
+            "namespace": self.namespace,
         }
 
     def show(self):
@@ -153,7 +165,8 @@ class Configuration(object):
             f"  Volumes: {volumes}\n"
             f"  Networks: {networks}\n"
             f"  User: {user}\n\n",
-            color=Fore.BLUE)
+            color=Fore.BLUE,
+        )
 
 
 class Database(object):
@@ -171,8 +184,9 @@ class Database(object):
         if "values" in data:
             # Old version, convert to new format !
             for name, conf in data["values"].items():
-                self.configurations[name] = \
-                    Configuration.load_from_data(self, name, conf)
+                self.configurations[name] = Configuration.load_from_data(
+                    self, name, conf
+                )
 
             # Save to new version
             self.save()
@@ -180,8 +194,9 @@ class Database(object):
         else:
             # New version
             for name, conf in data.items():
-                self.configurations[name] = \
-                    Configuration.load_from_data(self, name, conf)
+                self.configurations[name] = Configuration.load_from_data(
+                    self, name, conf
+                )
 
     def __len__(self):
         """Len."""
@@ -266,7 +281,8 @@ class Database(object):
         choice = prompt_yes_no(
             f"/!\\ are you sure you want to remove "
             f"configuration `{config_name}` ?",
-            force)
+            force,
+        )
 
         if choice:
             # Active session for current user
@@ -291,7 +307,8 @@ class Database(object):
         if len_values == 0:
             Logger.warn(
                 "no configuration found. "
-                "use `docknv config create` to generate configurations.")
+                "use `docknv config create` to generate configurations."
+            )
         else:
             Logger.info("known configurations:")
             for conf in self.configurations.values():

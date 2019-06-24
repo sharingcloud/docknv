@@ -7,8 +7,7 @@ from docknv.wrapper import (
     exec_process_with_output,
     exec_docker,
     exec_compose,
-
-    FailedCommandExecution
+    FailedCommandExecution,
 )
 
 
@@ -54,11 +53,22 @@ def test_compose():
     """Compose test."""
     ret = exec_compose("/project", "./toto.yml", ["start"], dry_run=True)
     assert ret == [
-        "docker-compose", "-f", "./toto.yml", "--project-directory",
-        "/project", "start"]
+        "docker-compose",
+        "-f",
+        "./toto.yml",
+        "--project-directory",
+        "/project",
+        "start",
+    ]
 
     ret = exec_compose(
-        "/project", "./toto.yml", ["start"], pretty=True, dry_run=True)
+        "/project", "./toto.yml", ["start"], pretty=True, dry_run=True
+    )
     assert ret == [
-        "docker-compose", "-f", "./toto.yml", "--project-directory",
-        "/project", "start"]
+        "docker-compose",
+        "-f",
+        "./toto.yml",
+        "--project-directory",
+        "/project",
+        "start",
+    ]

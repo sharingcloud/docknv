@@ -62,8 +62,7 @@ def composefile_resolve_volumes(content, config):
 
     # Cleaning static files
     create_path_or_replace(
-        volume_generate_namespaced_root(
-            session, "static", config.name)
+        volume_generate_namespaced_root(session, "static", config.name)
     )
 
     if "services" in output_content:
@@ -74,7 +73,8 @@ def composefile_resolve_volumes(content, config):
             if "env_file" not in service_data:
                 service_data["env_file"] = [
                     session.get_paths().get_file_path(
-                        "environment.env", config_name)
+                        "environment.env", config_name
+                    )
                 ]
 
             final_volumes = []
@@ -85,19 +85,23 @@ def composefile_resolve_volumes(content, config):
 
                 # Templates
                 final_volumes = _composefile_resolve_template_volumes(
-                    volumes_data, config, final_volumes)
+                    volumes_data, config, final_volumes
+                )
 
                 # Static files
                 final_volumes = _composefile_resolve_static_volumes(
-                    volumes_data, config, final_volumes)
+                    volumes_data, config, final_volumes
+                )
 
                 # Shared files
                 final_volumes = _composefile_resolve_shared_volumes(
-                    volumes_data, config, final_volumes)
+                    volumes_data, config, final_volumes
+                )
 
                 # Standard volumes
                 final_volumes = _composefile_resolve_standard_volumes(
-                    volumes_data, final_volumes)
+                    volumes_data, final_volumes
+                )
 
             service_data["volumes"] = final_volumes
 
@@ -117,12 +121,17 @@ def _composefile_resolve_static_volumes(volumes, config, output):
 
             # Create dirs & copy
             output_path = volume_object.get_namespaced_path(
-                config.session, "static", config.name)
+                config.session, "static", config.name
+            )
 
             data_path = os.path.normpath(
                 os.path.join(
-                    config.database.project_path, "data", "files",
-                    volume_object.host_path))
+                    config.database.project_path,
+                    "data",
+                    "files",
+                    volume_object.host_path,
+                )
+            )
 
             # Get files to copy
             files_to_copy = _get_files_to_copy(data_path, output_path)
@@ -157,8 +166,11 @@ def _composefile_resolve_shared_volumes(volumes, config, output):
             volume_object = Volume.load_from_entry(shared_def)
 
             data_path = os.path.join(
-                config.database.project_path, "data", "files",
-                volume_object.host_path)
+                config.database.project_path,
+                "data",
+                "files",
+                volume_object.host_path,
+            )
 
             volume_object.host_path = data_path
             output.append(str(volume_object))
@@ -234,7 +246,8 @@ def _get_files_to_copy(data_path, output_path):
             for filename in filenames:
                 full_path = os.path.normpath(os.path.join(root, filename))
                 full_output_path = os.path.normpath(
-                    os.path.join(output_path, sub_part, filename))
+                    os.path.join(output_path, sub_part, filename)
+                )
                 files_to_copy.append((full_path, full_output_path))
 
     return files_to_copy

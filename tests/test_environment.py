@@ -6,18 +6,15 @@ import shutil
 import pytest
 
 from docknv.environment import (
-    Environment, EnvironmentCollection,
-    MissingEnvironment, ExistingEnvironment,
+    Environment,
+    EnvironmentCollection,
+    MissingEnvironment,
+    ExistingEnvironment,
 )
 
-from docknv.project import (
-    MalformedProject,
-)
+from docknv.project import MalformedProject
 
-from docknv.tests.utils import (
-    using_temporary_directory,
-    copy_sample,
-)
+from docknv.tests.utils import using_temporary_directory, copy_sample
 
 
 def test_environment():
@@ -41,6 +38,12 @@ def test_environment():
         assert env["TEST_VALUE"] == "inclusion"
         assert env["TEST_ONE"] == 1
         assert env["TEST_ONE_2"] == "toto:1"
+
+        # Neg values
+        assert env["TEST_NEG_ONE"] == 0
+        assert env["TEST_NEG_BOOL1"] is False
+        assert env["TEST_NEG_BOOL2"] is True
+        assert env["TEST_NEG_ONE_2"] == env["TEST_ONE_2"]
 
         # Inheritance
         env = Environment.load_from_project(project_path, "inclusion2")
@@ -85,7 +88,8 @@ def test_collection():
         default_env = collection.get_environment("default")
         env = collection.create_inherited_environment("default", "default2")
         assert os.path.isfile(
-            os.path.join(project_path, "envs", "default2.env.yml"))
+            os.path.join(project_path, "envs", "default2.env.yml")
+        )
 
         assert len(collection) == 9
         assert env.name == "default2"

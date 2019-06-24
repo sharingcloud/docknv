@@ -23,13 +23,15 @@ def post_parse(shell, args, project, context):
     """Post parse."""
     if args.command == "notebook":
         config = project.get_command_parameters("notebook")
-        service_name = config.get('service', None)
+        service_name = config.get("service", None)
         if service_name is None:
             Logger.error(
-                'ipython machine name is not configured in `config.yml`.')
+                "ipython machine name is not configured in `config.yml`."
+            )
 
         if args.notebook_cmd == "password":
             Logger.info("generating notebook password...")
             cmd = 'python -c "from IPython.lib import passwd; print(passwd())"'
             project.lifecycle.service.run(
-                service_name, cmd, dry_run=args.dry_run)
+                service_name, cmd, dry_run=args.dry_run
+            )

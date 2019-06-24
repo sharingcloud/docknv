@@ -1,6 +1,8 @@
 tox
 pytest
+pytest-pythonpath
 pytest-cov
 mock
+black
 flake8
 flake8-docstrings

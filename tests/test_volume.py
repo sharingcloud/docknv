@@ -54,8 +54,12 @@ def test_namespace():
     obj = Volume.load_from_entry("toto:/toto:rw")
     session = UserSession("test", "/project")
 
-    assert obj.get_namespaced_path(session, "static", "config") == \
-        "/project/.docknv/test/config/data/static/toto"
+    assert (
+        obj.get_namespaced_path(session, "static", "config")
+        == "/project/.docknv/test/config/data/static/toto"
+    )
 
-    assert obj.get_namespaced_path(session, "shared", "config") == \
-        "data/global/toto"
+    assert (
+        obj.get_namespaced_path(session, "shared", "config")
+        == "data/global/toto"
+    )

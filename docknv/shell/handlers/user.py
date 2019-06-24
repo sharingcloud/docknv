@@ -11,15 +11,21 @@ def _init(subparsers):
     subs = cmd.add_subparsers(dest="user_cmd", metavar="")
 
     clean_cmd = subs.add_parser(
-        "clean", help="clean user config files for this project")
+        "clean", help="clean user config files for this project"
+    )
     clean_cmd.add_argument("config", nargs="?", default=None)
 
     edit_cmd = subs.add_parser(
-        "edit", help="edit user config for this project")
+        "edit", help="edit user config for this project"
+    )
     edit_cmd.add_argument("config", nargs="?", default=None)
     edit_cmd.add_argument(
-        "-e", "--editor", nargs="?", default=None,
-        help="editor to use (default: auto-detect)")
+        "-e",
+        "--editor",
+        nargs="?",
+        default=None,
+        help="editor to use (default: auto-detect)",
+    )
 
     subs.add_parser("rm-lock", help="remove the user lockfile")
 

@@ -16,8 +16,9 @@ class NoEditorFound(Exception):
     def __init__(self, editors):
         """Init."""
         editors_str = " ".join(editors)
-        message = \
+        message = (
             f"none of the following editors has been found: {editors_str}"
+        )
         super(NoEditorFound, self).__init__(message)
 
 

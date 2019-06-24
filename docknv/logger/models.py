@@ -55,11 +55,11 @@ class Logger(object):
                 Logger._round_time(current_time),
                 msg_type,
                 message,
-                Style.RESET_ALL
+                Style.RESET_ALL,
             )
 
             if six.PY2:
-                logged_str = logged_str.decode('utf-8', errors='replace')
+                logged_str = logged_str.decode("utf-8", errors="replace")
             print(logged_str)
 
     @staticmethod
@@ -80,8 +80,9 @@ class Logger(object):
         :param exc:     Exception
         """
         Logger.error(
-            "{cls}: {msg}".format(
-                cls=exc.__class__.__name__, msg=str(exc)), crash=crash)
+            "{cls}: {msg}".format(cls=exc.__class__.__name__, msg=str(exc)),
+            crash=crash,
+        )
 
     @staticmethod
     def error(message, color=Fore.RED, crash=True):
@@ -131,7 +132,7 @@ class Logger(object):
             message = "{0}{1}{2}".format(color, message, Style.RESET_ALL)
 
         if six.PY2:
-            message = unicode(message) # noqa
+            message = unicode(message)  # noqa
 
         if linebreak:
             print(message)

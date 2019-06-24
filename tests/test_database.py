@@ -5,25 +5,18 @@ import os
 import pytest
 
 from docknv.database import (
-    Configuration, MissingConfiguration, PermissionDenied
+    Configuration,
+    MissingConfiguration,
+    PermissionDenied,
 )
 
-from docknv.project import (
-    Project
-)
+from docknv.project import Project
 
-from docknv.tests.utils import (
-    using_temporary_directory,
-    copy_sample
-)
+from docknv.tests.utils import using_temporary_directory, copy_sample
 
-from docknv.utils.ioutils import (
-    io_open
-)
+from docknv.utils.ioutils import io_open
 
-from docknv.utils.serialization import (
-    yaml_ordered_load
-)
+from docknv.utils.serialization import yaml_ordered_load
 
 
 def test_empty_database():
@@ -69,8 +62,7 @@ second:
         # Create directory
         os.makedirs(os.path.join(project_path, ".docknv"))
         with open(
-            os.path.join(project_path, ".docknv", ".docknv.yml"),
-            mode="w"
+            os.path.join(project_path, ".docknv", ".docknv.yml"), mode="w"
         ) as handle:
             handle.write(database_file)
 
@@ -90,7 +82,7 @@ second:
             services=["toto"],
             volumes=[],
             networks=[],
-            namespace=None
+            namespace=None,
         )
         database.create_configuration(config)
 
@@ -135,17 +127,23 @@ second:
 
         # Paths test
         assert first.get_path() == os.path.join(
-            project_path, ".docknv", "test", "first")
+            project_path, ".docknv", "test", "first"
+        )
         assert second.get_path() == os.path.join(
-            project_path, ".docknv", "tost", "second")
+            project_path, ".docknv", "tost", "second"
+        )
         assert first.get_environment_path() == os.path.join(
-            project_path, ".docknv", "test", "first", "environment.env")
+            project_path, ".docknv", "test", "first", "environment.env"
+        )
         assert second.get_environment_path() == os.path.join(
-            project_path, ".docknv", "tost", "second", "environment.env")
+            project_path, ".docknv", "tost", "second", "environment.env"
+        )
         assert first.get_composefile_path() == os.path.join(
-            project_path, ".docknv", "test", "first", "docker-compose.yml")
+            project_path, ".docknv", "test", "first", "docker-compose.yml"
+        )
         assert second.get_composefile_path() == os.path.join(
-            project_path, ".docknv", "tost", "second", "docker-compose.yml")
+            project_path, ".docknv", "tost", "second", "docker-compose.yml"
+        )
 
         # Removal test
         project.session.set_current_configuration("first")

@@ -9,10 +9,7 @@ from docknv.utils.ioutils import io_open
 from docknv.compose import ComposeDefinition, MissingComposefile
 from docknv.project import Project
 
-from docknv.tests.utils import (
-    using_temporary_directory,
-    copy_sample
-)
+from docknv.tests.utils import using_temporary_directory, copy_sample
 
 CONFIG_DATA = """\
 config:
@@ -57,7 +54,8 @@ def test_compose():
 
         with pytest.raises(MissingComposefile):
             ComposeDefinition.load_from_path(
-                os.path.join(project_path, "test2.yml"))
+                os.path.join(project_path, "test2.yml")
+            )
 
         assert compose.content == composeclone.content
 

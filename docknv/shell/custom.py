@@ -22,16 +22,21 @@ class CustomShell(object):
     def __init__(self):
         """Init."""
         self.parser = argparse.ArgumentParser(
-            description="docknv custom commands")
+            description="docknv custom commands"
+        )
         self.parser.add_argument(
-            '-v', '--verbose', action='store_true', help='verbose mode')
+            "-v", "--verbose", action="store_true", help="verbose mode"
+        )
         self.parser.add_argument(
-            '-p', '--project', help='project path', default='.')
+            "-p", "--project", help="project path", default="."
+        )
         self.parser.add_argument(
-            '--dry-run', help='dry run', action="store_true")
+            "--dry-run", help="dry run", action="store_true"
+        )
 
         self.subparsers = self.parser.add_subparsers(
-            dest="command", metavar="")
+            dest="command", metavar=""
+        )
         self.post_parsers = []
 
     def register_post_parser(self, fct):

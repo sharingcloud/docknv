@@ -48,12 +48,17 @@ def exec_process_with_output(args, cwd=None, outfilter=None, dry_run=False):
 
     try:
         proc = subprocess.Popen(
-            " ".join(args), cwd=cwd, stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+            " ".join(args),
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            shell=True,
+            universal_newlines=True,
+        )
 
         while True:
             out = proc.stdout.readline()
-            if out == '' and proc.poll() is not None:
+            if out == "" and proc.poll() is not None:
                 break
             if out:
                 out = out.strip()

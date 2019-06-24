@@ -4,10 +4,7 @@ import os
 
 import pytest
 
-from docknv.tests.utils import (
-    using_temporary_directory,
-    copy_sample
-)
+from docknv.tests.utils import using_temporary_directory, copy_sample
 
 from docknv.project import Project, MissingProject
 from docknv.database import MissingActiveConfiguration
@@ -65,8 +62,10 @@ def test_project2():
         proj = Project.load_from_path(project_path)
 
         # Command config
-        assert proj.get_command_parameters() == \
-            {"notebook": {"service": "ipython"}}
-        assert proj.get_command_parameters("notebook") == \
-            {"service": "ipython"}
+        assert proj.get_command_parameters() == {
+            "notebook": {"service": "ipython"}
+        }
+        assert proj.get_command_parameters("notebook") == {
+            "service": "ipython"
+        }
         assert proj.get_command_parameters("tutu") == {}

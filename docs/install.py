@@ -22,8 +22,8 @@ if not os.path.exists(args.output_path):
 else:
     choice = prompt_yes_no(
         "/!\\ the folder {0} will be removed and recreated. "
-        "are you sure you want to install?".format(
-            args.output_path))
+        "are you sure you want to install?".format(args.output_path)
+    )
 
     if choice:
         shutil.rmtree(args.output_path)

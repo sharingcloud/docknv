@@ -17,9 +17,7 @@ from .methods import (
     project_is_valid,
 )
 
-from .exceptions import (
-    MissingProject,
-)
+from .exceptions import MissingProject
 
 
 class Project(object):
@@ -35,23 +33,29 @@ class Project(object):
         self.project_path = project_path
         self.project_name = project_get_name_from_path(project_path)
         self.schemas = SchemaCollection.load_from_data(
-            config_data.get("schemas", []))
+            config_data.get("schemas", [])
+        )
         self.config_data = config_data
 
         self.session = UserSession.load_from_path(
-            user_get_username(), project_path)
+            user_get_username(), project_path
+        )
         self.database = Database.load_from_project(self)
         self.lifecycle = ProjectLifecycle(self)
 
     def __repr__(self):
         """Repr."""
         import pprint
-        return pprint.pformat({
-            "project_path": self.project_path,
-            "project_name": self.project_name,
-            "schemas": self.schemas,
-            "config_data": self.config_data
-        }, indent=4)
+
+        return pprint.pformat(
+            {
+                "project_path": self.project_path,
+                "project_name": self.project_name,
+                "schemas": self.schemas,
+                "config_data": self.config_data,
+            },
+            indent=4,
+        )
 
     def get_command_parameters(self, command=None):
         """
@@ -59,7 +63,7 @@ class Project(object):
 
         :param command: Command (str?)
         """
-        data = self.config_data.get('commands', None)
+        data = self.config_data.get("commands", None)
         if not data:
             return {}
 

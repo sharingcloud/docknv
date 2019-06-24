@@ -23,9 +23,11 @@ class Volume(object):
         self.mode = mode
 
         self.is_absolute = self.host_path.startswith("/") or (
-            ":" in self.host_path)
+            ":" in self.host_path
+        )
         self.is_relative = not self.is_absolute and (
-            any(character in self.host_path for character in "/\\"))
+            any(character in self.host_path for character in "/\\")
+        )
         self.is_named = not self.is_absolute and not self.is_relative
 
     def get_namespaced_path(self, session, file_type, config_name):
@@ -41,8 +43,9 @@ class Volume(object):
         return os.path.normpath(
             "{0}/{1}".format(
                 volume_generate_namespaced_root(
-                    session, file_type, config_name),
-                self.host_path
+                    session, file_type, config_name
+                ),
+                self.host_path,
             )
         )
 

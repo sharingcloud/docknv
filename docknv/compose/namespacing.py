@@ -6,8 +6,9 @@ import copy
 from docknv.volume import Volume
 
 
-def composefile_apply_namespace(content, namespace=None,
-                                environment="default"):
+def composefile_apply_namespace(
+    content, namespace=None, environment="default"
+):
     """
     Apply namespace to compose content.
 
@@ -34,8 +35,7 @@ def composefile_apply_namespace(content, namespace=None,
         if volume in shared_volumes:
             continue
 
-        new_key = "{0}_{1}_{2}".format(
-            namespace, environment, volume)
+        new_key = "{0}_{1}_{2}".format(namespace, environment, volume)
         new_volumes[new_key] = volume
 
     # Cleanup shared mentions
@@ -48,11 +48,13 @@ def composefile_apply_namespace(content, namespace=None,
 
     # Service replacement
     return _composefile_apply_namespace_replacement(
-        output_content, namespace, environment, shared_volumes)
+        output_content, namespace, environment, shared_volumes
+    )
 
 
-def _composefile_apply_namespace_replacement(output_content, namespace,
-                                             environment, shared_volumes):
+def _composefile_apply_namespace_replacement(
+    output_content, namespace, environment, shared_volumes
+):
     # Service replacement
     new_keys_repl = OrderedDict()
     for key in output_content["services"]:
@@ -73,7 +75,8 @@ def _composefile_apply_namespace_replacement(output_content, namespace,
                         continue
 
                     volume_object.host_path = "{0}_{1}_{2}".format(
-                        namespace, environment, volume_object.host_path)
+                        namespace, environment, volume_object.host_path
+                    )
 
                     new_volumes[volume] = str(volume_object)
 
@@ -86,8 +89,9 @@ def _composefile_apply_namespace_replacement(output_content, namespace,
 
     # Apply new services/Remove old services
     for key in new_keys_repl:
-        output_content["services"][key] = \
-            output_content["services"][new_keys_repl[key]]
+        output_content["services"][key] = output_content["services"][
+            new_keys_repl[key]
+        ]
         del output_content["services"][new_keys_repl[key]]
 
     return output_content

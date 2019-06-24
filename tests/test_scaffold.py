@@ -6,14 +6,9 @@ import pytest
 
 from docknv.utils.ioutils import io_open
 
-from docknv.tests.utils import (
-    using_temporary_directory,
-    copy_sample,
-)
+from docknv.tests.utils import using_temporary_directory, copy_sample
 
-from docknv.tests.mocking import (
-    mock_input
-)
+from docknv.tests.mocking import mock_input
 
 
 from docknv.scaffolder import (
@@ -23,24 +18,15 @@ from docknv.scaffolder import (
     scaffold_ignore,
     scaffold_config,
     scaffold_project,
-
     IGNORE_FILE_CONTENT,
-    CONFIG_FILE_CONTENT
+    CONFIG_FILE_CONTENT,
 )
 
-from docknv.environment import (
-    env_get_yaml_path,
-    Environment,
-)
+from docknv.environment import env_get_yaml_path, Environment
 
-from docknv.image import (
-    image_check_dockerfile,
-    image_load_in_memory
-)
+from docknv.image import image_check_dockerfile, image_load_in_memory
 
-from docknv.project import (
-    MissingProject
-)
+from docknv.project import MissingProject
 
 
 def test_scaffold_environment():

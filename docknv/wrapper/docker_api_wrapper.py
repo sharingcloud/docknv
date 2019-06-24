@@ -13,7 +13,7 @@ def text_ellipse(s, maxlen):
     :param maxlen:  Max length (int)
     :rtype: Text (str)
     """
-    return s[:maxlen] + (s[maxlen:] and '..')
+    return s[:maxlen] + (s[maxlen:] and "..")
 
 
 @contextmanager
@@ -49,10 +49,14 @@ def docker_ps(client, project_name, namespace_name=None):
         if not container_name.startswith(container_filter):
             continue
 
-        status_lines.append({
-            "name": container_name,
-            "status": state["Status"],
-            "ports": " - ".join(list(attrs["NetworkSettings"]["Ports"].keys()))
-        })
+        status_lines.append(
+            {
+                "name": container_name,
+                "status": state["Status"],
+                "ports": " - ".join(
+                    list(attrs["NetworkSettings"]["Ports"].keys())
+                ),
+            }
+        )
 
     return status_lines

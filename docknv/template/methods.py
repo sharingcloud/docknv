@@ -22,7 +22,8 @@ def renderer_render_compose_template(compose_content, environment_data=None):
     output_content = copy.deepcopy(compose_content)
 
     template_result = renderer_render_template_inplace(
-        output_content, environment_data)
+        output_content, environment_data
+    )
 
     return yaml_ordered_load(template_result)
 
@@ -53,10 +54,12 @@ def renderer_render_template(template_path, config):
     :rtype: File output name (str)
     """
     config_path = config.session.get_paths().get_user_configuration_root(
-        config.name)
+        config.name
+    )
     environment_data = config.environment_data.data
     templates_path = os.path.join(
-        config.database.project_path, "data", "files")
+        config.database.project_path, "data", "files"
+    )
 
     real_template_path = os.path.join(templates_path, template_path)
 
@@ -69,7 +72,8 @@ def renderer_render_template(template_path, config):
     local_path = os.path.join(config_path, "data")
     tpl_output_path = os.path.join(local_path, "templates")
     destination_path = os.path.join(
-        tpl_output_path, os.path.dirname(template_path))
+        tpl_output_path, os.path.dirname(template_path)
+    )
 
     for path in (local_path, tpl_output_path, destination_path):
         if not os.path.exists(path):
@@ -81,7 +85,8 @@ def renderer_render_template(template_path, config):
 
     # Rendering template
     file_output = os.path.join(
-        destination_path, os.path.basename(template_path)[:-3])
+        destination_path, os.path.basename(template_path)[:-3]
+    )
     rendered_template = template.render(**environment_data)
 
     # Newline handle

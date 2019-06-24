@@ -9,8 +9,14 @@ from docknv.logger import Logger
 from docknv.version import __version__
 
 STANDARD_COMMANDS = (
-    "config", "service", "env", "schema",
-    "user", "scaffold", "custom", "machine"
+    "config",
+    "service",
+    "env",
+    "schema",
+    "user",
+    "scaffold",
+    "custom",
+    "machine",
 )
 
 
@@ -21,18 +27,25 @@ class Shell(object):
         """Init."""
         self.parser = argparse.ArgumentParser(
             description="Docker w/ environments (docknv v.{0})".format(
-                __version__))
+                __version__
+            )
+        )
         self.parser.add_argument(
-            '--version', action='version', version='%(prog)s ' + __version__)
+            "--version", action="version", version="%(prog)s " + __version__
+        )
         self.parser.add_argument(
-            '-v', '--verbose', action='store_true', help='verbose mode')
+            "-v", "--verbose", action="store_true", help="verbose mode"
+        )
         self.parser.add_argument(
-            '-p', '--project', help='project path', default='.')
+            "-p", "--project", help="project path", default="."
+        )
         self.parser.add_argument(
-            '--dry-run', help='dry run', action="store_true")
+            "--dry-run", help="dry run", action="store_true"
+        )
 
         self.subparsers = self.parser.add_subparsers(
-            dest="command", metavar="")
+            dest="command", metavar=""
+        )
         self.post_parsers = []
 
         self.init_parsers()
@@ -111,8 +124,7 @@ def handle_parsers(shell, args):
     # Absolute path
     args.project = os.path.abspath(args.project)
 
-    module = importlib.import_module(
-        "docknv.shell.handlers." + args.command)
+    module = importlib.import_module("docknv.shell.handlers." + args.command)
     exit_code = getattr(module, "_handle")(args)
 
     return exit_code

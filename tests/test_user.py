@@ -8,8 +8,7 @@ import pytest
 
 from docknv.tests.utils import using_temporary_directory
 
-from docknv.user import (
-    UserSession, ProjectLocked, user_get_username)
+from docknv.user import UserSession, ProjectLocked, user_get_username
 
 
 def test_real_ids():
@@ -17,7 +16,7 @@ def test_real_ids():
     os.environ.pop("DOCKNV_TEST_ID")
     os.environ.pop("DOCKNV_TEST_USERNAME")
 
-    assert user_get_username() != 'test'
+    assert user_get_username() != "test"
 
     os.environ["DOCKNV_TEST_ID"] = "1"
     os.environ["DOCKNV_TEST_USERNAME"] = "1"
@@ -32,16 +31,21 @@ def test_session_paths():
         session = UserSession.load_from_path(user_get_username(), project_path)
         paths = session.get_paths()
 
-        assert paths.get_project_root() == \
-            os.path.join(project_path, ".docknv")
-        assert paths.get_user_root() == \
-            os.path.join(project_path, ".docknv", "test")
-        assert paths.get_user_configuration_root("toto") == \
-            os.path.join(project_path, ".docknv", "test", "toto")
-        assert paths.get_file_path("tutu") == \
-            os.path.join(project_path, ".docknv", "test", "tutu")
-        assert paths.get_file_path("tutu", "toto") == \
-            os.path.join(project_path, ".docknv", "test", "toto", "tutu")
+        assert paths.get_project_root() == os.path.join(
+            project_path, ".docknv"
+        )
+        assert paths.get_user_root() == os.path.join(
+            project_path, ".docknv", "test"
+        )
+        assert paths.get_user_configuration_root("toto") == os.path.join(
+            project_path, ".docknv", "test", "toto"
+        )
+        assert paths.get_file_path("tutu") == os.path.join(
+            project_path, ".docknv", "test", "tutu"
+        )
+        assert paths.get_file_path("tutu", "toto") == os.path.join(
+            project_path, ".docknv", "test", "toto", "tutu"
+        )
 
 
 def test_session_config():
@@ -70,8 +74,9 @@ def test_session_existing():
         project_path = tempdir
         os.environ["DOCKNV_USER_PATH"] = project_path
 
-        session_file = os.path.join(project_path, ".docknv", "test",
-                                    "docknv.yml")
+        session_file = os.path.join(
+            project_path, ".docknv", "test", "docknv.yml"
+        )
         os.makedirs(os.path.dirname(session_file))
 
         with open(session_file, mode="w") as handle:

@@ -1,7 +1,10 @@
 """YAML utils tests."""
 
 from docknv.utils.serialization import (
-    yaml_ordered_load, yaml_ordered_dump, yaml_merge)
+    yaml_ordered_load,
+    yaml_ordered_dump,
+    yaml_merge,
+)
 
 
 def test_load():
@@ -29,13 +32,9 @@ aaa:
 def test_dump():
     """Test ordered_dump function."""
     content = {
-        "one": {
-            "two": ["a", "b", "c"],
-            "three": 1,
-            "four": ["a", "b", "c"]
-        },
+        "one": {"two": ["a", "b", "c"], "three": 1, "four": ["a", "b", "c"]},
         "two": ["pouet"],
-        "aaa": None
+        "aaa": None,
     }
 
     dump = yaml_ordered_dump(content)
@@ -46,24 +45,11 @@ def test_merge():
     """Test merge function."""
     content1 = {
         "one": ["a"],
-        "two": {
-            "a": 1
-        },
-        "three": {
-            "a": ["A"],
-            "b": {
-                "c": None
-            }
-        }
+        "two": {"a": 1},
+        "three": {"a": ["A"], "b": {"c": None}},
     }
 
-    content2 = {
-        "one": ["b"],
-        "two": {
-            "b": 2
-        },
-        "four": ["4"]
-    }
+    content2 = {"one": ["b"], "two": {"b": 2}, "four": ["4"]}
 
     merge = yaml_merge((content1, content2))
 

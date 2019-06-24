@@ -134,8 +134,9 @@ class UserPaths(object):
         if not config_name:
             return os.path.join(self.get_user_root(), path)
         else:
-            return os.path.join(self.get_user_configuration_root(config_name),
-                                path)
+            return os.path.join(
+                self.get_user_configuration_root(config_name), path
+            )
 
 
 class UserSession(object):
@@ -145,9 +146,7 @@ class UserSession(object):
         """Init."""
         self.username = username
         self.project_path = project_path
-        self.session_data = {
-            "current": None
-        }
+        self.session_data = {"current": None}
 
         self.lock = UserLock(username, project_path)
         self.paths = UserPaths(username, project_path)
@@ -196,9 +195,7 @@ class UserSession(object):
 
         session_file = session.get_paths().get_user_session_file_path()
         if not os.path.exists(session_file):
-            session.session_data = {
-                "current": None
-            }
+            session.session_data = {"current": None}
         else:
             with io_open(session_file, mode="r") as handle:
                 session.session_data = yaml_ordered_load(handle.read())
@@ -219,19 +216,25 @@ class UserSession(object):
         :param force:       Force (bool) (default: False)
         """
         if config_name:
-            user_config_root = self.get_paths()\
-                                   .get_user_configuration_root(config_name)
+            user_config_root = self.get_paths().get_user_configuration_root(
+                config_name
+            )
         else:
-            user_config_root = self.get_paths()\
-                                   .get_user_root()
+            user_config_root = self.get_paths().get_user_root()
 
         if not os.path.exists(user_config_root):
-            Logger.info(f"user configuration folder {user_config_root} "
-                        f"does not exist")
+            Logger.info(
+                f"user configuration folder {user_config_root} "
+                f"does not exist"
+            )
         else:
-            if prompt_yes_no(f"/!\\ are you sure you want to remove the "
-                             f"user folder {user_config_root}?",
-                             force):
+            if prompt_yes_no(
+                f"/!\\ are you sure you want to remove the "
+                f"user folder {user_config_root}?",
+                force,
+            ):
                 shutil.rmtree(user_config_root)
-                Logger.info(f"user configuration folder `{user_config_root}` "
-                            f"removed")
+                Logger.info(
+                    f"user configuration folder `{user_config_root}` "
+                    f"removed"
+                )

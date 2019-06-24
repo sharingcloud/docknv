@@ -83,8 +83,9 @@ class SchemaCollection(object):
         """
         return schema in self.schemas
 
-    def resolve_schemas(self, schemas, services=None, volumes=None,
-                        networks=None):
+    def resolve_schemas(
+        self, schemas, services=None, volumes=None, networks=None
+    ):
         """
         Resolve schemas.
 
@@ -140,7 +141,8 @@ class SchemaCollection(object):
                 key,
                 services=schema_data.get("services", []),
                 volumes=schema_data.get("volumes", []),
-                networks=schema_data.get("networks", []))
+                networks=schema_data.get("networks", []),
+            )
 
         return cls(loaded_schemas)
 

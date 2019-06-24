@@ -8,10 +8,7 @@ from docknv.database import MissingActiveConfiguration
 from docknv.project import Project
 
 from docknv.utils.ioutils import io_open
-from docknv.tests.utils import (
-    using_temporary_directory,
-    copy_sample
-)
+from docknv.tests.utils import using_temporary_directory, copy_sample
 
 CONFIG_DATA = """\
 config:
@@ -82,8 +79,8 @@ def test_lifecycle():
         lifecycle.config.update(services=[], dry_run=True)
         lifecycle.config.update(volumes=[], dry_run=True)
         lifecycle.config.update(networks=[], dry_run=True)
-        lifecycle.config.update(namespace='', dry_run=True)
-        lifecycle.config.update(namespace='hello', dry_run=True)
+        lifecycle.config.update(namespace="", dry_run=True)
+        lifecycle.config.update(namespace="hello", dry_run=True)
 
         # Create config
         lifecycle.config.create(name="tutu", services=["portainer"])

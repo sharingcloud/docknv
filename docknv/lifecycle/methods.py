@@ -52,8 +52,9 @@ def lifecycle_get_service_name(project, service_name):
     return service_name
 
 
-def lifecycle_compose_command_on_configs(project, configs, args,
-                                         dry_run=False):
+def lifecycle_compose_command_on_configs(
+    project, configs, args, dry_run=False
+):
     """
     Execute a compose command on configs.
 
@@ -96,8 +97,9 @@ def lifecycle_get_container_from_service(project, service):
     return f"{name}_{service}_1"
 
 
-def lifecycle_docker_command_on_service(project, service, args, add_name=True,
-                                        dry_run=False):
+def lifecycle_docker_command_on_service(
+    project, service, args, add_name=True, dry_run=False
+):
     """
     Execute Docker command on service.
 
@@ -108,8 +110,7 @@ def lifecycle_docker_command_on_service(project, service, args, add_name=True,
     :param dry_run: Dry run? (bool) (default: False)
     """
     # Get container from service
-    container = lifecycle_get_container_from_service(
-        project, service)
+    container = lifecycle_get_container_from_service(project, service)
 
     args = [x for x in args]
     if add_name:

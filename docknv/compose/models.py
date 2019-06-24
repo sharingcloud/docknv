@@ -4,7 +4,9 @@ import os
 
 from docknv.utils.ioutils import io_open
 from docknv.utils.serialization import (
-    yaml_merge, yaml_ordered_load, yaml_ordered_dump
+    yaml_merge,
+    yaml_ordered_load,
+    yaml_ordered_dump,
 )
 
 from docknv.template import renderer_render_compose_template
@@ -13,7 +15,8 @@ from .methods import composefile_get_composefile_paths
 from .filtering import composefile_filter
 from .namespacing import composefile_apply_namespace
 from .resolution import (
-    composefile_resolve_services, composefile_resolve_volumes
+    composefile_resolve_services,
+    composefile_resolve_volumes,
 )
 
 from .exceptions import MissingComposefile
@@ -55,7 +58,8 @@ class ComposeDefinition(object):
             with io_open(path, mode="r") as handle:
                 content = yaml_ordered_load(handle.read())
                 composefile_content = yaml_merge(
-                    [composefile_content, content])
+                    [composefile_content, content]
+                )
 
         return cls(composefile_content)
 
@@ -74,11 +78,13 @@ class ComposeDefinition(object):
         content = self.content
         content = composefile_filter(content, config)
         content = renderer_render_compose_template(
-            content, config.environment_data.data)
+            content, config.environment_data.data
+        )
         content = composefile_resolve_services(content)
         content = composefile_resolve_volumes(content, config)
         content = composefile_apply_namespace(
-            content, config.namespace, config.environment)
+            content, config.namespace, config.environment
+        )
 
         self.content = content
 

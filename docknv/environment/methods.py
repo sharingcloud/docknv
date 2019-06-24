@@ -9,8 +9,10 @@ from .exceptions import UnresolvableEnvironment
 
 from docknv.utils.ioutils import io_open
 from docknv.utils.serialization import yaml_ordered_load, yaml_ordered_dump
+from docknv.utils.strutils import parse_str
 
-VARIABLE_DETECTION_RGX = re.compile(r'\${([a-zA-Z0-9_-]+)}')
+VARIABLE_DETECTION_RGX = re.compile(r"\${([!a-zA-Z0-9_-]+)}")
+KNOWN_OPERATORS = ["!"]
 
 
 def env_yaml_resolve_variables(environment):
@@ -29,6 +31,11 @@ def env_yaml_resolve_variables(environment):
     for (key, _depth) in depth_graph:
         value = resolved_env[key]
         resolved_env[key] = env_yaml_deep_handle(key, value, known_values)
+        # Handle int values
+        if isinstance(resolved_env[key], str):
+            val = parse_str(resolved_env[key])
+            if val is not None:
+                resolved_env[key] = val
     return resolved_env
 
 
@@ -85,12 +92,86 @@ def env_yaml_deep_handle_str(string_value, known_values):
     :param known_values:    Known values
     :rtype: Handled string (str)
     """
+
     def _replace(match):
         var_name = match.group(1)
+        operator = None
+
+        # Extract operator
+        var_name, operator = env_extract_operator(var_name)
+
         if var_name in known_values:
-            return str(known_values[var_name])
+            value = known_values[var_name]
+
+            # Apply operator
+            value = env_apply_operator(operator, value)
+            return str(value)
 
     return re.sub(VARIABLE_DETECTION_RGX, _replace, string_value)
+
+
+def env_extract_operator(var_name):
+    """Extract operator.
+
+    Args:
+        var_name (str): Variable name
+
+    Returns:
+        (New variable name, Extracted operator) (Tuple<str, str>)
+    """
+    for operator in KNOWN_OPERATORS:
+        if var_name.startswith(operator):
+            operator_len = len(operator)
+            new_var_name = var_name[operator_len:]
+            return (new_var_name, operator)
+
+    # No operator found
+    return (var_name, None)
+
+
+def env_apply_operator(operator, value):
+    """Apply operator.
+
+    Args:
+        operator (str): Operator
+        value (Any): Value
+
+    Returns:
+        Value with applied operator.
+    """
+    # Negation operator
+    if operator == "!":
+        if isinstance(value, str):
+            # Check for bool
+            try:
+                bool_value = str(value).lower()
+                if bool_value == "true":
+                    return False
+                elif bool_value == "false":
+                    return True
+            except (ValueError, TypeError):
+                pass
+
+            # Check for int
+            try:
+                value = int(value)
+                if value == 0:
+                    return 1
+                else:
+                    return 0
+            except ValueError:
+                pass
+
+        elif isinstance(value, bool):
+            return not value
+
+        elif isinstance(value, int):
+            if value == 0:
+                return 1
+            else:
+                return 0
+
+    return value
 
 
 def env_yaml_generate_depth_graph(environment):
@@ -129,7 +210,14 @@ def env_yaml_get_dependencies_str(str_value):
     :param str_value:   String value
     :rtype: Dependencies
     """
-    return re.findall(VARIABLE_DETECTION_RGX, str_value)
+    found_vars = re.findall(VARIABLE_DETECTION_RGX, str_value)
+    output_vars = []
+    for v in found_vars:
+        if v.startswith("!"):
+            output_vars.append(v[1:])
+        else:
+            output_vars.append(v)
+    return output_vars
 
 
 def env_yaml_get_dependencies(value):
@@ -139,6 +227,7 @@ def env_yaml_get_dependencies(value):
     :param value: Value
     :rtype: Dependencies
     """
+
     def add_if_ne(ks, v):
         for k in ks:
             if k not in v:

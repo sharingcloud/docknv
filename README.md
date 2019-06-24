@@ -21,10 +21,10 @@ it online on my GitHub Pages: [docknv](https://srynetix.github.io/docknv/)
 
 ## Tests
 
-To execute test, install required libs:
+To execute tests, install `tox`:
 
 ```bash
-pip install -r requirements-dev.txt
+pip install tox
 ```
 
 Then, execute `tox`.

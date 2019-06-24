@@ -2,8 +2,7 @@
 
 import pytest
 
-from docknv.schema import (
-    SchemaCollection, MissingSchema, MalformedSchema)
+from docknv.schema import SchemaCollection, MissingSchema, MalformedSchema
 
 from docknv.utils.serialization import yaml_ordered_load
 

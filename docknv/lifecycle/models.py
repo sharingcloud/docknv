@@ -33,8 +33,8 @@ class ServiceLifecycle(object):
         """
         service_name = lifecycle_get_service_name(self.project, service_name)
         lifecycle_compose_command_on_current_config(
-            self.project, ["start", service_name],
-            dry_run=dry_run)
+            self.project, ["start", service_name], dry_run=dry_run
+        )
 
     def stop(self, service_name, dry_run=False):
         """
@@ -45,8 +45,8 @@ class ServiceLifecycle(object):
         """
         service_name = lifecycle_get_service_name(self.project, service_name)
         lifecycle_compose_command_on_current_config(
-            self.project, ["stop", service_name],
-            dry_run=dry_run)
+            self.project, ["stop", service_name], dry_run=dry_run
+        )
 
     def restart(self, service_name, force=False, dry_run=False):
         """
@@ -59,20 +59,22 @@ class ServiceLifecycle(object):
         service_name = lifecycle_get_service_name(self.project, service_name)
         if force:
             lifecycle_compose_command_on_current_config(
-                self.project, ["stop", service_name],
-                dry_run=dry_run)
+                self.project, ["stop", service_name], dry_run=dry_run
+            )
             lifecycle_compose_command_on_current_config(
-                self.project, ["rm", "-f", service_name],
-                dry_run=dry_run)
+                self.project, ["rm", "-f", service_name], dry_run=dry_run
+            )
             lifecycle_compose_command_on_current_config(
-                self.project, ["up", "-d", service_name],
-                dry_run=dry_run)
+                self.project, ["up", "-d", service_name], dry_run=dry_run
+            )
         else:
             lifecycle_compose_command_on_current_config(
-                self.project, ["restart", service_name],
-                dry_run=dry_run)
+                self.project, ["restart", service_name], dry_run=dry_run
+            )
 
-    def run(self, service_name, cmd, daemon=False, env_vars=None, dry_run=False):
+    def run(
+        self, service_name, cmd, daemon=False, env_vars=None, dry_run=False
+    ):
         """
         Create container with command.
 
@@ -92,8 +94,10 @@ class ServiceLifecycle(object):
             more_args += ["-e", f"{key}={value}"]
 
         lifecycle_compose_command_on_current_config(
-            self.project, ["run", *more_args, service_name, *shlex.split(cmd)],
-            dry_run=dry_run)
+            self.project,
+            ["run", *more_args, service_name, *shlex.split(cmd)],
+            dry_run=dry_run,
+        )
 
     def execute(self, service_name, cmds=None, no_tty=False, dry_run=False):
         """
@@ -113,8 +117,10 @@ class ServiceLifecycle(object):
 
         for cmd in cmds:
             lifecycle_compose_command_on_current_config(
-                self.project, ["exec", *args, service_name, *shlex.split(cmd)],
-                dry_run=dry_run)
+                self.project,
+                ["exec", *args, service_name, *shlex.split(cmd)],
+                dry_run=dry_run,
+            )
 
     def shell(self, service_name, shell="/bin/bash", dry_run=False):
         """
@@ -145,8 +151,8 @@ class ServiceLifecycle(object):
 
         try:
             lifecycle_compose_command_on_current_config(
-                self.project, ["logs", *args, service_name],
-                dry_run=dry_run)
+                self.project, ["logs", *args, service_name], dry_run=dry_run
+            )
         except StoppedCommandExecution as exc:
             print(exc)
 
@@ -159,11 +165,12 @@ class ServiceLifecycle(object):
         """
         service_name = lifecycle_get_service_name(self.project, service_name)
         lifecycle_compose_command_on_current_config(
-            self.project, ["attach", service_name],
-            dry_run=dry_run)
+            self.project, ["attach", service_name], dry_run=dry_run
+        )
 
-    def build(self, service_name, build_args=None, no_cache=False,
-              dry_run=False):
+    def build(
+        self, service_name, build_args=None, no_cache=False, dry_run=False
+    ):
         """
         Build a service.
 
@@ -183,8 +190,8 @@ class ServiceLifecycle(object):
             args.append("--no-cache")
 
         lifecycle_compose_command_on_current_config(
-            self.project, ["build", *args, service_name],
-            dry_run=dry_run)
+            self.project, ["build", *args, service_name], dry_run=dry_run
+        )
 
     def push(self, service_name, host_path, container_path, dry_run=False):
         """
@@ -199,12 +206,16 @@ class ServiceLifecycle(object):
 
         # Get container from service
         container = lifecycle_get_container_from_service(
-            self.project, service_name)
+            self.project, service_name
+        )
 
         lifecycle_docker_command_on_service(
-            self.project, service_name, [
-                "cp", host_path, f"{container}:{container_path}"],
-            add_name=False, dry_run=dry_run)
+            self.project,
+            service_name,
+            ["cp", host_path, f"{container}:{container_path}"],
+            add_name=False,
+            dry_run=dry_run,
+        )
 
     def pull(self, service_name, container_path, host_path, dry_run=False):
         """
@@ -219,12 +230,16 @@ class ServiceLifecycle(object):
 
         # Get container from service
         container = lifecycle_get_container_from_service(
-            self.project, service_name)
+            self.project, service_name
+        )
 
         lifecycle_docker_command_on_service(
-            self.project, service_name, [
-                "cp", f"{container}:{container_path}", host_path],
-            add_name=False, dry_run=dry_run)
+            self.project,
+            service_name,
+            ["cp", f"{container}:{container_path}", host_path],
+            add_name=False,
+            dry_run=dry_run,
+        )
 
 
 class ConfigLifecycle(object):
@@ -242,7 +257,8 @@ class ConfigLifecycle(object):
         :param dry_run:         Dry run? (bool) (default: False)
         """
         lifecycle_compose_command_on_configs(
-            self.project, config_names, ["up", "-d"], dry_run=dry_run)
+            self.project, config_names, ["up", "-d"], dry_run=dry_run
+        )
 
     def stop(self, config_names=None, dry_run=False):
         """
@@ -252,9 +268,11 @@ class ConfigLifecycle(object):
         :param dry_run:         Dry run? (bool) (default: False)
         """
         lifecycle_compose_command_on_configs(
-            self.project, config_names, ["stop"], dry_run=dry_run)
+            self.project, config_names, ["stop"], dry_run=dry_run
+        )
         lifecycle_compose_command_on_configs(
-            self.project, config_names, ["rm", "-f"], dry_run=dry_run)
+            self.project, config_names, ["rm", "-f"], dry_run=dry_run
+        )
 
     def restart(self, config_names=None, force=False, dry_run=False):
         """
@@ -266,17 +284,29 @@ class ConfigLifecycle(object):
         """
         if force:
             lifecycle_compose_command_on_configs(
-                self.project, config_names, ["stop"], dry_run=dry_run)
+                self.project, config_names, ["stop"], dry_run=dry_run
+            )
             lifecycle_compose_command_on_configs(
-                self.project, config_names, ["rm", "-f"], dry_run=dry_run)
+                self.project, config_names, ["rm", "-f"], dry_run=dry_run
+            )
             lifecycle_compose_command_on_configs(
-                self.project, config_names, ["up", "-d"], dry_run=dry_run)
+                self.project, config_names, ["up", "-d"], dry_run=dry_run
+            )
         else:
             lifecycle_compose_command_on_configs(
-                self.project, config_names, ["restart"], dry_run=dry_run)
+                self.project, config_names, ["restart"], dry_run=dry_run
+            )
 
-    def create(self, name, environment="default", schemas=None,
-               services=None, volumes=None, networks=None, namespace=None):
+    def create(
+        self,
+        name,
+        environment="default",
+        schemas=None,
+        services=None,
+        volumes=None,
+        networks=None,
+        namespace=None,
+    ):
         """
         Create configuration.
 
@@ -293,21 +323,38 @@ class ConfigLifecycle(object):
         # Resolve schemas
         schemas = schemas or []
         services, volumes, networks = self.project.schemas.resolve_schemas(
-            schemas, services, volumes, networks)
+            schemas, services, volumes, networks
+        )
 
         # Create configuration
         config = Configuration(
-            database, name, user_get_username(), environment, services,
-            volumes, networks, namespace)
+            database,
+            name,
+            user_get_username(),
+            environment,
+            services,
+            volumes,
+            networks,
+            namespace,
+        )
         database.create_configuration(config)
         database.save()
 
         self.project.session.set_current_configuration(name)
         self.project.session.save()
 
-    def update(self, name=None, environment=None, schemas=None, services=None,
-               volumes=None, networks=None, namespace=None, restart=False,
-               dry_run=False):
+    def update(
+        self,
+        name=None,
+        environment=None,
+        schemas=None,
+        services=None,
+        volumes=None,
+        networks=None,
+        namespace=None,
+        restart=False,
+        dry_run=False,
+    ):
         """
         Update configurations.
 
@@ -341,11 +388,12 @@ class ConfigLifecycle(object):
         if networks is not None:
             new_networks = copy.deepcopy(networks)
         if schemas is not None:
-            new_services, new_volumes, new_networks = \
-                self.project.schemas.resolve_schemas(
-                    schemas, new_services, new_volumes, new_networks)
+            rs = self.project.schemas.resolve_schemas
+            new_services, new_volumes, new_networks = rs(
+                schemas, new_services, new_volumes, new_networks
+            )
         if namespace is not None:
-            if namespace == '':
+            if namespace == "":
                 config.namespace = None
             else:
                 config.namespace = namespace
@@ -363,8 +411,7 @@ class ConfigLifecycle(object):
         if restart:
             self.start(name, dry_run=dry_run)
 
-    def build(self, name=None, build_args=None, no_cache=False,
-              dry_run=False):
+    def build(self, name=None, build_args=None, no_cache=False, dry_run=False):
         """
         Build configurations.
 
@@ -385,8 +432,8 @@ class ConfigLifecycle(object):
             args.append("--no-cache")
 
         lifecycle_compose_command_on_configs(
-            self.project, name, ["build", *args],
-            dry_run=dry_run)
+            self.project, name, ["build", *args], dry_run=dry_run
+        )
 
     def ps(self, config_names=None, dry_run=False):
         """
@@ -396,8 +443,8 @@ class ConfigLifecycle(object):
         :param dry_run:         Dry run? (bool) (default: False)
         """
         lifecycle_compose_command_on_configs(
-            self.project, config_names, ["ps"],
-            dry_run=dry_run)
+            self.project, config_names, ["ps"], dry_run=dry_run
+        )
 
 
 class ProjectLifecycle(object):

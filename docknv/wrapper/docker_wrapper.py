@@ -15,8 +15,9 @@ def exec_docker(project_path, args, dry_run=False):
     return exec_process(cmd, cwd=project_path, dry_run=dry_run)
 
 
-def exec_compose(project_path, composefile_path, args, pretty=False,
-                 dry_run=False):
+def exec_compose(
+    project_path, composefile_path, args, pretty=False, dry_run=False
+):
     """
     Execute a Docker Compose command.
 
@@ -27,13 +28,18 @@ def exec_compose(project_path, composefile_path, args, pretty=False,
     :param dry_run:          Dry run? (bool) (default: False)
     """
     cmd = [
-        "docker-compose", "-f", composefile_path, "--project-directory",
-        project_path]
+        "docker-compose",
+        "-f",
+        composefile_path,
+        "--project-directory",
+        project_path,
+    ]
     cmd += [str(a) for a in args if a != ""]
 
     if pretty:
         exec_process_with_output(
-            cmd, project_path, _pretty_handler, dry_run=dry_run)
+            cmd, project_path, _pretty_handler, dry_run=dry_run
+        )
 
     return exec_process(cmd, cwd=project_path, dry_run=dry_run)
 

@@ -13,9 +13,7 @@ def database_get_config_path(project_path):
     :param project_path:    Project path
     :rtype: Configuration path
     """
-    return os.path.join(
-        project_path, ".docknv"
-    )
+    return os.path.join(project_path, ".docknv")
 
 
 def database_get_database_path(project_path):

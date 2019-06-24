@@ -10,9 +10,7 @@ def composefile_get_composefile_paths(project_path):
     :param project_path:    Project path (str)
     :rtype: Composefile path list
     """
-    from docknv.project.exceptions import (
-        MalformedProject
-    )
+    from docknv.project.exceptions import MalformedProject
 
     composefiles_path = os.path.join(project_path, "composefiles")
     if not os.path.isdir(composefiles_path):

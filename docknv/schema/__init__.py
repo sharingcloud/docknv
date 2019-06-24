@@ -1,3 +1,3 @@
 """Schema module."""
 
-from .models import *   # noqa
+from .models import *  # noqa

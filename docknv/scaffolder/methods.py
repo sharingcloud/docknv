@@ -4,10 +4,7 @@ import os
 
 from docknv.project import MissingProject
 
-from docknv.environment import (
-    env_get_yaml_path,
-    EnvironmentCollection
-)
+from docknv.environment import env_get_yaml_path, EnvironmentCollection
 
 from docknv.utils.prompt import prompt_yes_no
 from docknv.utils.serialization import yaml_ordered_dump
@@ -43,7 +40,8 @@ def scaffold_project(project_path, force=False):
         choice = prompt_yes_no(
             "/!\\ WARNING: The project path `{0}` already exists. "
             "Overwrite all ?".format(project_path),
-            force=force)
+            force=force,
+        )
 
         if not choice:
             return
@@ -84,8 +82,9 @@ def scaffold_config(project_path):
         handle.write(CONFIG_FILE_CONTENT)
 
 
-def scaffold_environment(project_path, env_name, env_content=None,
-                         force=False):
+def scaffold_environment(
+    project_path, env_name, env_content=None, force=False
+):
     """
     Scaffold an environment.
 
@@ -100,7 +99,8 @@ def scaffold_environment(project_path, env_name, env_content=None,
         choice = prompt_yes_no(
             "/!\\ WARNING: The environment file `{0}` already exists. "
             "Overwrite ?".format(env_name),
-            force=force)
+            force=force,
+        )
 
         if not choice:
             return
@@ -116,8 +116,9 @@ def scaffold_environment(project_path, env_name, env_content=None,
             handle.write(yaml_ordered_dump({"environment": env_content}))
 
 
-def scaffold_environment_copy(project_path, env_name_source, env_name_dest,
-                              force=False):
+def scaffold_environment_copy(
+    project_path, env_name_source, env_name_dest, force=False
+):
     """
     Copy an environment.
 
@@ -142,7 +143,8 @@ def scaffold_ignore(project_path, force=False):
     if os.path.exists(ignore_file):
         choice = prompt_yes_no(
             "/!\\ WARNING: The .gitignore file already exists. Overwrite ?",
-            force=force)
+            force=force,
+        )
 
         if not choice:
             return
@@ -154,8 +156,9 @@ def scaffold_ignore(project_path, force=False):
         handle.write(IGNORE_FILE_CONTENT)
 
 
-def scaffold_image(project_path, image_name, image_url, image_tag="latest",
-                   force=False):
+def scaffold_image(
+    project_path, image_name, image_url, image_tag="latest", force=False
+):
     """
     Scaffold an image Dockerfile.
 
@@ -180,7 +183,8 @@ def scaffold_image(project_path, image_name, image_url, image_tag="latest",
         choice = prompt_yes_no(
             "/!\\ WARNING: The Dockerfile `{0}` already exists. "
             "Overwrite ?".format(dockerfile_path),
-            force=force)
+            force=force,
+        )
 
         if not choice:
             return

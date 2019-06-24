@@ -7,8 +7,19 @@ import shutil
 # Update docknv modules .rst
 print("Updating modules...")
 subprocess.call(
-    ["sphinx-apidoc", "-f", "-T", "-M", "-d", "4", "--ext-viewcode", "-o", ".",
-     "../docknv"])
+    [
+        "sphinx-apidoc",
+        "-f",
+        "-T",
+        "-M",
+        "-d",
+        "4",
+        "--ext-viewcode",
+        "-o",
+        ".",
+        "../docknv",
+    ]
+)
 
 # Clean build
 build_path = os.path.join("_build", "html")

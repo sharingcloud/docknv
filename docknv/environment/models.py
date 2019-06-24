@@ -7,14 +7,9 @@ import os
 from docknv.logger import Logger, Fore
 
 from docknv.utils.serialization import yaml_ordered_load
-from docknv.utils.ioutils import (
-    io_open
-)
+from docknv.utils.ioutils import io_open
 
-from .methods import (
-    env_get_yaml_path,
-    env_yaml_resolve_variables
-)
+from .methods import env_get_yaml_path, env_yaml_resolve_variables
 
 from .exceptions import (
     MissingEnvironment,
@@ -56,11 +51,15 @@ class EnvironmentCollection(object):
             raise MalformedProject("missing envs folder")
 
         return cls(
-            project_path, {
+            project_path,
+            {
                 f[:-ENV_OFFSET]: Environment.load_from_project(
-                    project_path, f[:-ENV_OFFSET])
+                    project_path, f[:-ENV_OFFSET]
+                )
                 for f in os.listdir(env_path)
-                if f.endswith(".env.yml")})
+                if f.endswith(".env.yml")
+            },
+        )
 
     def get_environment(self, name):
         """
@@ -114,7 +113,8 @@ class EnvironmentCollection(object):
             )
 
         self.environments[target_name] = Environment.load_from_project(
-            self.project_path, target_name)
+            self.project_path, target_name
+        )
         return self.environments[target_name]
 
     def show_environments(self):

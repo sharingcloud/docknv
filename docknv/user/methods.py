@@ -13,6 +13,7 @@ def user_get_username():
         return "test"
 
     import getpass
+
     return getpass.getuser()
 
 
@@ -23,4 +24,5 @@ def user_get_username_from_id(user_id):
     :param user_id: User ID (int)
     """
     import pwd
+
     return pwd.getpwuid(user_id)[0]

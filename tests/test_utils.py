@@ -26,24 +26,21 @@ def test_create_path_tree():
         path_to_create_local = os.path.join(tempdir, "toto/tutu/titi")
         create_path_tree(path_to_create_local)
 
-        assert os.path.isdir(
-            os.path.join(tempdir, "toto")
-        )
+        assert os.path.isdir(os.path.join(tempdir, "toto"))
 
-        assert os.path.isdir(
-            os.path.join(tempdir, "toto", "tutu")
-        )
+        assert os.path.isdir(os.path.join(tempdir, "toto", "tutu"))
 
-        assert os.path.isdir(
-            os.path.join(tempdir, "toto", "tutu", "titi")
-        )
+        assert os.path.isdir(os.path.join(tempdir, "toto", "tutu", "titi"))
 
 
 def test_get_lower_basename():
     """Test get_lower_basename."""
     import platform
-    if platform.system() == 'Windows':
-        assert get_lower_basename("C:\\Users\\Pouet\\MyFolderName") == \
-            "myfoldername"
+
+    if platform.system() == "Windows":
+        assert (
+            get_lower_basename("C:\\Users\\Pouet\\MyFolderName")
+            == "myfoldername"
+        )
     else:
         assert get_lower_basename("/hello/Folder/FolderName") == "foldername"

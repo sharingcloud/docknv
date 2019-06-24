@@ -1,8 +1,6 @@
 """Env sub commands."""
 
-from docknv.environment import (
-    EnvironmentCollection,
-)
+from docknv.environment import EnvironmentCollection
 
 from docknv.shell.common import exec_handler
 from docknv.utils.ioutils import get_editor_executable
@@ -21,8 +19,12 @@ def _init(subparsers):
     edit_cmd = subs.add_parser("edit", help="edit an environment file")
     edit_cmd.add_argument("env_name", help="environment file name")
     edit_cmd.add_argument(
-        "-e", "--editor", nargs="?", default=None,
-        help="editor to use (default: auto-detect)")
+        "-e",
+        "--editor",
+        nargs="?",
+        default=None,
+        help="editor to use (default: auto-detect)",
+    )
 
 
 def _handle(args):
