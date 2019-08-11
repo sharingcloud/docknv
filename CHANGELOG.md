@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.3
+
+- Support config hot-swap in service and custom commands
+
 ## 4.2.1
 
 - Handle empty ports in composefiles.

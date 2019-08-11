@@ -238,7 +238,7 @@ def _get_files_to_copy(data_path, output_path):
         files_to_copy.append((data_path, output_path))
     else:
         base_root = data_path
-        for root, folders, filenames in os.walk(data_path):
+        for root, _folders, filenames in os.walk(data_path):
             sub_part = root.replace(base_root, "")
             if len(sub_part) > 0:
                 sub_part = sub_part[1:]

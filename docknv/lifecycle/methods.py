@@ -39,14 +39,15 @@ def lifecycle_get_config(project, config_name=None):
     return lifecycle_get_configs(project, config_name)[0]
 
 
-def lifecycle_get_service_name(project, service_name):
+def lifecycle_get_service_name(project, service_name, config_name=None):
     """
     Get service name from project, applying namespace if necessary.
 
     :param project:         Project
     :param service_name:    Service name (str)
+    :param config_name:     Configuration name (str)
     """
-    config = lifecycle_get_config(project)
+    config = lifecycle_get_config(project, config_name)
     if config.namespace:
         return f"{config.namespace}_{service_name}"
     return service_name

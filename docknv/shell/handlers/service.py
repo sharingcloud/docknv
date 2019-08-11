@@ -7,6 +7,9 @@ def _init(subparsers):
     cmd = subparsers.add_parser(
         "service", help="manage one service at a time (service mode)"
     )
+    cmd.add_argument(
+        "-c", "--config", help="configuration name (swap)", default=None
+    )
     subs = cmd.add_subparsers(dest="service_cmd", metavar="")
 
     # Start
@@ -88,64 +91,97 @@ def _handle(args):
 def _handle_build(args):
     project = load_project(args.project)
     project.lifecycle.service.build(
-        args.service, args.build_args, args.no_cache, dry_run=args.dry_run
+        args.service,
+        config_name=args.config,
+        build_args=args.build_args,
+        no_cache=args.no_cache,
+        dry_run=args.dry_run,
     )
 
 
 def _handle_run(args):
     project = load_project(args.project)
     project.lifecycle.service.run(
-        args.service, args.run_command, args.daemon, dry_run=args.dry_run
+        args.service,
+        args.run_command,
+        daemon=args.daemon,
+        config_name=args.config,
+        dry_run=args.dry_run,
     )
 
 
 def _handle_exec(args):
     project = load_project(args.project)
     project.lifecycle.service.execute(
-        args.service, [args.run_command], dry_run=args.dry_run
+        args.service,
+        cmds=[args.run_command],
+        config_name=args.config,
+        dry_run=args.dry_run,
     )
 
 
 def _handle_shell(args):
     project = load_project(args.project)
     project.lifecycle.service.shell(
-        args.service, args.shell, dry_run=args.dry_run
+        args.service,
+        config_name=args.config,
+        shell=args.shell,
+        dry_run=args.dry_run,
     )
 
 
 def _handle_restart(args):
     project = load_project(args.project)
     project.lifecycle.service.restart(
-        args.service, force=args.force, dry_run=args.dry_run
+        args.service,
+        config_name=args.config,
+        force=args.force,
+        dry_run=args.dry_run,
     )
 
 
 def _handle_stop(args):
     project = load_project(args.project)
-    project.lifecycle.service.stop(args.service, dry_run=args.dry_run)
+    project.lifecycle.service.stop(
+        args.service, config_name=args.config, dry_run=args.dry_run
+    )
 
 
 def _handle_start(args):
     project = load_project(args.project)
-    project.lifecycle.service.start(args.service, dry_run=args.dry_run)
+    project.lifecycle.service.start(
+        args.service, config_name=args.config, dry_run=args.dry_run
+    )
 
 
 def _handle_push(args):
     project = load_project(args.project)
     project.lifecycle.service.push(
-        args.service, args.host_path, args.container_path, dry_run=args.dry_run
+        args.service,
+        args.host_path,
+        args.container_path,
+        config_name=args.config,
+        dry_run=args.dry_run,
     )
 
 
 def _handle_pull(args):
     project = load_project(args.project)
     project.lifecycle.service.pull(
-        args.service, args.container_path, args.host_path, dry_run=args.dry_run
+        args.service,
+        args.container_path,
+        args.host_path,
+        config_name=args.config,
+        dry_run=args.dry_run,
     )
 
 
 def _handle_logs(args):
     project = load_project(args.project)
     project.lifecycle.service.logs(
-        args.service, args.tail, args.follow, dry_run=args.dry_run
+        args.service,
+        config_name=args.config,
+        tail=args.tail,
+        follow=args.follow,
+        dry_run=args.dry_run,
     )

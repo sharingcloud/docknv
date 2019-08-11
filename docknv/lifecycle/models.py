@@ -24,68 +24,99 @@ class ServiceLifecycle(object):
         """Init."""
         self.project = project
 
-    def start(self, service_name, dry_run=False):
+    def _execute_compose_command(self, config_name, args, **kwargs):
+        if config_name:
+            lifecycle_compose_command_on_configs(
+                self.project, [config_name], args, **kwargs
+            )
+        else:
+            lifecycle_compose_command_on_current_config(
+                self.project, args, **kwargs
+            )
+
+    def start(self, service_name, *, config_name=None, dry_run=False):
         """
         Start service.
 
         :param service_name:    Service name (str)
+        :param config_name:     Configuration name (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        service_name = lifecycle_get_service_name(self.project, service_name)
-        lifecycle_compose_command_on_current_config(
-            self.project, ["start", service_name], dry_run=dry_run
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
+        self._execute_compose_command(
+            config_name, ["start", service_name], dry_run=dry_run
         )
 
-    def stop(self, service_name, dry_run=False):
+    def stop(self, service_name, *, config_name=None, dry_run=False):
         """
         Stop service.
 
         :param service_name:    Service name (str)
+        :param config_name:     Configuration name (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        service_name = lifecycle_get_service_name(self.project, service_name)
-        lifecycle_compose_command_on_current_config(
-            self.project, ["stop", service_name], dry_run=dry_run
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
+        self._execute_compose_command(
+            config_name, ["stop", service_name], dry_run=dry_run
         )
 
-    def restart(self, service_name, force=False, dry_run=False):
+    def restart(
+        self, service_name, *, config_name=None, force=False, dry_run=False
+    ):
         """
         Restart service.
 
         :param service_name:    Service name (str)
+        :param config_name:     Configuration name (str)
         :param force:           Force? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        service_name = lifecycle_get_service_name(self.project, service_name)
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
         if force:
-            lifecycle_compose_command_on_current_config(
-                self.project, ["stop", service_name], dry_run=dry_run
+            self._execute_compose_command(
+                config_name, ["stop", service_name], dry_run=dry_run
             )
-            lifecycle_compose_command_on_current_config(
-                self.project, ["rm", "-f", service_name], dry_run=dry_run
+            self._execute_compose_command(
+                config_name, ["rm", "-f", service_name], dry_run=dry_run
             )
-            lifecycle_compose_command_on_current_config(
-                self.project, ["up", "-d", service_name], dry_run=dry_run
+            self._execute_compose_command(
+                config_name, ["up", "-d", service_name], dry_run=dry_run
             )
         else:
-            lifecycle_compose_command_on_current_config(
-                self.project, ["restart", service_name], dry_run=dry_run
+            self._execute_compose_command(
+                config_name, ["restart", service_name], dry_run=dry_run
             )
 
     def run(
-        self, service_name, cmd, daemon=False, env_vars=None, dry_run=False
+        self,
+        service_name,
+        cmd,
+        *,
+        config_name=None,
+        daemon=False,
+        env_vars=None,
+        dry_run=False,
     ):
         """
         Create container with command.
 
         :param service_name:    Service name (str)
         :param cmd:             Command (str)
+        :param config_name:     Configuration name (str)
         :param daemon:          Daemon mode? (bool) (default: False)
         :param env_vars:        Env vars (dict) (default: None)
         :param dry_run:         Dry run? (bool) (default: False)
         """
         env_vars = env_vars or {}
-        service_name = lifecycle_get_service_name(self.project, service_name)
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
         more_args = ["--use-aliases", "--service-ports", "--rm"]
         if daemon:
             more_args.remove("--rm")
@@ -93,22 +124,33 @@ class ServiceLifecycle(object):
         for key, value in env_vars.items():
             more_args += ["-e", f"{key}={value}"]
 
-        lifecycle_compose_command_on_current_config(
-            self.project,
+        self._execute_compose_command(
+            config_name,
             ["run", *more_args, service_name, *shlex.split(cmd)],
             dry_run=dry_run,
         )
 
-    def execute(self, service_name, cmds=None, no_tty=False, dry_run=False):
+    def execute(
+        self,
+        service_name,
+        cmds=None,
+        *,
+        config_name=None,
+        no_tty=False,
+        dry_run=False,
+    ):
         """
         Execute command on service.
 
         :param service_name:    Service name (str)
+        :param config_name:     Configuration name (str)
         :param cmds:            Commands (list?)
         :param no_tty:          Disable TTY? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        service_name = lifecycle_get_service_name(self.project, service_name)
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
         cmds = cmds or []
 
         args = []
@@ -116,27 +158,46 @@ class ServiceLifecycle(object):
             args += ["-T"]
 
         for cmd in cmds:
-            lifecycle_compose_command_on_current_config(
-                self.project,
+            self._execute_compose_command(
+                config_name,
                 ["exec", *args, service_name, *shlex.split(cmd)],
                 dry_run=dry_run,
             )
 
-    def shell(self, service_name, shell="/bin/bash", dry_run=False):
+    def shell(
+        self,
+        service_name,
+        *,
+        config_name=None,
+        shell="/bin/bash",
+        dry_run=False,
+    ):
         """
         Execute shell on running container.
 
         :param service_name:    Service name (str)
+        :param config_name:     Configuration name (str)
         :param shell:           Shell executable (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        self.execute(service_name, [shell], dry_run=dry_run)
+        self.execute(
+            service_name, [shell], config_name=config_name, dry_run=dry_run
+        )
 
-    def logs(self, service_name, tail=0, follow=False, dry_run=False):
+    def logs(
+        self,
+        service_name,
+        *,
+        config_name=None,
+        tail=0,
+        follow=False,
+        dry_run=False,
+    ):
         """
         Get logs from running container.
 
         :param service_name:    Service name (str)
+        :param config_name:     Configuration name (str)
         :param tail:            Apply tail lines (int)
         :param follow:          Follow logs (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
@@ -147,39 +208,53 @@ class ServiceLifecycle(object):
         if follow:
             args += ["-f"]
 
-        service_name = lifecycle_get_service_name(self.project, service_name)
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
 
         try:
-            lifecycle_compose_command_on_current_config(
-                self.project, ["logs", *args, service_name], dry_run=dry_run
+            self._execute_compose_command(
+                config_name, ["logs", *args, service_name], dry_run=dry_run
             )
         except StoppedCommandExecution as exc:
             print(exc)
 
-    def attach(self, service_name, dry_run=False):
+    def attach(self, service_name, *, config_name=None, dry_run=False):
         """
         Attach to a running container.
 
         :param service_name:    Service name (str)
+        :param config_name:     Configuration name (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        service_name = lifecycle_get_service_name(self.project, service_name)
-        lifecycle_compose_command_on_current_config(
-            self.project, ["attach", service_name], dry_run=dry_run
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
+        self._execute_compose_command(
+            config_name, ["attach", service_name], dry_run=dry_run
         )
 
     def build(
-        self, service_name, build_args=None, no_cache=False, dry_run=False
+        self,
+        service_name,
+        *,
+        config_name=None,
+        build_args=None,
+        no_cache=False,
+        dry_run=False,
     ):
         """
         Build a service.
 
         :param service_name:    Service name (str)
+        :param config_name:     Configuration name (str)
         :param build_args:      Build args (list?)
         :param no_cache:        No cache? (bool) (default: False)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        service_name = lifecycle_get_service_name(self.project, service_name)
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
         args = []
         build_args = build_args or []
         for x in build_args:
@@ -189,20 +264,31 @@ class ServiceLifecycle(object):
         if no_cache:
             args.append("--no-cache")
 
-        lifecycle_compose_command_on_current_config(
-            self.project, ["build", *args, service_name], dry_run=dry_run
+        self._execute_compose_command(
+            config_name, ["build", *args, service_name], dry_run=dry_run
         )
 
-    def push(self, service_name, host_path, container_path, dry_run=False):
+    def push(
+        self,
+        service_name,
+        host_path,
+        container_path,
+        *,
+        config_name=None,
+        dry_run=False,
+    ):
         """
         Push a file from host to container.
 
         :param service_name:    Service name (str)
         :param host_path:       Host path (str)
         :param container_path:  Container path (str)
+        :param config_name:     Configuration name (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        service_name = lifecycle_get_service_name(self.project, service_name)
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
 
         # Get container from service
         container = lifecycle_get_container_from_service(
@@ -217,16 +303,27 @@ class ServiceLifecycle(object):
             dry_run=dry_run,
         )
 
-    def pull(self, service_name, container_path, host_path, dry_run=False):
+    def pull(
+        self,
+        service_name,
+        container_path,
+        host_path,
+        *,
+        config_name=None,
+        dry_run=False,
+    ):
         """
         Pull a file from host to container.
 
         :param service_name:    Service name (str)
         :param container_path:  Container path (str)
         :param host_path:       Host path (str)
+        :param config_name:     Configuration name (str)
         :param dry_run:         Dry run? (bool) (default: False)
         """
-        service_name = lifecycle_get_service_name(self.project, service_name)
+        service_name = lifecycle_get_service_name(
+            self.project, service_name, config_name
+        )
 
         # Get container from service
         container = lifecycle_get_container_from_service(

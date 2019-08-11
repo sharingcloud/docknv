@@ -6,8 +6,8 @@ import traceback
 from docknv.logger import Logger, LoggerError
 from docknv.wrapper import FailedCommandExecution, StoppedCommandExecution
 
-from .shell import Shell
 from .custom import MalformedCommand
+from .shell import Shell
 
 
 def docknv_entry_point():
