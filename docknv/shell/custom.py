@@ -33,6 +33,9 @@ class CustomShell(object):
         self.parser.add_argument(
             "--dry-run", help="dry run", action="store_true"
         )
+        self.parser.add_argument(
+            "-c", "--config", help="configuration name", default=None
+        )
 
         self.subparsers = self.parser.add_subparsers(
             dest="command", metavar=""

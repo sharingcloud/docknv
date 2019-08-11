@@ -12,6 +12,7 @@ from docknv.project import project_is_valid
 
 def _init(subparsers):
     cmd = subparsers.add_parser("custom", help="custom commands")
+    cmd.add_argument("-c", "--config", help="configuration name", default=None)
     cmd.add_argument("args", nargs=argparse.REMAINDER)
 
 
@@ -45,8 +46,8 @@ def _handle(args):
 
                 src = imp.load_source("commands", abs_f)
                 if hasattr(src, "pre_parse") and hasattr(src, "post_parse"):
-                    pre_parse = getattr(src, "pre_parse")
-                    post_parse = getattr(src, "post_parse")
+                    pre_parse = src.pre_parse
+                    post_parse = src.post_parse
                     error = None
 
                     try:
@@ -67,6 +68,8 @@ def _handle(args):
         cmd_args += ["-v"]
     if args.dry_run:
         cmd_args += ["--dry-run"]
+    if args.config:
+        cmd_args += ["-c", args.config]
     cmd_args += args.args
 
     shell.run(cmd_args)

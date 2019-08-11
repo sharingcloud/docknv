@@ -1,9 +1,9 @@
 """Shell class."""
 
-import os
-import sys
 import argparse
 import importlib
+import os
+import sys
 
 from docknv.logger import Logger
 from docknv.version import __version__
@@ -77,7 +77,7 @@ class Shell(object):
         """Initialize each parsers."""
         for cmd in STANDARD_COMMANDS:
             module = importlib.import_module("docknv.shell.handlers." + cmd)
-            getattr(module, "_init")(self.subparsers)
+            module._init(self.subparsers)
 
     def parse_args(self, args):
         """
@@ -125,6 +125,6 @@ def handle_parsers(shell, args):
     args.project = os.path.abspath(args.project)
 
     module = importlib.import_module("docknv.shell.handlers." + args.command)
-    exit_code = getattr(module, "_handle")(args)
+    exit_code = module._handle(args)
 
     return exit_code
