@@ -17,11 +17,11 @@ def exec_process(args, cwd=None, shell=False, dry_run=False):
     :param dry_run: Dry run? (bool) (default: False)
     :rtype: Arguments or return code
     """
-    if dry_run:
-        return args
-
     try:
         Logger.debug(f"executing command {args}...")
+        if dry_run:
+            return args
+
         rc = subprocess.call(args, cwd=cwd, shell=shell)
     except KeyboardInterrupt:
         raise StoppedCommandExecution("CTRL+C")

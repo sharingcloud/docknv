@@ -6,6 +6,7 @@ import os
 from docknv.user import UserSession, user_get_username
 from docknv.database import Database, MissingActiveConfiguration
 from docknv.schema import SchemaCollection
+from docknv.image import ImageCollection
 from docknv.lifecycle import ProjectLifecycle
 
 from docknv.utils.ioutils import io_open
@@ -42,6 +43,7 @@ class Project(object):
         )
         self.database = Database.load_from_project(self)
         self.lifecycle = ProjectLifecycle(self)
+        self.images = ImageCollection.load_from_project(self)
 
     def __repr__(self):
         """Repr."""
@@ -53,6 +55,7 @@ class Project(object):
                 "project_name": self.project_name,
                 "schemas": self.schemas,
                 "config_data": self.config_data,
+                "images": self.images,
             },
             indent=4,
         )
