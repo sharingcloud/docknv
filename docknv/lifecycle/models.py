@@ -5,7 +5,7 @@ import shlex
 
 from docknv.database import Configuration
 from docknv.user import user_get_username
-from docknv.wrapper import StoppedCommandExecution
+from docknv.wrapper import exec_docker, StoppedCommandExecution
 
 from .methods import (
     lifecycle_compose_command_on_configs,
@@ -544,6 +544,51 @@ class ConfigLifecycle(object):
         )
 
 
+class ImageLifecycle(object):
+    """Image lifecycle."""
+
+    def __init__(self, project):
+        self.project = project
+
+    def build(
+        self,
+        image_name,
+        image_tag,
+        image_version,
+        build_args=None,
+        no_cache=False,
+        dry_run=False,
+    ):
+        """
+        Build image.
+
+        :param image_name:      Image name (str)
+        :param image_tag:       Image tag (str)
+        :param image_version:   Image version (str)
+        :param build_args:      Build args (list)
+        :param no_cache:        No cache? (bool) (default: False)
+        :param dry_run:         Dry run? (bool) (default: False)
+        """
+        args = []
+        build_args = build_args or []
+        image_data = self.project.images.get_image(image_name)
+
+        for x in build_args:
+            args.append("--build-arg")
+            args.append(x)
+
+        if no_cache:
+            args.append("--no-cache")
+
+        tag = f"{image_tag}:{image_version}"
+
+        exec_docker(
+            self.project.project_path,
+            ["build", image_data.path, "-t", tag, *args],
+            dry_run=dry_run,
+        )
+
+
 class ProjectLifecycle(object):
     """Project lifecycle."""
 
@@ -552,3 +597,4 @@ class ProjectLifecycle(object):
         self.project = project
         self.config = ConfigLifecycle(project)
         self.service = ServiceLifecycle(project)
+        self.image = ImageLifecycle(project)

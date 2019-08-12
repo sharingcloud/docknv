@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.4
+
+- Image subcommand to build images without configurations and schemas
+
+*Example*:
+```bash
+docknv images build weblate isd_weblate_py3 3.44.2
+```
+
 ## 5.3
 
 - Support config hot-swap in service and custom commands

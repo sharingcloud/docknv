@@ -13,6 +13,7 @@ STANDARD_COMMANDS = (
     "service",
     "env",
     "schema",
+    "images",
     "user",
     "scaffold",
     "custom",
