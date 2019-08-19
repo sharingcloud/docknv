@@ -46,7 +46,7 @@ class ServiceLifecycle(object):
             self.project, service_name, config_name
         )
         self._execute_compose_command(
-            config_name, ["start", service_name], dry_run=dry_run
+            config_name, ["up", "-d", service_name], dry_run=dry_run
         )
 
     def stop(self, service_name, *, config_name=None, dry_run=False):
