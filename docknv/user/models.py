@@ -71,6 +71,7 @@ class UserLock(object):
         :param timeout: Timeout in seconds
         """
         start_time = time.time()
+        message_shown = False
 
         while True:
             if self.lock():
@@ -84,8 +85,15 @@ class UserLock(object):
                     if elapsed_time > timeout:
                         raise ProjectLocked(self.project_path)
 
-            # Sleep for 0.5 seconds
-            time.sleep(0.5)
+            # Sleep for 1 seconds
+            time.sleep(1)
+
+            if timeout == -1 and not message_shown:
+                if time.time() - start_time > 3:
+                    Logger.info(
+                        f"Waiting for lockfile... If you know what you are doing, remove the file {self.get_file()}."
+                    )
+                    message_shown = True
 
         try:
             yield
